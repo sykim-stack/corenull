@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoreNull</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Serif+KR:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF6F0;
+      --warm:  #F5EDE0;
+      --brown: #8B6B4A;
+      --dark:  #2C1A0E;
+      --soft:  #C4956A;
+      --green: #7A9E7E;
+      --pink:  #E8B4B8;
+      --text:  #3D2B1F;
+      --muted: #9B8B7E;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Gowun Dodum', serif;
+      min-height: 100vh;
+    }
+
+    /* ── 커버 ── */
+    .cover {
+      position: relative;
+      height: 100vh;
+      max-height: 600px;
+      overflow: hidden;
+      background: linear-gradient(160deg, #E8D5C0 0%, #D4B896 50%, #C49A6C 100%);
+    }
+    .cover-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 60%, rgba(232,180,184,0.4) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 30%, rgba(122,158,126,0.25) 0%, transparent 50%);
+    }
+    .cover-photo {
+      position: absolute; inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.65;
+      transition: opacity 0.5s;
+    }
+    .cover-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 30%, rgba(44,26,14,0.65) 100%);
+    }
+    .cover-content {
+      position: absolute;
+      bottom: 40px; left: 0; right: 0;
+      text-align: center;
+      color: white;
+      padding: 0 24px;
+      animation: fadeUp 0.8s ease;
+    }
+    .cover-name {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+      margin-bottom: 6px;
+    }
+    .cover-sub {
+      font-size: 12px;
+      letter-spacing: 3px;
+      opacity: 0.85;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .cover-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+    }
+
+    /* ── 네비 ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--cream);
+      border-bottom: 1px solid rgba(139,107,74,0.15);
+      display: flex;
+      justify-content: center;
+      padding: 0 16px;
+      overflow-x: auto;
+    }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav-item {
+      padding: 16px 18px;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .nav-item.active { color: var(--brown); border-bottom-color: var(--soft); }
+
+    /* ── 메인 ── */
+    .main { max-width: 640px; margin: 0 auto; padding: 0 16px 100px; }
+
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 28px 0 18px;
+    }
+    .section-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 17px; font-weight: 600;
+      color: var(--dark);
+      white-space: nowrap;
+    }
+    .section-line { flex:1; height:1px; background: rgba(139,107,74,0.2); }
+
+    /* ── D-DAY 카드 ── */
+    .dday-card {
+      background: linear-gradient(135deg, #FFF8F0, #F5EDE0);
+      border: 1px solid rgba(139,107,74,0.2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative; overflow: hidden;
+    }
+    .dday-card::before {
+      content: attr(data-icon);
+      position: absolute; top: -8px; right: 16px;
+      font-size: 56px; opacity: 0.12;
+    }
+    .dday-label { font-size: 11px; letter-spacing: 3px; color: var(--muted); margin-bottom: 10px; }
+    .dday-number {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 50px; font-weight: 300;
+      color: var(--brown); line-height: 1; margin-bottom: 8px;
+    }
+    .dday-desc { font-size: 13px; color: var(--muted); letter-spacing: 1px; }
+
+    /* ── 방문 통계 ── */
+    .visit-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 24px; padding: 16px;
+      background: var(--warm); border-radius: 14px;
+      margin-bottom: 20px;
+    }
+    .visit-item { text-align: center; }
+    .visit-num { font-family: 'Noto Serif KR', serif; font-size: 20px; color: var(--brown); font-weight: 600; }
+    .visit-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; margin-top: 2px; }
+    .visit-divider { width: 1px; height: 32px; background: rgba(139,107,74,0.2); }
+
+    /* ── 사진 그리드 ── */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px; margin-bottom: 8px;
+    }
+    .photo-item {
+      aspect-ratio: 1;
+      background: var(--warm);
+      border-radius: 4px; overflow: hidden;
+      cursor: pointer; position: relative;
+      transition: transform 0.2s;
+    }
+    .photo-item:hover { transform: scale(0.97); }
+    .photo-item:first-child { grid-column: span 2; grid-row: span 2; }
+    .photo-item img { width:100%; height:100%; object-fit:cover; }
+    .photo-overlay {
+      position: absolute; bottom:0; left:0; right:0;
+      background: linear-gradient(to top, rgba(44,26,14,0.7), transparent);
+      color: white; padding: 20px 10px 10px;
+      font-size: 11px; line-height: 1.4;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .photo-item:hover .photo-overlay { opacity: 1; }
+    .photo-placeholder {
+      width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 28px;
+      background: linear-gradient(135deg, #F5EDE0, #E8D5C0);
+    }
+
+    /* ── 마일스톤 ── */
+    .milestone-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .milestone-item {
+      display: flex; align-items: center; gap: 16px;
+      background: white;
+      border: 1px solid rgba(139,107,74,0.12);
+      border-radius: 14px; padding: 14px 18px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .milestone-icon {
+      font-size: 22px; width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--warm); border-radius: 12px; flex-shrink: 0;
+    }
+    .milestone-info { flex: 1; }
+    .milestone-title { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 3px; }
+    .milestone-date { font-size: 12px; color: var(--muted); }
+    .milestone-badge {
+      font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: var(--green); color: white;
+    }
+    .milestone-badge.pending { background: var(--warm); color: var(--muted); }
+
+    /* ── 댓글 ── */
+    .comment-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .comment-item {
+      background: white;
+      border: 1px solid rgba(139,107,74,0.1);
+      border-radius: 14px; padding: 14px 16px;
+    }
+    .comment-header { display:flex; align-items:center; gap:8px; margin-bottom: 8px; }
+    .comment-avatar {
+      width:32px; height:32px;
+      background: linear-gradient(135deg, var(--pink), var(--soft));
+      border-radius: 50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 13px; color: white; font-weight: 600;
+    }
+    .comment-author { font-size: 13px; font-weight: 600; color: var(--dark); }
+    .comment-flag { font-size: 14px; margin-left: auto; }
+    .comment-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+    .comment-time { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    .comment-form {
+      background: white;
+      border: 1px solid rgba(139,107,74,0.15);
+      border-radius: 16px; padding: 16px;
+    }
+    .comment-form input,
+    .comment-form textarea {
+      width: 100%; background: var(--warm); border: none;
+      border-radius: 10px; padding: 12px 14px;
+      font-family: 'Gowun Dodum', serif; font-size: 13px;
+      color: var(--dark); outline: none; margin-bottom: 8px; resize: none;
+    }
+    .comment-form textarea { height: 80px; }
+    .comment-submit {
+      width: 100%; background: var(--brown); color: white; border: none;
+      border-radius: 10px; padding: 12px;
+      font-family: 'Gowun Dodum', serif; font-size: 13px;
+      letter-spacing: 1px; cursor: pointer; transition: background 0.2s;
+    }
+    .comment-submit:hover { background: var(--dark); }
+
+    /* ── 탭 ── */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeUp 0.35s ease; }
+
+    /* ── 빈 상태 ── */
+    .empty-state {
+      text-align: center; padding: 48px 24px; color: var(--muted);
+      grid-column: span 3;
+    }
+    .empty-state .icon { font-size: 38px; margin-bottom: 10px; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    /* ── 업로드 FAB ── */
+    .fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 56px; height: 56px;
+      background: var(--brown); color: white;
+      border: none; border-radius: 50%; font-size: 24px;
+      cursor: pointer; z-index: 200;
+      box-shadow: 0 4px 20px rgba(139,107,74,0.4);
+      transition: transform 0.2s;
+      display: none;
+    }
+    .fab:hover { transform: scale(1.1); }
+
+    /* ── 모달 ── */
+    .modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(44,26,14,0.75);
+      z-index: 500; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal.open { display: flex; }
+    .modal-box {
+      background: var(--cream); border-radius: 20px;
+      max-width: 400px; width: 100%;
+      max-height: 85vh; overflow-y: auto;
+      padding: 24px; position: relative;
+      animation: fadeUp 0.3s ease;
+    }
+    .modal-img {
+      width: 100%; aspect-ratio: 1; object-fit: cover;
+      border-radius: 14px; margin-bottom: 14px;
+      background: var(--warm);
+    }
+    .modal-text { font-size: 14px; line-height: 1.8; color: var(--text); margin-bottom: 10px; }
+    .modal-date { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(44,26,14,0.5); color: white; border: none;
+      width: 30px; height: 30px; border-radius: 50%;
+      font-size: 14px; cursor: pointer;
+    }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--dark); color: white;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; opacity: 0; transition: all 0.3s;
+      z-index: 999; white-space: nowrap; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── 404 ── */
+    .not-found {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; padding: 24px;
+    }
+    .not-found h1 { font-size: 48px; margin-bottom: 12px; }
+    .not-found p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(14px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 커버 -->
+<div class="cover" id="cover">
+  <div class="cover-bg"></div>
+  <div class="cover-photo" id="coverPhoto"></div>
+  <div class="cover-overlay"></div>
+  <div class="cover-content">
+    <div class="cover-name" id="houseName">—</div>
+    <div class="cover-sub" id="houseSub">—</div>
+    <div class="cover-badge" id="coverBadge">불러오는 중...</div>
+  </div>
+</div>
+
+<!-- 네비 -->
+<nav class="nav" id="nav" style="display:none">
+  <div class="nav-item active" data-tab="home">홈</div>
+  <div class="nav-item" data-tab="gallery">사진첩</div>
+  <div class="nav-item" data-tab="milestone">성장</div>
+  <div class="nav-item" data-tab="guestbook">방명록</div>
+</nav>
+
+<!-- 메인 -->
+<div class="main" id="mainContent" style="display:none">
+
+  <!-- 홈 -->
+  <div class="tab-content active" id="tab-home">
+    <div class="dday-card" id="ddayCard" data-icon="🎂">
+      <div class="dday-label" id="ddayLabel">—</div>
+      <div class="dday-number" id="ddayNumber">—</div>
+      <div class="dday-desc" id="ddayDesc">—</div>
+    </div>
+
+    <div class="visit-bar">
+      <div class="visit-item">
+        <div class="visit-num" id="mediaCount">0</div>
+        <div class="visit-label">사진</div>
+      </div>
+      <div class="visit-divider"></div>
+      <div class="visit-item">
+        <div class="visit-num" id="commentCount">0</div>
+        <div class="visit-label">방명록</div>
+      </div>
+      <div class="visit-divider"></div>
+      <div class="visit-item">
+        <div class="visit-num" id="milestoneCount">0</div>
+        <div class="visit-label">기록</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">최근 사진</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="photo-grid" id="recentPhotos"></div>
+
+    <div class="section-header">
+      <div class="section-title">성장 기록</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="milestone-list" id="recentMilestones"></div>
+  </div>
+
+  <!-- 사진첩 -->
+  <div class="tab-content" id="tab-gallery">
+    <div class="section-header">
+      <div class="section-title">사진첩</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="photo-grid" id="allPhotos"></div>
+  </div>
+
+  <!-- 성장 -->
+  <div class="tab-content" id="tab-milestone">
+    <div class="section-header">
+      <div class="section-title">성장 기록</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="milestone-list" id="allMilestones"></div>
+  </div>
+
+  <!-- 방명록 -->
+  <div class="tab-content" id="tab-guestbook">
+    <div class="section-header">
+      <div class="section-title">방명록</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="comment-list" id="commentList"></div>
+    <div class="comment-form">
+      <input type="text" id="commentAuthor" placeholder="이름 (예: 할머니, Bà ngoại)">
+      <textarea id="commentText" placeholder="하준이에게 한마디 남겨주세요 💌&#10;한국어, 베트남어 모두 괜찮아요"></textarea>
+      <button class="comment-submit" onclick="submitComment()">방명록 남기기</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="showToast('업로드 기능 준비중!')">+</button>
+
+<!-- 사진 모달 -->
+<div class="modal" id="photoModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('photoModal').classList.remove('open')">✕</button>
+    <img class="modal-img" id="modalImg" src="" alt="">
+    <div class="modal-text" id="modalText"></div>
+    <div class="modal-date" id="modalDate"></div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── URL에서 slug 읽기 ─────────────────────────────────
+const pathSlug  = location.pathname.replace(/^\//, '').replace(/\/$/, '');
+const paramSlug = new URLSearchParams(location.search).get('slug');
+const SLUG      = pathSlug || paramSlug || '';
+
+let houseData = null;
+
+// ─── 초기화 ────────────────────────────────────────────
+async function init() {
+  if (!SLUG) { showNotFound('슬러그가 없습니다'); return; }
+
+  try {
+    const res  = await fetch(`/api/house?slug=${SLUG}`);
+    const data = await res.json();
+
+    if (!data.house) { showNotFound('존재하지 않는 집입니다'); return; }
+
+    houseData = data;
+    renderHouse(data);
+    recordVisit(data.house.id);
+
+  } catch (e) {
+    showNotFound('불러오기에 실패했습니다');
+  }
+}
+
+// ─── 집 렌더 ───────────────────────────────────────────
+function renderHouse(data) {
+  const { house, media, milestones, comments } = data;
+
+  // 커버
+  document.title = `${house.name} 🏡`;
+  document.getElementById('houseName').textContent = house.name;
+  document.getElementById('houseSub').textContent  = house.description || '';
+
+  if (house.cover_url) {
+    document.getElementById('coverPhoto').style.backgroundImage = `url('${house.cover_url}')`;
+  }
+
+  // D-DAY (baby 카테고리만, 나머지는 가입일 기준)
+  renderDday(house);
+
+  // 통계
+  document.getElementById('mediaCount').textContent    = media.length;
+  document.getElementById('commentCount').textContent  = comments.length;
+  document.getElementById('milestoneCount').textContent = milestones.length;
+
+  // 컨텐츠
+  renderPhotos(media);
+  renderMilestones(milestones, house.category);
+  renderComments(comments);
+
+  // 네비/메인 표시
+  document.getElementById('nav').style.display         = '';
+  document.getElementById('mainContent').style.display = '';
+}
+
+// ─── D-DAY ─────────────────────────────────────────────
+function renderDday(house) {
+  // house에 birth_date / target_date 컬럼이 있으면 그걸 쓰고
+  // 없으면 category별 기본 아이콘/라벨만
+  const iconMap = {
+    baby:    '🎂', couple: '💑', travel: '✈️',
+    pet:     '🐾', food:   '🍳', fitness: '💪', daily: '📅'
+  };
+  const labelMap = {
+    baby:    'HUNDRED DAYS', couple: 'TOGETHER',
+    travel:  'NEXT TRIP',    pet:    'BIRTHDAY',
+    food:    'COOKING',      fitness: 'RECORD', daily: 'TODAY'
+  };
+
+  const cat = house.category || 'daily';
+  document.getElementById('ddayCard').dataset.icon = iconMap[cat];
+  document.getElementById('ddayLabel').textContent = labelMap[cat];
+
+  // baby 카테고리: 백일 계산 예시 (실제 birth_date 컬럼 추가 후 교체)
+  const now = new Date();
+  if (cat === 'baby') {
+    // TODO: house.birth_date 컬럼 추가 후 실제 값으로 교체
+    const birth  = house.birth_date ? new Date(house.birth_date) : null;
+    const target = house.target_date ? new Date(house.target_date) : null;
+
+    if (target) {
+      const diff = Math.ceil((target - now) / 86400000);
+      const days = birth ? Math.floor((now - birth) / 86400000) : null;
+      document.getElementById('ddayNumber').textContent = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : `${Math.abs(diff)}일`;
+      document.getElementById('ddayDesc').textContent   = days !== null ? `태어난 지 ${days}일 · ${formatDate(target)}` : formatDate(target);
+    } else {
+      document.getElementById('ddayNumber').textContent = '—';
+      document.getElementById('ddayDesc').textContent   = '날짜 설정 전';
+    }
+  } else {
+    document.getElementById('ddayNumber').textContent = formatDate(now).replace('년 ', '.').replace('월 ', '.').replace('일', '');
+    document.getElementById('ddayDesc').textContent   = house.bio || '';
+  }
+}
+
+// ─── 사진 ──────────────────────────────────────────────
+function renderPhotos(media) {
+  const photos = media.filter(m => m.media_type === 'photo');
+  document.getElementById('mediaCount').textContent = photos.length;
+
+  const html = (items) => items.length === 0
+    ? `<div class="empty-state"><div class="icon">📷</div><p>아직 사진이 없어요</p></div>`
+    : items.map(m => `
+        <div class="photo-item" onclick="openPhoto('${m.id}')">
+          ${m.file_url
+            ? `<img src="${m.file_url}" alt="" loading="lazy">`
+            : `<div class="photo-placeholder">📷</div>`}
+          ${m.content ? `<div class="photo-overlay">${m.content.slice(0,50)}</div>` : ''}
+        </div>`).join('');
+
+  document.getElementById('recentPhotos').innerHTML = html(photos.slice(0, 7));
+  document.getElementById('allPhotos').innerHTML    = html(photos);
+}
+
+// ─── 마일스톤 ──────────────────────────────────────────
+function renderMilestones(milestones, category) {
+  const defaults = {
+    baby: [
+      { title:'태어났어요',   icon:'👶', milestone_date: null, done: true  },
+      { title:'백일',         icon:'🎂', milestone_date: null, done: false },
+      { title:'첫 뒤집기',    icon:'🔄', milestone_date: null, done: false },
+      { title:'첫 걸음마',    icon:'👣', milestone_date: null, done: false },
+      { title:'첫 단어',      icon:'💬', milestone_date: null, done: false },
+      { title:'첫 번째 생일', icon:'🎁', milestone_date: null, done: false },
+    ],
+    pet:     [{ title:'입양일', icon:'🐾' }, { title:'첫 산책', icon:'🦮' }, { title:'첫 목욕', icon:'🛁' }],
+    travel:  [{ title:'첫 여행', icon:'✈️' }, { title:'첫 해외', icon:'🌏' }],
+    fitness: [{ title:'시작일', icon:'💪' }, { title:'첫 목표 달성', icon:'🏆' }],
+    daily:   [],
+  };
+
+  const items = milestones.length > 0 ? milestones : (defaults[category] || []);
+
+  const html = items.length === 0
+    ? `<div class="empty-state" style="grid-column:auto"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`
+    : items.map((m, i) => {
+        const done = m.done || (m.milestone_date && new Date(m.milestone_date) <= new Date());
+        return `
+        <div class="milestone-item" style="animation-delay:${i*0.07}s">
+          <div class="milestone-icon">${m.icon || '⭐'}</div>
+          <div class="milestone-info">
+            <div class="milestone-title">${m.title}</div>
+            <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+          </div>
+          <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('recentMilestones').innerHTML = html;
+  document.getElementById('allMilestones').innerHTML    = html;
+}
+
+// ─── 댓글 ──────────────────────────────────────────────
+function renderComments(comments) {
+  const el = document.getElementById('commentList');
+  el.innerHTML = comments.length === 0
+    ? `<div class="empty-state" style="grid-column:auto"><div class="icon">💌</div><p>첫 방명록을 남겨주세요!</p></div>`
+    : comments.map(c => `
+        <div class="comment-item">
+          <div class="comment-header">
+            <div class="comment-avatar">${[...c.author_name][0]}</div>
+            <div class="comment-author">${c.author_name}</div>
+            <div class="comment-flag">${c.lang==='ko'?'🇰🇷':c.lang==='vi'?'🇻🇳':'🌏'}</div>
+          </div>
+          <div class="comment-text">${c.content}</div>
+          <div class="comment-time">${timeAgo(c.created_at)}</div>
+        </div>`).join('');
+}
+
+// ─── 댓글 제출 ─────────────────────────────────────────
+async function submitComment() {
+  const author  = document.getElementById('commentAuthor').value.trim();
+  const content = document.getElementById('commentText').value.trim();
+  if (!author || !content) { showToast('이름과 내용을 입력해주세요'); return; }
+
+  try {
+    const res = await fetch('/api/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: houseData.house.id, author_name: author, content })
+    });
+    if (res.ok) {
+      document.getElementById('commentAuthor').value = '';
+      document.getElementById('commentText').value   = '';
+      showToast('방명록이 등록됐어요 💌');
+      const data = await res.json();
+      houseData.comments.unshift(data.comment);
+      renderComments(houseData.comments);
+      document.getElementById('commentCount').textContent = houseData.comments.length;
+    }
+  } catch { showToast('오류가 발생했어요'); }
+}
+
+// ─── 사진 모달 ─────────────────────────────────────────
+function openPhoto(id) {
+  const m = houseData?.media.find(m => m.id === id);
+  if (!m) return;
+  document.getElementById('modalImg').src       = m.file_url || '';
+  document.getElementById('modalText').textContent = m.content || '';
+  document.getElementById('modalDate').textContent = m.event_date ? formatDate(m.event_date) : timeAgo(m.created_at);
+  document.getElementById('photoModal').classList.add('open');
+}
+
+// ─── 방문 기록 ─────────────────────────────────────────
+async function recordVisit(houseId) {
+  try {
+    await fetch('/api/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: houseId })
+    });
+  } catch {}
+}
+
+// ─── 404 ───────────────────────────────────────────────
+function showNotFound(msg) {
+  document.getElementById('cover').style.display = 'none';
+  document.body.innerHTML += `
+    <div class="not-found">
+      <h1>🏚️</h1>
+      <p>${msg}<br><a href="/" style="color:var(--brown)">메인으로 돌아가기</a></p>
+    </div>`;
+}
+
+// ─── 네비 탭 ───────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(`tab-${item.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ─── 유틸 ──────────────────────────────────────────────
+function formatDate(str) {
+  const d = new Date(str);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+function timeAgo(str) {
+  const diff = Date.now() - new Date(str).getTime();
+  const m = Math.floor(diff/60000), h = Math.floor(m/60), d = Math.floor(h/24);
+  if (d > 0) return `${d}일 전`;
+  if (h > 0) return `${h}시간 전`;
+  if (m > 0) return `${m}분 전`;
+  return '방금';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>
