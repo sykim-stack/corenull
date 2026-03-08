@@ -1,8 +1,14 @@
-// api/upload.js
-// 미디어 메타데이터 Supabase 저장
-// (실제 파일 업로드는 브라우저 → Cloudinary 직접)
+// ============================================================
+// CoreNull | api/upload.js
+// Cloudinary 이미지 업로드 + Supabase media 저장
+// ============================================================
 
-import { supabase } from '../lib/supabase.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,49 +17,40 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const {
-    house_id,
-    media_type,     // photo | video
-    file_url,       // Cloudinary URL
-    thumbnail_url,
-    video_url,      // YouTube/TikTok URL
-    video_platform, // youtube | tiktok | facebook
-    event_tag,      // daily | birth | hundred_days | first_step 등
-    event_date,
-    uploaded_by,    // 방문자 이름
-    is_owner        // true: 집주인, false: 방문자
-  } = req.body;
+  const { file_url, thumbnail_url, media_type, content, event_tag, event_date, room_id, house_id } = req.body;
 
-  if (!house_id || !media_type) {
-    return res.status(400).json({ error: 'house_id, media_type required' });
+  if (!file_url || !house_id) {
+    return res.status(400).json({ error: 'file_url, house_id 필수' });
   }
 
-  // 집주인이면 approved, 방문자면 pending
-  const status = is_owner ? 'approved' : 'pending';
+  const { data, error } = await fetch(
+    `${process.env.SUPABASE_URL}/rest/v1/media`,
+    {
+      method: 'POST',
+      headers: {
+        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept-Profile': 'corenull',
+        'Content-Profile': 'corenull',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        house_id,
+        room_id:       room_id || null,
+        media_type:    media_type || 'photo',
+        file_url,
+        thumbnail_url: thumbnail_url || null,
+        content:       content || null,
+        event_tag:     event_tag || null,
+        event_date:    event_date || null,
+        is_owner:      true,
+        status:        'approved'
+      })
+    }
+  ).then(r => r.json()).catch(e => ({ error: e.message }));
 
-  const { data, error } = await supabase
-    .schema('corenull')
-    .from('media')
-    .insert({
-      house_id,
-      media_type,
-      file_url:       file_url       || null,
-      thumbnail_url:  thumbnail_url  || null,
-      video_url:      video_url      || null,
-      video_platform: video_platform || null,
-      event_tag:      event_tag      || 'daily',
-      event_date:     event_date     || null,
-      uploaded_by:    uploaded_by    || null,
-      is_owner:       is_owner       ?? true,
-      status
-    })
-    .select()
-    .single();
+  if (error) return res.status(500).json({ error });
 
-  if (error) {
-    console.error('upload error:', error);
-    return res.status(500).json({ error: error.message });
-  }
-
-  return res.status(200).json({ success: true, media: data });
+  return res.status(200).json({ success: true, data });
 }
