@@ -19,7 +19,10 @@ export default async function handler(req, res) {
   const { slug } = req.query;
   if (!slug) return res.status(400).json({ error: 'slug required' });
 
-  // 집 기본 정보
+  // ✅ 디버그 추가
+  console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+  console.log('KEY prefix:', process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 20));
+
   const { data: house, error } = await supabase
     .schema('corenull')
     .from('houses')
@@ -28,8 +31,12 @@ export default async function handler(req, res) {
     .eq('is_public', true)
     .single();
 
+  // ✅ 디버그 추가
+  console.log('house:', house);
+  console.log('error:', error);
+
   if (error || !house) {
-    return res.status(404).json({ error: '존재하지 않는 집입니다' });
+    return res.status(404).json({ error: '존재하지 않는 집입니다', debug: error });
   }
 
   // 미디어 (approved만)
