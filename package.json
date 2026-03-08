@@ -1,14 +1,10 @@
-<<<<<<< HEAD
 {
-    "name": "corenull",
-    "version": "1.0.0",
-    "description": "CoreNull — 한-베 디지털 마을 커뮤니티",
-    "main": "index.html"
-=======
-{
-    "name": "corenull",
-    "version": "1.0.0",
-    "description": "CoreNull — 한-베 디지털 마을 커뮤니티",
-    "main": "index.html"
->>>>>>> f78c0f58511154bbe35d4f1078be025820056b4e
+  "name": "corenull",
+  "version": "1.0.0",
+  "description": "CoreNull — 한-베 디지털 마을 커뮤니티",
+  "main": "index.html",
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
   }
+}
