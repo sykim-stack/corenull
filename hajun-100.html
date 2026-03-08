@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>김하준 100일 🎂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&family=Be+Vietnam+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream:   #FDF8F3;
+      --warm:    #F7EEE3;
+      --peach:   #F2C4A0;
+      --brown:   #8B5E3C;
+      --dark:    #2C1A0E;
+      --soft:    #D4956A;
+      --mint:    #8FBFAB;
+      --pink:    #E8A0A8;
+      --gold:    #C9A84C;
+      --text:    #3D2B1F;
+      --muted:   #9B8B7E;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Gowun Dodum', serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── 히어로 ── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #FDE8D8 0%, #F7D4C0 40%, #EFBFA8 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 60px 24px;
+    }
+
+    .hero-circles {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+
+    .hero-circles span {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+
+    .hero-circles span:nth-child(1) {
+      width: 400px; height: 400px;
+      background: var(--pink);
+      top: -100px; right: -100px;
+      animation: float1 8s ease-in-out infinite;
+    }
+
+    .hero-circles span:nth-child(2) {
+      width: 250px; height: 250px;
+      background: var(--mint);
+      bottom: -50px; left: -50px;
+      animation: float2 10s ease-in-out infinite;
+    }
+
+    .hero-circles span:nth-child(3) {
+      width: 150px; height: 150px;
+      background: var(--gold);
+      top: 30%; left: 10%;
+      animation: float1 6s ease-in-out infinite reverse;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+    @keyframes float2 {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+
+    .hero-badge {
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 30px;
+      padding: 8px 20px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--brown);
+      margin-bottom: 28px;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    /* 사진 프레임 */
+    .photo-frame {
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FDE8D8, #F5C6A8);
+      border: 4px solid rgba(255,255,255,0.8);
+      box-shadow: 0 20px 60px rgba(139,94,60,0.25);
+      margin-bottom: 32px;
+      overflow: hidden;
+      position: relative;
+      animation: fadeUp 0.8s 0.2s ease both;
+      cursor: pointer;
+    }
+
+    .photo-frame img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-frame-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 64px;
+    }
+
+    .photo-upload-hint {
+      position: absolute; inset: 0;
+      background: rgba(44,26,14,0.5);
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 13px;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      border-radius: 50%;
+    }
+
+    .photo-frame:hover .photo-upload-hint { opacity: 1; }
+
+    .hero-name {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: 6px;
+      margin-bottom: 8px;
+      animation: fadeUp 0.8s 0.3s ease both;
+      text-shadow: 0 2px 20px rgba(139,94,60,0.15);
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--brown);
+      opacity: 0.8;
+      margin-bottom: 32px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    /* D-day 카운터 */
+    .dday-wrap {
+      display: flex;
+      gap: 16px;
+      animation: fadeUp 0.8s 0.5s ease both;
+    }
+
+    .dday-box {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 16px;
+      padding: 16px 20px;
+      text-align: center;
+      min-width: 72px;
+    }
+
+    .dday-num {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--brown);
+      line-height: 1;
+    }
+
+    .dday-label {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--brown);
+      opacity: 0.5;
+      font-size: 11px;
+      letter-spacing: 2px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ── 섹션 공통 ── */
+    .section {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-tag {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    /* ── 마일스톤 타임라인 ── */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--peach), var(--mint));
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 28px;
+      animation: fadeLeft 0.6s ease both;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -26px; top: 14px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--peach);
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(139,94,60,0.2);
+    }
+
+    .timeline-dot.done { background: var(--mint); }
+
+    .timeline-card {
+      background: white;
+      border: 1px solid rgba(139,94,60,0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .timeline-icon {
+      font-size: 28px;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--warm);
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .timeline-info { flex: 1; }
+
+    .timeline-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 3px;
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .timeline-badge {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--mint);
+      color: white;
+      white-space: nowrap;
+    }
+
+    .timeline-badge.pending {
+      background: var(--warm);
+      color: var(--muted);
+    }
+
+    /* ── 사진 갤러리 ── */
+    .gallery-bg {
+      background: var(--warm);
+      padding: 60px 0;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .photo-item {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: #EDE3D5;
+      transition: transform 0.2s;
+    }
+
+    .photo-item:first-child {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .photo-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+
+    .photo-item:hover img { transform: scale(1.05); }
+
+    .photo-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      color: var(--muted);
+    }
+
+    /* ── 이벤트 피드 (SNS) ── */
+    .feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .feed-item {
+      background: white;
+      border: 1px solid rgba(139,94,60,0.1);
+      border-radius: 20px;
+      padding: 20px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .feed-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .feed-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--peach));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      color: white;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .feed-author {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .feed-lang {
+      font-size: 11px;
+      margin-left: auto;
+      background: var(--warm);
+      padding: 3px 10px;
+      border-radius: 10px;
+      color: var(--muted);
+    }
+
+    .feed-content {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .feed-media {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .feed-media img {
+      width: 100%;
+      object-fit: cover;
+      max-height: 300px;
+    }
+
+    .feed-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .feed-like-btn {
+      background: none;
+      border: 1px solid rgba(139,94,60,0.15);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      color: var(--muted);
+      transition: all 0.2s;
+      font-family: 'Gowun Dodum', serif;
+    }
+
+    .feed-like-btn:hover, .feed-like-btn.liked {
+      background: #FFF0F0;
+      border-color: var(--pink);
+      color: var(--pink);
+    }
+
+    .feed-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* ── 메시지 작성 폼 ── */
+    .post-form {
+      background: white;
+      border: 1px solid rgba(139,94,60,0.12);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .post-form-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 14px;
+    }
+
+    .post-form input,
+    .post-form textarea {
+      width: 100%;
+      background: var(--warm);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 13px;
+      color: var(--dark);
+      outline: none;
+      margin-bottom: 10px;
+      resize: none;
+    }
+
+    .post-form textarea { height: 90px; }
+
+    .post-form-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .post-photo-btn {
+      background: var(--warm);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .post-photo-btn:hover { background: var(--peach); }
+
+    .post-submit {
+      flex: 1;
+      background: var(--brown);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 13px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .post-submit:hover { background: var(--dark); }
+
+    /* ── 업로드 FAB ── */
+    .fab {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      width: 56px; height: 56px;
+      background: var(--brown);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(139,94,60,0.4);
+      z-index: 200;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: none;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 32px rgba(139,94,60,0.5);
+    }
+
+    /* ── 업로드 모달 ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(44,26,14,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--cream);
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 640px;
+      padding: 28px 24px 40px;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: rgba(139,94,60,0.2);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    .modal-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 20px;
+    }
+
+    .upload-preview {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: var(--warm);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .upload-preview img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .upload-preview-placeholder {
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .upload-preview-placeholder .icon { font-size: 40px; margin-bottom: 8px; }
+    .upload-preview-placeholder p { font-size: 13px; }
+
+    .modal-input {
+      width: 100%;
+      background: var(--warm);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 13px;
+      color: var(--dark);
+      outline: none;
+      margin-bottom: 10px;
+      resize: none;
+    }
+
+    .modal-input.textarea { height: 80px; }
+
+    .modal-submit {
+      width: 100%;
+      background: var(--brown);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 15px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+
+    .modal-submit:hover { background: var(--dark); }
+    .modal-submit:disabled { background: var(--muted); cursor: not-allowed; }
+
+    .upload-progress {
+      display: none;
+      text-align: center;
+      padding: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── 하단 인삿말 ── */
+    .footer-section {
+      background: linear-gradient(160deg, #2C1A0E 0%, #4A2E1A 100%);
+      color: white;
+      text-align: center;
+      padding: 60px 24px;
+    }
+
+    .footer-emoji { font-size: 48px; margin-bottom: 20px; }
+
+    .footer-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+      opacity: 0.9;
+    }
+
+    .footer-sub {
+      font-size: 13px;
+      opacity: 0.5;
+      letter-spacing: 1px;
+    }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed;
+      bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--dark);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── 애니메이션 ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeLeft {
+      from { opacity: 0; transform: translateX(-16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── 빈 상태 ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; line-height: 1.7; }
+
+    /* ── 반응형 ── */
+    @media (min-width: 480px) {
+      .hero-name { font-size: 56px; }
+      .photo-frame { width: 220px; height: 220px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 히어로 -->
+<div class="hero">
+  <div class="hero-circles">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="hero-badge">🎂 HUNDRED DAYS · 백일</div>
+
+  <div class="photo-frame" id="heroPhotoFrame" onclick="document.getElementById('coverInput').click()">
+    <div class="photo-frame-placeholder">👶</div>
+    <div class="photo-upload-hint">사진 변경</div>
+  </div>
+  <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCoverPhoto(this)">
+
+  <div class="hero-name">김하준</div>
+  <div class="hero-sub">KIM HA JUN · MANGO 🥭</div>
+
+  <div class="dday-wrap" id="ddayWrap"></div>
+
+  <div class="scroll-hint">
+    <span>↓</span>
+    <span>SCROLL</span>
+  </div>
+</div>
+
+<!-- 마일스톤 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">MILESTONE</div>
+    <div class="section-title">하준이의 성장 기록</div>
+  </div>
+  <div class="timeline" id="milestoneList"></div>
+</div>
+
+<!-- 사진첩 -->
+<div class="gallery-bg">
+  <div class="section" style="padding-top:0; padding-bottom:0">
+    <div class="section-header">
+      <div class="section-tag">GALLERY</div>
+      <div class="section-title">사진첩</div>
+    </div>
+  </div>
+  <div class="photo-grid" id="photoGrid"></div>
+</div>
+
+<!-- 이벤트 피드 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-tag">MESSAGES</div>
+    <div class="section-title">축하 메시지 💌</div>
+  </div>
+
+  <div class="feed-list" id="feedList"></div>
+
+  <!-- 메시지 작성 -->
+  <div class="post-form">
+    <div class="post-form-title">하준이에게 메시지를 남겨주세요 🎂</div>
+    <input type="text" id="postAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)">
+    <textarea id="postContent" placeholder="축하 메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea>
+    <div class="post-form-actions">
+      <button class="post-photo-btn" onclick="document.getElementById('postPhotoInput').click()">📷</button>
+      <input type="file" id="postPhotoInput" accept="image/*" style="display:none" onchange="previewPostPhoto(this)">
+      <button class="post-submit" onclick="submitPost()">메시지 남기기</button>
+    </div>
+    <div id="postPhotoPreview" style="margin-top:10px; display:none">
+      <img id="postPhotoImg" style="width:100%; border-radius:12px; max-height:200px; object-fit:cover">
+    </div>
+  </div>
+</div>
+
+<!-- 하단 -->
+<div class="footer-section">
+  <div class="footer-emoji">🥭</div>
+  <div class="footer-title">김하준의 100일을 축하합니다</div>
+  <div class="footer-sub">2025.12.22 → 2026.03.31</div>
+</div>
+
+<!-- 업로드 FAB (오너용) -->
+<button class="fab" id="uploadFab" onclick="openUploadModal()">+</button>
+
+<!-- 업로드 모달 -->
+<div class="modal-overlay" id="uploadModal" onclick="closeUploadModal(event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">사진 업로드 📷</div>
+
+    <div class="upload-preview" id="uploadPreview" onclick="document.getElementById('uploadInput').click()">
+      <div class="upload-preview-placeholder">
+        <div class="icon">📷</div>
+        <p>사진을 선택하세요</p>
+      </div>
+    </div>
+    <input type="file" id="uploadInput" accept="image/*" style="display:none" onchange="previewUpload(this)">
+
+    <textarea class="modal-input textarea" id="uploadContent" placeholder="사진 설명 (선택)"></textarea>
+    <input type="date" class="modal-input" id="uploadDate">
+
+    <div class="upload-progress" id="uploadProgress">업로드 중... ⏳</div>
+    <button class="modal-submit" id="uploadSubmit" onclick="submitUpload()">올리기</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 상수 ──────────────────────────────────────────────
+const HOUSE_ID   = '6341b872-4555-4fdc-8f1d-8009b2b1764f';
+const BIRTH_DATE = new Date('2025-12-22');
+const HUNDRED    = new Date('2026-03-31');
+const IS_OWNER   = true; // TODO: 인증 연동 후 변경
+
+let houseData   = null;
+let postPhotoBase64 = null;
+let uploadBase64    = null;
+
+// ── D-DAY ─────────────────────────────────────────────
+function initDday() {
+  const now  = new Date();
+  const days = Math.floor((now - BIRTH_DATE) / 86400000);
+  const diff = Math.ceil((HUNDRED - now) / 86400000);
+
+  const items = [
+    { num: days + '일', label: '태어난 지' },
+    { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
+    { num: '100', label: '기념일' }
+  ];
+
+  document.getElementById('ddayWrap').innerHTML = items.map(i => `
+    <div class="dday-box">
+      <div class="dday-num">${i.num}</div>
+      <div class="dday-label">${i.label}</div>
+    </div>
+  `).join('');
+}
+
+// ── 데이터 로드 ───────────────────────────────────────
+async function loadData() {
+  try {
+    const res  = await fetch(`/api/house?slug=hajun`);
+    const data = await res.json();
+    if (!data.house) return;
+    houseData = data;
+    renderMilestones(data.milestones || []);
+    renderPhotos(data.media || []);
+  } catch(e) { console.error(e); }
+
+  await loadPosts();
+
+  if (IS_OWNER) {
+    document.getElementById('uploadFab').style.display = 'flex';
+    document.getElementById('uploadFab').style.alignItems = 'center';
+    document.getElementById('uploadFab').style.justifyContent = 'center';
+  }
+}
+
+// ── 마일스톤 ──────────────────────────────────────────
+function renderMilestones(milestones) {
+  const defaults = [
+    { title: '태어났어요',   milestone_date: '2025-12-22', icon: '👶', done: true  },
+    { title: '백일',         milestone_date: '2026-03-31', icon: '🎂', done: false },
+    { title: '첫 뒤집기',    milestone_date: null,         icon: '🔄', done: false },
+    { title: '첫 걸음마',    milestone_date: null,         icon: '👣', done: false },
+    { title: '첫 단어',      milestone_date: null,         icon: '💬', done: false },
+    { title: '첫 번째 생일', milestone_date: '2026-12-22', icon: '🎁', done: false },
+  ];
+
+  const items = milestones.length > 0 ? milestones : defaults;
+
+  document.getElementById('milestoneList').innerHTML = items.map((m, i) => {
+    const done = m.done || (m.milestone_date && new Date(m.milestone_date) <= new Date());
+    return `
+      <div class="timeline-item" style="animation-delay:${i*0.1}s">
+        <div class="timeline-dot ${done ? 'done' : ''}"></div>
+        <div class="timeline-card">
+          <div class="timeline-icon">${m.icon || '⭐'}</div>
+          <div class="timeline-info">
+            <div class="timeline-title">${m.title}</div>
+            <div class="timeline-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+          </div>
+          <div class="timeline-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── 사진 갤러리 ───────────────────────────────────────
+function renderPhotos(media) {
+  const photos = media.filter(m => m.media_type === 'photo');
+  const grid   = document.getElementById('photoGrid');
+
+  if (photos.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:span 3; padding: 48px 24px">
+      <div class="icon">📷</div>
+      <p>아직 사진이 없어요<br>첫 번째 사진을 올려주세요!</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = photos.map(m => `
+    <div class="photo-item">
+      <img src="${m.file_url}" alt="${m.content || ''}" loading="lazy">
+    </div>
+  `).join('');
+}
+
+// ── 이벤트 피드 ───────────────────────────────────────
+async function loadPosts() {
+  try {
+    const res   = await fetch(`/api/event-posts?house_id=${HOUSE_ID}`);
+    const posts = await res.json();
+    renderPosts(Array.isArray(posts) ? posts : []);
+  } catch(e) {
+    renderPosts([]);
+  }
+}
+
+function renderPosts(posts) {
+  const el = document.getElementById('feedList');
+  if (posts.length === 0) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="icon">💌</div>
+      <p>아직 메시지가 없어요<br>하준이에게 첫 축하 메시지를 남겨주세요!</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = posts.map((p, i) => `
+    <div class="feed-item" style="animation-delay:${i*0.08}s">
+      <div class="feed-header">
+        <div class="feed-avatar">${p.author_name[0]}</div>
+        <div class="feed-author">${p.author_name}</div>
+        <div class="feed-lang">${p.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>
+      </div>
+      ${p.media_url ? `<div class="feed-media"><img src="${p.media_url}" alt=""></div>` : ''}
+      <div class="feed-content">${p.content || ''}</div>
+      <div class="feed-footer">
+        <button class="feed-like-btn" onclick="toggleLike(this, '${p.id}')">
+          ❤️ <span class="like-count">${p.like_count || 0}</span>
+        </button>
+        <div class="feed-time">${timeAgo(p.created_at)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── 메시지 제출 ───────────────────────────────────────
+async function submitPost() {
+  const author  = document.getElementById('postAuthor').value.trim();
+  const content = document.getElementById('postContent').value.trim();
+  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
+
+  const lang = /[\uAC00-\uD7AF]/.test(content) ? 'ko' : 'vi';
+
+  try {
+    const body = { house_id: HOUSE_ID, author_name: author, content, lang, media_type: 'text' };
+    if (postPhotoBase64) { body.file_base64 = postPhotoBase64; body.media_type = 'photo'; }
+
+    const res = await fetch('/api/event-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      document.getElementById('postAuthor').value  = '';
+      document.getElementById('postContent').value = '';
+      document.getElementById('postPhotoPreview').style.display = 'none';
+      postPhotoBase64 = null;
+      showToast('메시지가 등록됐어요 💌');
+      await loadPosts();
+    }
+  } catch(e) { showToast('오류가 발생했어요'); }
+}
+
+// ── 사진 미리보기 ─────────────────────────────────────
+function previewPostPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    postPhotoBase64 = e.target.result;
+    document.getElementById('postPhotoImg').src = e.target.result;
+    document.getElementById('postPhotoPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── 업로드 모달 ───────────────────────────────────────
+function openUploadModal() {
+  document.getElementById('uploadModal').classList.add('open');
+}
+
+function closeUploadModal(e) {
+  if (e.target === document.getElementById('uploadModal')) {
+    document.getElementById('uploadModal').classList.remove('open');
+  }
+}
+
+function previewUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    uploadBase64 = e.target.result;
+    document.getElementById('uploadPreview').innerHTML =
+      `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitUpload() {
+  if (!uploadBase64) { showToast('사진을 선택해주세요'); return; }
+
+  const btn = document.getElementById('uploadSubmit');
+  const prog = document.getElementById('uploadProgress');
+  btn.disabled = true;
+  prog.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_base64: uploadBase64,
+        house_id:    HOUSE_ID,
+        content:     document.getElementById('uploadContent').value,
+        event_date:  document.getElementById('uploadDate').value || null,
+        media_type:  'photo'
+      })
+    });
+
+    if (res.ok) {
+      showToast('사진이 업로드됐어요 📷');
+      document.getElementById('uploadModal').classList.remove('open');
+      uploadBase64 = null;
+      await loadData();
+    } else {
+      showToast('업로드 실패했어요');
+    }
+  } catch(e) {
+    showToast('오류가 발생했어요');
+  } finally {
+    btn.disabled = false;
+    prog.style.display = 'none';
+  }
+}
+
+// ── 커버 사진 ─────────────────────────────────────────
+function uploadCoverPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('heroPhotoFrame').innerHTML = `
+      <img src="${e.target.result}" alt="하준이">
+      <div class="photo-upload-hint">사진 변경</div>
+    `;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── 좋아요 ────────────────────────────────────────────
+async function toggleLike(btn, postId) {
+  btn.classList.toggle('liked');
+  const countEl = btn.querySelector('.like-count');
+  const current = parseInt(countEl.textContent);
+  const liked   = btn.classList.contains('liked');
+  countEl.textContent = liked ? current + 1 : current - 1;
+
+  try {
+    await fetch('/api/event-like', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId, author_name: '방문자', emoji: '❤️' })
+    });
+  } catch(e) {}
+}
+
+// ── 유틸 ──────────────────────────────────────────────
+function formatDate(str) {
+  const d = new Date(str);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+
+function timeAgo(str) {
+  const diff = Date.now() - new Date(str).getTime();
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (d > 0) return `${d}일 전`;
+  if (h > 0) return `${h}시간 전`;
+  if (m > 0) return `${m}분 전`;
+  return '방금';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── 초기화 ────────────────────────────────────────────
+initDday();
+loadData();
+</script>
+</body>
+</html>
