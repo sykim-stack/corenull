@@ -2,10 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    db: { schema: 'corenull' }  // ← 클라이언트 생성 시 스키마 지정
-  }
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
@@ -17,41 +14,43 @@ export default async function handler(req, res) {
   const { slug } = req.query;
   if (!slug) return res.status(400).json({ error: 'slug required' });
 
-  const { data: house, error } = await supabase
-    .from('houses')          // ← .schema() 제거
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_public', true)
-    .single();
+  // Supabase REST API 직접 호출 (스키마 헤더 수동 지정)
+  const baseUrl = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const headers = {
+    'apikey': key,
+    'Authorization': `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    'Accept-Profile': 'corenull'  // ← 스키마 직접 지정
+  };
 
-  if (error || !house) {
-    return res.status(404).json({ error: '존재하지 않는 집입니다', debug: error });
+  const houseRes = await fetch(
+    `${baseUrl}/rest/v1/houses?slug=eq.${slug}&is_public=eq.true&limit=1`,
+    { headers }
+  );
+  const houses = await houseRes.json();
+  const house = houses[0];
+
+  if (!house) {
+    return res.status(404).json({ error: '존재하지 않는 집입니다', debug: houses });
   }
 
-  const { data: media } = await supabase
-    .from('media')
-    .select('id, media_type, file_url, thumbnail_url, content, event_tag, event_date, uploaded_by, is_owner, video_url, video_platform, created_at')
-    .eq('house_id', house.id)
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false });
+  const [mediaRes, commentsRes, milestonesRes] = await Promise.all([
+    fetch(`${baseUrl}/rest/v1/media?house_id=eq.${house.id}&status=eq.approved&order=created_at.desc`, { headers }),
+    fetch(`${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&order=created_at.desc&limit=20`, { headers }),
+    fetch(`${baseUrl}/rest/v1/milestones?house_id=eq.${house.id}&order=milestone_date.asc`, { headers })
+  ]);
 
-  const { data: comments } = await supabase
-    .from('comments')
-    .select('id, author_name, content, lang, created_at')
-    .eq('house_id', house.id)
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  const { data: milestones } = await supabase
-    .from('milestones')
-    .select('id, title, memo, milestone_date, category')
-    .eq('house_id', house.id)
-    .order('milestone_date', { ascending: true, nullsFirst: false });
+  const [media, comments, milestones] = await Promise.all([
+    mediaRes.json(),
+    commentsRes.json(),
+    milestonesRes.json()
+  ]);
 
   return res.status(200).json({
     house,
-    media:      media      || [],
-    comments:   comments   || [],
-    milestones: milestones || []
+    media:      Array.isArray(media)      ? media      : [],
+    comments:   Array.isArray(comments)   ? comments   : [],
+    milestones: Array.isArray(milestones) ? milestones : []
   });
 }
