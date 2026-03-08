@@ -434,8 +434,90 @@
 </div>
 
 <!-- FAB -->
-<button class="fab" id="fab" onclick="showToast('업로드 기능 준비중!')">+</button>
+<button class="fab" id="fab" onclick="showUploadModal()">+</button>
+<!-- 업로드 모달 -->
+<div class="modal" id="uploadModal" onclick="if(event.target===this)closeUploadModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeUploadModal()">✕</button>
 
+    <div style="text-align:center; margin-bottom:20px;">
+      <div style="font-family:'Noto Serif KR',serif; font-size:16px; color:var(--dark); margin-bottom:4px;">
+        추가하기
+      </div>
+      <div style="font-size:12px; color:var(--muted);">사진 또는 영상을 올려주세요</div>
+    </div>
+
+    <!-- 타입 선택 -->
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <button id="btnPhoto" onclick="selectType('photo')"
+        style="flex:1; padding:12px; border-radius:12px; border:2px solid var(--brown);
+               background:var(--brown); color:white; font-family:'Gowun Dodum',serif;
+               font-size:13px; cursor:pointer;">
+        📷 사진
+      </button>
+      <button id="btnVideo" onclick="selectType('video')"
+        style="flex:1; padding:12px; border-radius:12px; border:2px solid rgba(139,107,74,0.3);
+               background:transparent; color:var(--brown); font-family:'Gowun Dodum',serif;
+               font-size:13px; cursor:pointer;">
+        🎥 영상
+      </button>
+    </div>
+
+    <!-- 사진 업로드 영역 -->
+    <div id="photoUploadArea">
+      <label for="fileInput" style="display:block;">
+        <div id="dropZone" style="
+          border:2px dashed rgba(139,107,74,0.3); border-radius:14px;
+          padding:32px 16px; text-align:center; cursor:pointer;
+          background:var(--warm); margin-bottom:12px; transition:all 0.2s;">
+          <div style="font-size:32px; margin-bottom:8px;">📷</div>
+          <div style="font-size:13px; color:var(--muted);">탭해서 사진 선택</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:4px;">JPG, PNG, HEIC</div>
+        </div>
+      </label>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFileSelect(event)">
+      <img id="previewImg" style="display:none; width:100%; border-radius:12px; margin-bottom:12px;" alt="">
+    </div>
+
+    <!-- 영상 URL 영역 -->
+    <div id="videoUploadArea" style="display:none;">
+      <input type="text" id="videoUrl" placeholder="YouTube / TikTok / Facebook URL"
+        style="width:100%; background:var(--warm); border:none; border-radius:10px;
+               padding:12px 14px; font-family:'Gowun Dodum',serif; font-size:13px;
+               color:var(--dark); outline:none; margin-bottom:12px;">
+    </div>
+
+    <!-- 공통 입력 -->
+    <input type="text" id="uploadCaption" placeholder="한마디 (선택사항)"
+      style="width:100%; background:var(--warm); border:none; border-radius:10px;
+             padding:12px 14px; font-family:'Gowun Dodum',serif; font-size:13px;
+             color:var(--dark); outline:none; margin-bottom:8px;">
+
+    <input type="date" id="uploadDate"
+      style="width:100%; background:var(--warm); border:none; border-radius:10px;
+             padding:12px 14px; font-family:'Gowun Dodum',serif; font-size:13px;
+             color:var(--dark); outline:none; margin-bottom:12px;">
+
+    <!-- 업로드 버튼 -->
+    <button onclick="submitUpload()"
+      style="width:100%; background:var(--brown); color:white; border:none;
+             border-radius:10px; padding:14px; font-family:'Gowun Dodum',serif;
+             font-size:13px; letter-spacing:1px; cursor:pointer;">
+      올리기
+    </button>
+
+    <!-- 진행바 -->
+    <div id="uploadProgress" style="display:none; margin-top:12px;">
+      <div style="background:var(--warm); border-radius:10px; height:6px; overflow:hidden;">
+        <div id="progressBar" style="height:100%; background:var(--brown); width:0%; transition:width 0.3s;"></div>
+      </div>
+      <div id="progressText" style="font-size:11px; color:var(--muted); text-align:center; margin-top:6px;">
+        업로드 중...
+      </div>
+    </div>
+
+  </div>
+</div>
 <!-- 사진 모달 -->
 <div class="modal" id="photoModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal-box">
@@ -705,7 +787,130 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+// ─── 업로드 ────────────────────────────────────────────
+const CLOUD_NAME = '312365863569228';
+const UPLOAD_PRESET = 'corenull';
+let uploadType = 'photo';
 
+function showUploadModal() {
+  document.getElementById('uploadModal').classList.add('open');
+  document.getElementById('uploadDate').value = new Date().toISOString().split('T')[0];
+}
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.remove('open');
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('videoUrl').value = '';
+  document.getElementById('uploadCaption').value = '';
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('progressBar').style.width = '0%';
+}
+
+function selectType(type) {
+  uploadType = type;
+  const isPhoto = type === 'photo';
+  document.getElementById('photoUploadArea').style.display = isPhoto ? '' : 'none';
+  document.getElementById('videoUploadArea').style.display = isPhoto ? 'none' : '';
+  document.getElementById('btnPhoto').style.background = isPhoto ? 'var(--brown)' : 'transparent';
+  document.getElementById('btnPhoto').style.color      = isPhoto ? 'white' : 'var(--brown)';
+  document.getElementById('btnPhoto').style.border     = isPhoto ? '2px solid var(--brown)' : '2px solid rgba(139,107,74,0.3)';
+  document.getElementById('btnVideo').style.background = isPhoto ? 'transparent' : 'var(--brown)';
+  document.getElementById('btnVideo').style.color      = isPhoto ? 'var(--brown)' : 'white';
+  document.getElementById('btnVideo').style.border     = isPhoto ? '2px solid rgba(139,107,74,0.3)' : '2px solid var(--brown)';
+}
+
+function onFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('previewImg');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+}
+
+async function submitUpload() {
+  if (!houseData) return;
+
+  if (uploadType === 'photo') {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) { showToast('사진을 선택해주세요'); return; }
+    await uploadPhoto(file);
+  } else {
+    const url = document.getElementById('videoUrl').value.trim();
+    if (!url) { showToast('영상 URL을 입력해주세요'); return; }
+    await uploadVideo(url);
+  }
+}
+
+async function uploadPhoto(file) {
+  const progress = document.getElementById('uploadProgress');
+  const bar      = document.getElementById('progressBar');
+  const text     = document.getElementById('progressText');
+  progress.style.display = '';
+  bar.style.width = '30%';
+  text.textContent = '업로드 중...';
+
+  try {
+    // Cloudinary 직접 업로드
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    bar.style.width = '60%';
+    const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: 'POST', body: formData
+    });
+    const data = await res.json();
+    if (!data.secure_url) throw new Error('업로드 실패');
+
+    bar.style.width = '85%';
+    text.textContent = '저장 중...';
+
+    // Supabase 메타 저장
+    await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        house_id:   houseData.house.id,
+        media_type: 'photo',
+        file_url:   data.secure_url,
+        content:    document.getElementById('uploadCaption').value.trim() || null,
+        event_date: document.getElementById('uploadDate').value || null,
+        content_type: 'manual'
+      })
+    });
+
+    bar.style.width = '100%';
+    text.textContent = '완료!';
+    showToast('사진이 등록됐어요 📷');
+    setTimeout(() => { closeUploadModal(); location.reload(); }, 800);
+
+  } catch (e) {
+    showToast('업로드 실패: ' + e.message);
+    progress.style.display = 'none';
+  }
+}
+
+async function uploadVideo(url) {
+  try {
+    await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        house_id:      houseData.house.id,
+        media_type:    'video',
+        video_url:     url,
+        content:       document.getElementById('uploadCaption').value.trim() || null,
+        event_date:    document.getElementById('uploadDate').value || null,
+        content_type:  'manual'
+      })
+    });
+    showToast('영상이 등록됐어요 🎥');
+    setTimeout(() => { closeUploadModal(); location.reload(); }, 800);
+  } catch {
+    showToast('등록 실패');
+  }
+}
 init();
 </script>
 </body>
