@@ -1096,6 +1096,8 @@ async function submitUpload() {
 async function uploadCoverPhoto(input) {
   const file = input.files[0];
   if (!file) return;
+  input.value = ''; // ← 중복 방지
+  
   const reader = new FileReader();
   reader.onload = async (e) => {
     // 미리보기
