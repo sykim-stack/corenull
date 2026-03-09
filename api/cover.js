@@ -24,14 +24,16 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        file:           file_base64,
-        upload_preset:  process.env.CLOUDINARY_UPLOAD_PRESET
+        file:          file_base64,
+        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET
       })
     }
   );
   const cloud = await cloudRes.json();
+  console.log('[cover] Cloudinary 결과:', cloud.secure_url || cloud.error);
+
   if (!cloud.secure_url) {
-    return res.status(500).json({ error: 'Cloudinary 업로드 실패', detail: cloud });
+    return res.status(500).json({ error: 'Cloudinary 실패', detail: cloud });
   }
 
   // 2. houses.cover_url 업데이트
@@ -50,6 +52,16 @@ export default async function handler(req, res) {
       body: JSON.stringify({ cover_url: cloud.secure_url })
     }
   );
+
+  const dbText = await dbRes.text();
+  console.log('[cover] DB 상태:', dbRes.status, dbText);
+
+  if (!dbRes.ok) {
+    return res.status(500).json({ error: 'DB 저장 실패', status: dbRes.status, detail: dbText });
+  }
+
+  return res.status(200).json({ success: true, cover_url: cloud.secure_url });
+}
 
   const db = await dbRes.json();
   return res.status(200).json({ success: true, cover_url: cloud.secure_url });
