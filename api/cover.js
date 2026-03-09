@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   // 1. Cloudinary 업로드 (FormData 방식)
-  const formData = new URLSearchParams();
+  const formData = new FormData();
   formData.append('file', file_base64);
   formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
 
