@@ -13,7 +13,6 @@
       --peach:   #F2C4A0;
       --brown:   #8B5E3C;
       --dark:    #2C1A0E;
-      --soft:    #D4956A;
       --mint:    #8FBFAB;
       --pink:    #E8A0A8;
       --gold:    #C9A84C;
@@ -21,103 +20,31 @@
       --muted:   #9B8B7E;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--cream);
-      color: var(--text);
-      font-family: 'Gowun Dodum', serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    body { background: var(--cream); color: var(--text); font-family: 'Gowun Dodum', serif; min-height: 100vh; overflow-x: hidden; }
 
     /* ── 히어로 ── */
-    .hero {
-      min-height: 100vh;
-      background: linear-gradient(160deg, #FDE8D8 0%, #F7D4C0 40%, #EFBFA8 100%);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      padding: 60px 24px;
-    }
+    .hero { min-height: 100vh; background: linear-gradient(160deg, #FDE8D8 0%, #F7D4C0 40%, #EFBFA8 100%); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 60px 24px; }
     .hero-circles { position: absolute; inset: 0; pointer-events: none; }
     .hero-circles span { position: absolute; border-radius: 50%; opacity: 0.15; }
     .hero-circles span:nth-child(1) { width: 400px; height: 400px; background: var(--pink); top: -100px; right: -100px; animation: float1 8s ease-in-out infinite; }
     .hero-circles span:nth-child(2) { width: 250px; height: 250px; background: var(--mint); bottom: -50px; left: -50px; animation: float2 10s ease-in-out infinite; }
     .hero-circles span:nth-child(3) { width: 150px; height: 150px; background: var(--gold); top: 30%; left: 10%; animation: float1 6s ease-in-out infinite reverse; }
-    @keyframes float1 { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.05); } }
-    @keyframes float2 { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } }
-
-    .hero-badge {
-      background: rgba(255,255,255,0.5);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.6);
-      border-radius: 30px;
-      padding: 8px 20px;
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: var(--brown);
-      margin-bottom: 28px;
-      animation: fadeDown 0.8s ease both;
-    }
-
-    .photo-frame {
-      width: 200px; height: 200px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #FDE8D8, #F5C6A8);
-      border: 4px solid rgba(255,255,255,0.8);
-      box-shadow: 0 20px 60px rgba(139,94,60,0.25);
-      margin-bottom: 32px;
-      overflow: hidden;
-      position: relative;
-      animation: fadeUp 0.8s 0.2s ease both;
-      cursor: pointer;
-    }
+    @keyframes float1 { 0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-20px) scale(1.05);} }
+    @keyframes float2 { 0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-15px) rotate(5deg);} }
+    .hero-badge { background: rgba(255,255,255,0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 30px; padding: 8px 20px; font-size: 11px; letter-spacing: 3px; color: var(--brown); margin-bottom: 28px; animation: fadeDown 0.8s ease both; }
+    .photo-frame { width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #FDE8D8, #F5C6A8); border: 4px solid rgba(255,255,255,0.8); box-shadow: 0 20px 60px rgba(139,94,60,0.25); margin-bottom: 32px; overflow: hidden; position: relative; animation: fadeUp 0.8s 0.2s ease both; cursor: pointer; }
     .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
     .photo-frame-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 64px; }
-    .photo-upload-hint {
-      position: absolute; inset: 0;
-      background: rgba(44,26,14,0.5);
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 13px; letter-spacing: 1px;
-      opacity: 0; transition: opacity 0.2s; border-radius: 50%;
-    }
+    .photo-upload-hint { position: absolute; inset: 0; background: rgba(44,26,14,0.5); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; letter-spacing: 1px; opacity: 0; transition: opacity 0.2s; border-radius: 50%; }
     .photo-frame:hover .photo-upload-hint { opacity: 1; }
-
-    .hero-name {
-      font-family: 'Noto Serif KR', serif;
-      font-size: 48px; font-weight: 700;
-      color: var(--dark); letter-spacing: 6px;
-      margin-bottom: 8px;
-      animation: fadeUp 0.8s 0.3s ease both;
-      text-shadow: 0 2px 20px rgba(139,94,60,0.15);
-    }
-    .hero-sub {
-      font-size: 13px; letter-spacing: 3px;
-      color: var(--brown); opacity: 0.8;
-      margin-bottom: 32px;
-      animation: fadeUp 0.8s 0.4s ease both;
-    }
+    .hero-name { font-family: 'Noto Serif KR', serif; font-size: 48px; font-weight: 700; color: var(--dark); letter-spacing: 6px; margin-bottom: 8px; animation: fadeUp 0.8s 0.3s ease both; text-shadow: 0 2px 20px rgba(139,94,60,0.15); }
+    .hero-sub { font-size: 13px; letter-spacing: 3px; color: var(--brown); opacity: 0.8; margin-bottom: 32px; animation: fadeUp 0.8s 0.4s ease both; }
     .dday-wrap { display: flex; gap: 16px; animation: fadeUp 0.8s 0.5s ease both; }
-    .dday-box {
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.7);
-      border-radius: 16px; padding: 16px 20px;
-      text-align: center; min-width: 72px;
-    }
+    .dday-box { background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.7); border-radius: 16px; padding: 16px 20px; text-align: center; min-width: 72px; }
     .dday-num { font-family: 'Noto Serif KR', serif; font-size: 28px; font-weight: 600; color: var(--brown); line-height: 1; }
     .dday-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; margin-top: 4px; }
-
-    .scroll-hint {
-      position: absolute; bottom: 32px; left: 50%;
-      transform: translateX(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      color: var(--brown); opacity: 0.5; font-size: 11px; letter-spacing: 2px;
-      animation: bounce 2s ease-in-out infinite;
-    }
-    @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+    .scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--brown); opacity: 0.5; font-size: 11px; letter-spacing: 2px; animation: bounce 2s ease-in-out infinite; }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(6px);} }
 
     /* ── 섹션 ── */
     .section { max-width: 640px; margin: 0 auto; padding: 60px 20px; }
@@ -142,7 +69,7 @@
     /* ── 갤러리 ── */
     .gallery-bg { background: var(--warm); padding: 60px 0; }
     .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; max-width: 640px; margin: 0 auto; padding: 0 20px; }
-    .photo-item { aspect-ratio: 1; border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; background: #EDE3D5; transition: transform 0.2s; }
+    .photo-item { aspect-ratio: 1; border-radius: 4px; overflow: hidden; cursor: pointer; position: relative; background: #EDE3D5; }
     .photo-item:first-child { grid-column: span 2; grid-row: span 2; }
     .photo-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
     .photo-item:hover img { transform: scale(1.05); }
@@ -174,27 +101,61 @@
     .post-submit:hover { background: var(--dark); }
 
     /* ── FAB ── */
-    .fab { position: fixed; bottom: 28px; right: 28px; width: 56px; height: 56px; background: var(--brown); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 6px 24px rgba(139,94,60,0.4); z-index: 200; transition: transform 0.2s, box-shadow 0.2s; display: none; align-items: center; justify-content: center; }
-    .fab:hover { transform: scale(1.1); box-shadow: 0 8px 32px rgba(139,94,60,0.5); }
+    .fab { position: fixed; bottom: 28px; right: 28px; width: 56px; height: 56px; background: var(--brown); color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 6px 24px rgba(139,94,60,0.4); z-index: 200; transition: transform 0.2s; display: none; align-items: center; justify-content: center; }
+    .fab:hover { transform: scale(1.1); }
 
-    /* ── 모달 ── */
+    /* ── 업로드 모달 ── */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(44,26,14,0.65); backdrop-filter: blur(4px); z-index: 500; align-items: flex-end; justify-content: center; }
     .modal-overlay.open { display: flex; }
-    .modal-box { background: var(--cream); border-radius: 24px 24px 0 0; width: 100%; max-width: 640px; padding: 28px 24px 40px; animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-box { background: var(--cream); border-radius: 24px 24px 0 0; width: 100%; max-width: 640px; padding: 28px 24px 40px; animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
+    @keyframes slideUp { from{transform:translateY(100%);}to{transform:translateY(0);} }
     .modal-handle { width: 40px; height: 4px; background: rgba(139,94,60,0.2); border-radius: 2px; margin: 0 auto 20px; }
-    .modal-title { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 600; color: var(--dark); margin-bottom: 20px; }
-    .upload-preview { width: 100%; aspect-ratio: 4/3; background: var(--warm); border-radius: 16px; overflow: hidden; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
-    .upload-preview-placeholder { text-align: center; color: var(--muted); }
-    .upload-preview-placeholder .icon { font-size: 40px; margin-bottom: 8px; }
-    .upload-preview-placeholder p { font-size: 13px; }
+    .modal-title { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 600; color: var(--dark); margin-bottom: 16px; }
+
+    /* 드롭존 */
+    .upload-drop-zone { width: 100%; border: 2px dashed rgba(139,94,60,0.25); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--warm); margin-bottom: 14px; text-align: center; color: var(--muted); transition: all 0.2s; }
+    .upload-drop-zone:hover { border-color: var(--brown); background: #F0E6D8; }
+    .upload-drop-zone .dz-icon { font-size: 40px; margin-bottom: 10px; }
+    .upload-drop-zone .dz-text { font-size: 14px; }
+    .upload-drop-zone .dz-sub { font-size: 11px; margin-top: 4px; opacity: 0.6; }
+
+    /* 프리뷰 그리드 */
+    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+    .preview-grid.single { grid-template-columns: 1fr; }
+    .preview-grid.double { grid-template-columns: 1fr 1fr; }
+    .preview-cell { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #EDE3D5; }
+    .preview-cell.main-cell { grid-column: span 2; grid-row: span 2; aspect-ratio: unset; min-height: 180px; }
+    .preview-cell img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-cell .remove-btn { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; background: rgba(44,26,14,0.7); color: white; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .preview-more { position: absolute; inset: 0; background: rgba(44,26,14,0.55); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; font-family: 'Noto Serif KR', serif; }
+    .add-more-btn { aspect-ratio: 1; border-radius: 10px; border: 2px dashed rgba(139,94,60,0.25); background: var(--warm); display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+    .add-more-btn:hover { border-color: var(--brown); color: var(--brown); }
+
     .modal-input { width: 100%; background: var(--warm); border: none; border-radius: 12px; padding: 12px 14px; font-family: 'Gowun Dodum', serif; font-size: 13px; color: var(--dark); outline: none; margin-bottom: 10px; resize: none; }
     .modal-input.textarea { height: 80px; }
     .modal-submit { width: 100%; background: var(--brown); color: white; border: none; border-radius: 14px; padding: 16px; font-family: 'Gowun Dodum', serif; font-size: 15px; letter-spacing: 1px; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
     .modal-submit:hover { background: var(--dark); }
     .modal-submit:disabled { background: var(--muted); cursor: not-allowed; }
-    .upload-progress { display: none; text-align: center; padding: 12px; font-size: 13px; color: var(--muted); }
+
+    /* 진행바 */
+    .upload-progress-wrap { display: none; margin-bottom: 12px; }
+    .upload-progress-bar { height: 6px; background: var(--warm); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+    .upload-progress-fill { height: 100%; background: var(--brown); border-radius: 3px; transition: width 0.3s; width: 0%; }
+    .upload-progress-text { font-size: 12px; color: var(--muted); text-align: center; }
+
+    /* ── 라이트박스 ── */
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 900; align-items: center; justify-content: center; flex-direction: column; }
+    .lightbox.open { display: flex; }
+    .lightbox-img { max-width: 94vw; max-height: 78vh; object-fit: contain; border-radius: 8px; }
+    .lightbox-nav { display: flex; gap: 16px; margin-top: 14px; align-items: center; }
+    .lightbox-btn { background: rgba(255,255,255,0.15); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .lightbox-btn:hover { background: rgba(255,255,255,0.3); }
+    .lightbox-counter { color: rgba(255,255,255,0.6); font-size: 13px; min-width: 60px; text-align: center; }
+    .lightbox-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.15); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .lightbox-thumbs { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; justify-content: center; max-width: 94vw; }
+    .lightbox-thumb { width: 48px; height: 48px; border-radius: 6px; overflow: hidden; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; border: 2px solid transparent; flex-shrink: 0; }
+    .lightbox-thumb.active { opacity: 1; border-color: white; }
+    .lightbox-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ── 푸터 ── */
     .footer-section { background: linear-gradient(160deg, #2C1A0E 0%, #4A2E1A 100%); color: white; text-align: center; padding: 60px 24px; }
@@ -206,20 +167,13 @@
     .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--dark); color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ── 애니메이션 ── */
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeLeft { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
-
-    /* ── 빈 상태 ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeDown { from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeLeft { from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);} }
     .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
     .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
     .empty-state p { font-size: 13px; line-height: 1.7; }
-
-    @media (min-width: 480px) {
-      .hero-name { font-size: 56px; }
-      .photo-frame { width: 220px; height: 220px; }
-    }
+    @media (min-width: 480px) { .hero-name{font-size:56px;} .photo-frame{width:220px;height:220px;} }
   </style>
 </head>
 <body>
@@ -228,13 +182,11 @@
 <div class="hero">
   <div class="hero-circles"><span></span><span></span><span></span></div>
   <div class="hero-badge">🎂 HUNDRED DAYS · 백일</div>
-
   <div class="photo-frame" id="heroPhotoFrame" onclick="document.getElementById('coverInput').click()">
     <div class="photo-frame-placeholder">👶</div>
     <div class="photo-upload-hint">사진 변경</div>
   </div>
   <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCoverPhoto(this)">
-
   <div class="hero-name">김하준</div>
   <div class="hero-sub">KIM HA JUN · MANGO 🥭</div>
   <div class="dday-wrap" id="ddayWrap"></div>
@@ -252,7 +204,7 @@
 
 <!-- 사진첩 -->
 <div class="gallery-bg">
-  <div class="section" style="padding-top:0; padding-bottom:0">
+  <div class="section" style="padding-top:0;padding-bottom:0">
     <div class="section-header">
       <div class="section-tag">GALLERY</div>
       <div class="section-title">사진첩</div>
@@ -277,8 +229,8 @@
       <input type="file" id="postPhotoInput" accept="image/*" style="display:none" onchange="previewPostPhoto(this)">
       <button class="post-submit" onclick="submitPost()">메시지 남기기</button>
     </div>
-    <div id="postPhotoPreview" style="margin-top:10px; display:none">
-      <img id="postPhotoImg" style="width:100%; border-radius:12px; max-height:200px; object-fit:cover">
+    <div id="postPhotoPreview" style="margin-top:10px;display:none">
+      <img id="postPhotoImg" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover">
     </div>
   </div>
 </div>
@@ -298,35 +250,60 @@
   <div class="modal-box">
     <div class="modal-handle"></div>
     <div class="modal-title">사진 업로드 📷</div>
-    <div class="upload-preview" id="uploadPreview" onclick="document.getElementById('uploadInput').click()">
-      <div class="upload-preview-placeholder">
-        <div class="icon">📷</div>
-        <p>사진을 선택하세요</p>
-      </div>
+
+    <div class="upload-drop-zone" id="dropZone" onclick="document.getElementById('uploadInput').click()">
+      <div class="dz-icon">🖼️</div>
+      <div class="dz-text">사진을 선택하세요</div>
+      <div class="dz-sub">여러 장 동시 선택 가능 · 최대 10장</div>
     </div>
-    <input type="file" id="uploadInput" accept="image/*" style="display:none" onchange="previewUpload(this)">
+    <input type="file" id="uploadInput" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)">
+
+    <div id="previewGrid" style="display:none">
+      <div class="preview-grid" id="previewCells"></div>
+    </div>
+
     <textarea class="modal-input textarea" id="uploadContent" placeholder="사진 설명 (선택)"></textarea>
     <input type="date" class="modal-input" id="uploadDate">
-    <div class="upload-progress" id="uploadProgress">업로드 중... ⏳</div>
+
+    <div class="upload-progress-wrap" id="uploadProgressWrap">
+      <div class="upload-progress-bar">
+        <div class="upload-progress-fill" id="uploadProgressFill"></div>
+      </div>
+      <div class="upload-progress-text" id="uploadProgressText">준비 중...</div>
+    </div>
+
     <button class="modal-submit" id="uploadSubmit" onclick="submitUpload()">올리기</button>
   </div>
+</div>
+
+<!-- 라이트박스 -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOnBg(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="">
+  <div class="lightbox-nav">
+    <button class="lightbox-btn" onclick="lightboxPrev()">‹</button>
+    <span class="lightbox-counter" id="lightboxCounter"></span>
+    <button class="lightbox-btn" onclick="lightboxNext()">›</button>
+  </div>
+  <div class="lightbox-thumbs" id="lightboxThumbs"></div>
 </div>
 
 <!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── 상수 ──────────────────────────────────────────────
 const HOUSE_ID   = '6341b872-4555-4fdc-8f1d-8009b2b1764f';
 const BIRTH_DATE = new Date('2025-12-22');
 const HUNDRED    = new Date('2026-03-31');
 const IS_OWNER   = true;
 
 let postPhotoBase64 = null;
-let uploadBase64    = null;
+let selectedFiles   = [];
+let lightboxImages  = [];
+let lightboxIndex   = 0;
 
 // ── 이미지 리사이즈 ───────────────────────────────────
-function resizeImage(file, maxWidth) {
+function resizeImage(file, maxWidth = 1200) {
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -343,6 +320,11 @@ function resizeImage(file, maxWidth) {
   });
 }
 
+// base64 → Blob
+async function b64toBlob(b64) {
+  return await (await fetch(b64)).blob();
+}
+
 // ── D-DAY ─────────────────────────────────────────────
 function initDday() {
   const now  = new Date();
@@ -353,12 +335,9 @@ function initDday() {
     { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
     { num: '100', label: '기념일' }
   ];
-  document.getElementById('ddayWrap').innerHTML = items.map(i => `
-    <div class="dday-box">
-      <div class="dday-num">${i.num}</div>
-      <div class="dday-label">${i.label}</div>
-    </div>
-  `).join('');
+  document.getElementById('ddayWrap').innerHTML = items.map(i =>
+    `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`
+  ).join('');
 }
 
 // ── 데이터 로드 ───────────────────────────────────────
@@ -367,25 +346,17 @@ async function loadData() {
     const res  = await fetch('/api/house?slug=hajun');
     const data = await res.json();
     if (!data.house) return;
-
-    // 커버 사진 적용
     if (data.house.cover_url) {
       document.getElementById('heroPhotoFrame').innerHTML = `
         <img src="${data.house.cover_url}" alt="하준이">
         <div class="photo-upload-hint">사진 변경</div>
       `;
     }
-
     renderMilestones(data.milestones || []);
     renderPhotos(data.media || []);
-  } catch(e) { console.error('loadData 에러:', e); }
-
+  } catch(e) { console.error('loadData:', e); }
   await loadPosts();
-
-  if (IS_OWNER) {
-    const fab = document.getElementById('uploadFab');
-    fab.style.display = 'flex';
-  }
+  if (IS_OWNER) document.getElementById('uploadFab').style.display = 'flex';
 }
 
 // ── 마일스톤 ──────────────────────────────────────────
@@ -403,17 +374,16 @@ function renderMilestones(milestones) {
     const done = m.done || (m.milestone_date && new Date(m.milestone_date) <= new Date());
     return `
       <div class="timeline-item" style="animation-delay:${i*0.1}s">
-        <div class="timeline-dot ${done ? 'done' : ''}"></div>
+        <div class="timeline-dot ${done?'done':''}"></div>
         <div class="timeline-card">
-          <div class="timeline-icon">${m.icon || '⭐'}</div>
+          <div class="timeline-icon">${m.icon||'⭐'}</div>
           <div class="timeline-info">
             <div class="timeline-title">${m.title}</div>
             <div class="timeline-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
           </div>
-          <div class="timeline-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
+          <div class="timeline-badge ${done?'':'pending'}">${done?'완료':'예정'}</div>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 }
 
@@ -422,17 +392,15 @@ function renderPhotos(media) {
   const photos = media.filter(m => m.media_type === 'photo');
   const grid   = document.getElementById('photoGrid');
   if (photos.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:span 3; padding:48px 24px">
-      <div class="icon">📷</div>
-      <p>아직 사진이 없어요<br>첫 번째 사진을 올려주세요!</p>
-    </div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:span 3;padding:48px 24px">
+      <div class="icon">📷</div><p>아직 사진이 없어요<br>첫 번째 사진을 올려주세요!</p></div>`;
     return;
   }
-  grid.innerHTML = photos.map(m => `
-    <div class="photo-item">
-      <img src="${m.file_url}" alt="${m.content || ''}" loading="lazy">
-    </div>
-  `).join('');
+  const allUrls = photos.map(m => m.file_url);
+  grid.innerHTML = photos.map((m, idx) => `
+    <div class="photo-item" onclick="openLightbox(${JSON.stringify(allUrls)}, ${idx})">
+      <img src="${m.file_url}" alt="${m.content||''}" loading="lazy">
+    </div>`).join('');
 }
 
 // ── 피드 ──────────────────────────────────────────────
@@ -447,10 +415,8 @@ async function loadPosts() {
 function renderPosts(posts) {
   const el = document.getElementById('feedList');
   if (posts.length === 0) {
-    el.innerHTML = `<div class="empty-state">
-      <div class="icon">💌</div>
-      <p>아직 메시지가 없어요<br>하준이에게 첫 축하 메시지를 남겨주세요!</p>
-    </div>`;
+    el.innerHTML = `<div class="empty-state"><div class="icon">💌</div>
+      <p>아직 메시지가 없어요<br>하준이에게 첫 축하 메시지를 남겨주세요!</p></div>`;
     return;
   }
   el.innerHTML = posts.map((p, i) => `
@@ -458,18 +424,17 @@ function renderPosts(posts) {
       <div class="feed-header">
         <div class="feed-avatar">${p.author_name[0]}</div>
         <div class="feed-author">${p.author_name}</div>
-        <div class="feed-lang">${p.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>
+        <div class="feed-lang">${p.lang==='vi'?'🇻🇳':'🇰🇷'}</div>
       </div>
-      ${p.media_url ? `<div class="feed-media"><img src="${p.media_url}" alt=""></div>` : ''}
-      <div class="feed-content">${p.content || ''}</div>
+      ${p.media_url?`<div class="feed-media"><img src="${p.media_url}" alt=""></div>`:''}
+      <div class="feed-content">${p.content||''}</div>
       <div class="feed-footer">
-        <button class="feed-like-btn" onclick="toggleLike(this, '${p.id}')">
-          ❤️ <span class="like-count">${p.like_count || 0}</span>
+        <button class="feed-like-btn" onclick="toggleLike(this,'${p.id}')">
+          ❤️ <span class="like-count">${p.like_count||0}</span>
         </button>
         <div class="feed-time">${timeAgo(p.created_at)}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 // ── 메시지 제출 ───────────────────────────────────────
@@ -482,9 +447,7 @@ async function submitPost() {
     const body = { house_id: HOUSE_ID, author_name: author, content, lang, media_type: 'text' };
     if (postPhotoBase64) { body.file_base64 = postPhotoBase64; body.media_type = 'photo'; }
     const res = await fetch('/api/event-post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
     });
     if (res.ok) {
       document.getElementById('postAuthor').value  = '';
@@ -511,58 +474,132 @@ function previewPostPhoto(input) {
 
 // ── 업로드 모달 ───────────────────────────────────────
 function openUploadModal() {
+  selectedFiles = [];
+  document.getElementById('uploadContent').value = '';
+  document.getElementById('uploadDate').value    = '';
+  document.getElementById('dropZone').style.display    = 'flex';
+  document.getElementById('previewGrid').style.display = 'none';
+  document.getElementById('uploadProgressWrap').style.display = 'none';
+  document.getElementById('uploadSubmit').disabled = false;
   document.getElementById('uploadModal').classList.add('open');
 }
 
 function closeUploadModal(e) {
-  if (e.target === document.getElementById('uploadModal')) {
+  if (e.target === document.getElementById('uploadModal'))
     document.getElementById('uploadModal').classList.remove('open');
+}
+
+async function handleFileSelect(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  input.value = '';
+  selectedFiles = [...selectedFiles, ...files].slice(0, 10);
+  renderPreviewGrid();
+  document.getElementById('dropZone').style.display    = 'none';
+  document.getElementById('previewGrid').style.display = 'block';
+}
+
+function renderPreviewGrid() {
+  const container = document.getElementById('previewCells');
+  const count     = selectedFiles.length;
+  container.className = 'preview-grid' + (count===1?' single':count===2?' double':'');
+  container.innerHTML = '';
+
+  const showCount = Math.min(count, 5);
+
+  selectedFiles.slice(0, showCount).forEach((file, idx) => {
+    const cell = document.createElement('div');
+    cell.className = 'preview-cell' + (idx===0 && count>=3 ? ' main-cell' : '');
+    const url = URL.createObjectURL(file);
+    cell.innerHTML = `<img src="${url}" alt="">`;
+
+    if (idx === showCount - 1 && count > showCount) {
+      cell.innerHTML += `<div class="preview-more">+${count - showCount}</div>`;
+    } else {
+      const rm = document.createElement('button');
+      rm.className  = 'remove-btn';
+      rm.textContent = '✕';
+      rm.onclick = (e) => { e.stopPropagation(); removeFile(idx); };
+      cell.appendChild(rm);
+    }
+    container.appendChild(cell);
+  });
+
+  if (count < 10) {
+    const addBtn = document.createElement('div');
+    addBtn.className   = 'add-more-btn';
+    addBtn.textContent = '+';
+    addBtn.onclick = () => document.getElementById('uploadInput').click();
+    container.appendChild(addBtn);
   }
 }
 
-function previewUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    uploadBase64 = e.target.result;
-    document.getElementById('uploadPreview').innerHTML =
-      `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-  };
-  reader.readAsDataURL(file);
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  if (selectedFiles.length === 0) {
+    document.getElementById('dropZone').style.display    = 'flex';
+    document.getElementById('previewGrid').style.display = 'none';
+  } else {
+    renderPreviewGrid();
+  }
 }
 
+// ── 멀티 업로드 제출 ──────────────────────────────────
 async function submitUpload() {
-  if (!uploadBase64) { showToast('사진을 선택해주세요'); return; }
-  const btn  = document.getElementById('uploadSubmit');
-  const prog = document.getElementById('uploadProgress');
-  btn.disabled = true;
-  prog.style.display = 'block';
+  if (!selectedFiles.length) { showToast('사진을 선택해주세요'); return; }
+
+  const btn      = document.getElementById('uploadSubmit');
+  const progWrap = document.getElementById('uploadProgressWrap');
+  const progFill = document.getElementById('uploadProgressFill');
+  const progText = document.getElementById('uploadProgressText');
+
+  btn.disabled           = true;
+  progWrap.style.display = 'block';
+
+  const content   = document.getElementById('uploadContent').value || null;
+  const eventDate = document.getElementById('uploadDate').value    || null;
+  const total     = selectedFiles.length;
+
   try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file_base64: uploadBase64,
-        house_id:    HOUSE_ID,
-        content:     document.getElementById('uploadContent').value,
-        event_date:  document.getElementById('uploadDate').value || null,
-        media_type:  'photo'
-      })
-    });
-    if (res.ok) {
-      showToast('사진이 업로드됐어요 📷');
-      document.getElementById('uploadModal').classList.remove('open');
-      uploadBase64 = null;
-      await loadData();
-    } else {
-      showToast('업로드 실패했어요');
+    for (let i = 0; i < total; i++) {
+      progText.textContent      = `${i+1} / ${total} 업로드 중...`;
+      progFill.style.width      = `${(i/total)*100}%`;
+
+      // 1. 리사이즈
+      const b64  = await resizeImage(selectedFiles[i], 1200);
+      const blob = await b64toBlob(b64);
+
+      // 2. Cloudinary 직접 업로드
+      const fd = new FormData();
+      fd.append('file', blob, `photo_${i}.jpg`);
+      fd.append('upload_preset', 'corenull');
+      const cr   = await fetch(`https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload`, { method:'POST', body:fd });
+      const cl   = await cr.json();
+      if (!cl.secure_url) throw new Error('Cloudinary 실패: ' + JSON.stringify(cl.error));
+
+      // 3. Supabase 저장 (file_url 방식)
+      await fetch('/api/upload', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ file_url: cl.secure_url, house_id: HOUSE_ID, content, event_date: eventDate, media_type: 'photo' })
+      });
+
+      progFill.style.width = `${((i+1)/total)*100}%`;
     }
+
+    progText.textContent = `완료! ✅`;
+    showToast(`사진 ${total}장 업로드됐어요 📷`);
+    setTimeout(() => {
+      document.getElementById('uploadModal').classList.remove('open');
+      selectedFiles = [];
+      loadData();
+    }, 800);
+
   } catch(e) {
-    showToast('오류가 발생했어요');
+    showToast('업로드 실패: ' + e.message);
+    console.error(e);
   } finally {
     btn.disabled = false;
-    prog.style.display = 'none';
   }
 }
 
@@ -570,56 +607,71 @@ async function submitUpload() {
 async function uploadCoverPhoto(input) {
   const file = input.files[0];
   if (!file) return;
-  input.value = ''; // 중복 방지
-
-  // 8MB 체크
-  if (file.size > 8 * 1024 * 1024) {
-    showToast('8MB 이하 사진만 가능해요');
-    return;
-  }
+  input.value = '';
+  if (file.size > 8*1024*1024) { showToast('8MB 이하 사진만 가능해요'); return; }
 
   showToast('업로드 중... ⏳');
+  const b64  = await resizeImage(file, 1200);
+  const blob = await b64toBlob(b64);
 
-  // 1200px 리사이즈
-  const resized = await resizeImage(file, 1200);
-
-  // 미리보기
   document.getElementById('heroPhotoFrame').innerHTML = `
-    <img src="${resized}" alt="하준이">
+    <img src="${b64}" alt="하준이">
     <div class="photo-upload-hint">사진 변경</div>
   `;
 
   try {
+    const fd = new FormData();
+    fd.append('file', blob, 'cover.jpg');
+    fd.append('upload_preset', 'corenull');
+    const cr = await fetch(`https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload`, { method:'POST', body:fd });
+    const cl = await cr.json();
+    if (!cl.secure_url) throw new Error('Cloudinary 실패');
+
     const res  = await fetch('/api/cover', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file_base64: resized, house_id: HOUSE_ID })
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ file_base64: cl.secure_url, house_id: HOUSE_ID })
     });
     const data = await res.json();
-    if (data.success) {
-      showToast('커버 사진이 저장됐어요 📷');
-    } else {
-      showToast('저장 실패: ' + (data.error || ''));
-      console.error('[cover] 에러:', data);
-    }
-  } catch(err) {
-    showToast('저장 실패');
-    console.error('[cover] fetch 에러:', err);
-  }
+    if (data.success) showToast('커버 사진이 저장됐어요 📷');
+    else showToast('저장 실패');
+  } catch(err) { showToast('저장 실패: ' + err.message); }
 }
+
+// ── 라이트박스 ────────────────────────────────────────
+function openLightbox(images, startIndex) {
+  lightboxImages = images;
+  lightboxIndex  = startIndex;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+}
+function updateLightbox() {
+  document.getElementById('lightboxImg').src       = lightboxImages[lightboxIndex];
+  document.getElementById('lightboxCounter').textContent = `${lightboxIndex+1} / ${lightboxImages.length}`;
+  document.getElementById('lightboxThumbs').innerHTML = lightboxImages.map((url,i) =>
+    `<div class="lightbox-thumb ${i===lightboxIndex?'active':''}" onclick="lightboxGoto(${i})">
+      <img src="${url}" alt=""></div>`).join('');
+  const nav = document.querySelector('.lightbox-nav');
+  const thumbs = document.getElementById('lightboxThumbs');
+  nav.style.display    = lightboxImages.length > 1 ? 'flex' : 'none';
+  thumbs.style.display = lightboxImages.length > 1 ? 'flex' : 'none';
+}
+function lightboxPrev()  { lightboxIndex = (lightboxIndex-1+lightboxImages.length)%lightboxImages.length; updateLightbox(); }
+function lightboxNext()  { lightboxIndex = (lightboxIndex+1)%lightboxImages.length; updateLightbox(); }
+function lightboxGoto(i) { lightboxIndex = i; updateLightbox(); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+function closeLightboxOnBg(e) { if (e.target===document.getElementById('lightbox')) closeLightbox(); }
 
 // ── 좋아요 ────────────────────────────────────────────
 async function toggleLike(btn, postId) {
   btn.classList.toggle('liked');
   const countEl = btn.querySelector('.like-count');
-  const current = parseInt(countEl.textContent);
   const liked   = btn.classList.contains('liked');
-  countEl.textContent = liked ? current + 1 : current - 1;
+  countEl.textContent = parseInt(countEl.textContent) + (liked?1:-1);
   try {
     await fetch('/api/event-like', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ post_id: postId, author_name: '방문자', emoji: '❤️' })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ post_id:postId, author_name:'방문자', emoji:'❤️' })
     });
   } catch(e) {}
 }
@@ -629,18 +681,14 @@ function formatDate(str) {
   const d = new Date(str);
   return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
 }
-
 function timeAgo(str) {
   const diff = Date.now() - new Date(str).getTime();
-  const m = Math.floor(diff / 60000);
-  const h = Math.floor(m / 60);
-  const d = Math.floor(h / 24);
-  if (d > 0) return `${d}일 전`;
-  if (h > 0) return `${h}시간 전`;
-  if (m > 0) return `${m}분 전`;
+  const m=Math.floor(diff/60000), h=Math.floor(m/60), d=Math.floor(h/24);
+  if(d>0) return `${d}일 전`;
+  if(h>0) return `${h}시간 전`;
+  if(m>0) return `${m}분 전`;
   return '방금';
 }
-
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -648,7 +696,6 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ── 초기화 ────────────────────────────────────────────
 initDday();
 loadData();
 </script>
