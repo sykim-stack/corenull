@@ -886,6 +886,14 @@ async function loadData() {
     const data = await res.json();
     if (!data.house) return;
     houseData = data;
+        // ✅ 이 부분 추가
+    if (data.house.cover_url) {
+      document.getElementById('heroPhotoFrame').innerHTML = `
+        <img src="${data.house.cover_url}" alt="하준이">
+        <div class="photo-upload-hint">사진 변경</div>
+      `;
+    }
+    
     renderMilestones(data.milestones || []);
     renderPhotos(data.media || []);
   } catch(e) { console.error(e); }
