@@ -1104,18 +1104,16 @@ async function submitUpload() {
 async function uploadCoverPhoto(input) {
   const file = input.files[0];
   if (!file) return;
-  input.value = ''; // ← 중복 방지
-  
+  input.value = '';
+
   const reader = new FileReader();
   reader.onload = async (e) => {
-    // 미리보기
     document.getElementById('heroPhotoFrame').innerHTML = `
       <img src="${e.target.result}" alt="하준이">
       <div class="photo-upload-hint">사진 변경</div>
     `;
-    // 저장
     try {
-      const res = await fetch('/api/cover', {
+      const res  = await fetch('/api/cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1123,8 +1121,18 @@ async function uploadCoverPhoto(input) {
           house_id: HOUSE_ID
         })
       });
-      if (res.ok) showToast('커버 사진이 저장됐어요 📷');
-    } catch(e) { showToast('저장 실패'); }
+      const data = await res.json();
+      console.log('cover 응답:', data);
+      if (data.success) {
+        showToast('커버 사진이 저장됐어요 📷');
+      } else {
+        showToast('저장 실패: ' + (data.error || '알 수 없는 오류'));
+        console.error('cover 에러:', data);
+      }
+    } catch(err) {
+      showToast('저장 실패');
+      console.error(err);
+    }
   };
   reader.readAsDataURL(file);
 }
