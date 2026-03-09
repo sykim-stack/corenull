@@ -1,9 +1,7 @@
 // ============================================================
 // CoreNull | api/upload.js
-// Cloudinary 이미지 업로드 + Supabase media 저장
+// Cloudinary URL 받아서 Supabase media 저장
 // ============================================================
-
-export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,30 +10,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { file_base64, media_type, content, event_tag, event_date, room_id, house_id } = req.body;
+  const { file_url, media_type, content, event_tag, event_date, room_id, house_id } = req.body;
 
-  if (!file_base64 || !house_id) {
-    return res.status(400).json({ error: 'file_base64, house_id 필수' });
+  if (!file_url || !house_id) {
+    return res.status(400).json({ error: 'file_url, house_id 필수' });
   }
 
-   // 1. Cloudinary 업로드 (FormData 방식)
-   const formData = new FormData();
-   formData.append('file', file_base64);
-   formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
- 
-   const cloudRes = await fetch(
-     `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-     {
-       method: 'POST',
-       body: formData
-     }
-   );
-   const cloud = await cloudRes.json();
-   if (!cloud.secure_url) {
-     return res.status(500).json({ error: 'Cloudinary 업로드 실패', detail: cloud });
-   }
-
-  // 2. Supabase 저장
   const dbRes = await fetch(
     `${process.env.SUPABASE_URL}/rest/v1/media`,
     {
@@ -50,19 +30,23 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         house_id,
-        room_id:       room_id || null,
+        room_id:       room_id    || null,
         media_type:    media_type || 'photo',
-        file_url:      cloud.secure_url,
-        thumbnail_url: cloud.eager?.[0]?.secure_url || null,
-        content:       content || null,
-        event_tag:     event_tag || null,
+        file_url,
+        content:       content    || null,
+        event_tag:     event_tag  || null,
         event_date:    event_date || null,
         is_owner:      true,
         status:        'approved'
       })
     }
   );
+
   const db = await dbRes.json();
 
-  return res.status(200).json({ success: true, file_url: cloud.secure_url, data: db });
+  if (!dbRes.ok) {
+    return res.status(500).json({ error: 'DB 저장 실패', detail: db });
+  }
+
+  return res.status(200).json({ success: true, data: db });
 }
