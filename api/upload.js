@@ -18,22 +18,22 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'file_base64, house_id 필수' });
   }
 
-  // 1. Cloudinary 업로드
-  const cloudRes = await fetch(
-    `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file:          file_base64,
-        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET
-      })
-    }
-  );
-  const cloud = await cloudRes.json();
-  if (!cloud.secure_url) {
-    return res.status(500).json({ error: 'Cloudinary 업로드 실패', detail: cloud });
-  }
+   // 1. Cloudinary 업로드 (FormData 방식)
+   const formData = new FormData();
+   formData.append('file', file_base64);
+   formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET);
+ 
+   const cloudRes = await fetch(
+     `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
+     {
+       method: 'POST',
+       body: formData
+     }
+   );
+   const cloud = await cloudRes.json();
+   if (!cloud.secure_url) {
+     return res.status(500).json({ error: 'Cloudinary 업로드 실패', detail: cloud });
+   }
 
   // 2. Supabase 저장
   const dbRes = await fetch(
