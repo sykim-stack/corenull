@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     }
   );
   const cloud = await cloudRes.json();
-  console.log('[cover] Cloudinary 결과:', cloud.secure_url || cloud.error);
+  console.log('[cover] Cloudinary:', cloud.secure_url || cloud.error);
 
   if (!cloud.secure_url) {
     return res.status(500).json({ error: 'Cloudinary 실패', detail: cloud });
@@ -60,9 +60,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'DB 저장 실패', status: dbRes.status, detail: dbText });
   }
 
-  return res.status(200).json({ success: true, cover_url: cloud.secure_url });
-}
-
-  const db = await dbRes.json();
   return res.status(200).json({ success: true, cover_url: cloud.secure_url });
 }
