@@ -860,34 +860,85 @@ async function uploadCoverPhoto(input) {
   }catch(err){showToast('저장 실패: '+err.message);}
 }
 
-// ── 라이트박스 ────────────────────────────────────────
+// ── 라이트박스 (슬라이드 + 터치 스와이프) ───────────────
+let lbTouchStartX=0, lbTouchStartY=0, lbDragging=false, lbDragX=0;
+
 function openLightbox(images, startIndex) {
   lbImages=images; lbIndex=startIndex;
+  buildLbTrack();
   updateLightbox();
   document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow='hidden';
 }
-function updateLightbox() {
-  document.getElementById('lbImg').src=lbImages[lbIndex];
-  document.getElementById('lbCounter').textContent=`${lbIndex+1} / ${lbImages.length}`;
-  document.getElementById('lbThumbs').innerHTML=lbImages.map((url,i)=>
-    `<div class="lb-thumb ${i===lbIndex?'active':''}" onclick="lbGoto(${i})">
-      <img src="${url}" alt=""></div>`).join('');
-  const show=lbImages.length>1;
-  document.getElementById('lbNav').style.display=show?'flex':'none';
-  document.getElementById('lbThumbs').style.display=show?'flex':'none';
-}
-function lbPrev(){lbIndex=(lbIndex-1+lbImages.length)%lbImages.length;updateLightbox();}
-function lbNext(){lbIndex=(lbIndex+1)%lbImages.length;updateLightbox();}
-function lbGoto(i){lbIndex=i;updateLightbox();}
-function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
 
-// 라이트박스 배경 클릭 닫기
-document.getElementById('lightbox').addEventListener('click', function(e){
+function buildLbTrack() {
+  const track=document.getElementById('lbTrack');
+  if(!track) return;
+  track.innerHTML=lbImages.map((url,i)=>
+    `<div class="lb-slide"><img src="${url}" alt="" draggable="false"></div>`
+  ).join('');
+}
+
+function updateLightbox() {
+  const track=document.getElementById('lbTrack');
+  if(!track) return;
+  track.style.transition='transform .3s cubic-bezier(.4,0,.2,1)';
+  track.style.transform=`translateX(-${lbIndex*100}vw)`;
+  const counter=document.getElementById('lbCounter');
+  if(counter) counter.textContent=`${lbIndex+1} / ${lbImages.length}`;
+  const thumbs=document.getElementById('lbThumbs');
+  if(thumbs) {
+    thumbs.innerHTML=lbImages.map((url,i)=>
+      `<div class="lb-thumb ${i===lbIndex?'active':''}" onclick="lbGoto(${i})">
+        <img src="${url}" alt=""></div>`).join('');
+    setTimeout(()=>{
+      const active=thumbs.querySelector('.active');
+      if(active) active.scrollIntoView({inline:'center',behavior:'smooth',block:'nearest'});
+    },50);
+  }
+}
+
+function lbPrev(){if(lbIndex>0){lbIndex--;updateLightbox();}}
+function lbNext(){if(lbIndex<lbImages.length-1){lbIndex++;updateLightbox();}}
+function lbGoto(i){lbIndex=i;updateLightbox();}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// 터치 스와이프
+const lbEl=document.getElementById('lightbox');
+lbEl.addEventListener('touchstart',e=>{
+  lbTouchStartX=e.touches[0].clientX;
+  lbTouchStartY=e.touches[0].clientY;
+  lbDragging=true; lbDragX=0;
+  const t=document.getElementById('lbTrack');
+  if(t) t.style.transition='none';
+},{passive:true});
+
+lbEl.addEventListener('touchmove',e=>{
+  if(!lbDragging) return;
+  lbDragX=e.touches[0].clientX-lbTouchStartX;
+  const dy=Math.abs(e.touches[0].clientY-lbTouchStartY);
+  if(Math.abs(lbDragX)<dy) return;
+  const t=document.getElementById('lbTrack');
+  if(t) t.style.transform=`translateX(calc(${-lbIndex*100}vw + ${lbDragX}px))`;
+},{passive:true});
+
+lbEl.addEventListener('touchend',()=>{
+  lbDragging=false;
+  if(lbDragX<-50&&lbIndex<lbImages.length-1) lbIndex++;
+  else if(lbDragX>50&&lbIndex>0) lbIndex--;
+  updateLightbox();
+});
+
+// 배경 클릭 닫기
+lbEl.addEventListener('click',function(e){
   if(e.target===this) closeLightbox();
 });
 
-// 키보드 지원
-document.addEventListener('keydown', e=>{
+// 키보드
+document.addEventListener('keydown',e=>{
   if(!document.getElementById('lightbox').classList.contains('open')) return;
   if(e.key==='ArrowLeft') lbPrev();
   if(e.key==='ArrowRight') lbNext();
