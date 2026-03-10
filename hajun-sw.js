@@ -1,5 +1,5 @@
 // BRAINPOOL | CoreNull - Hajun SW v1.0
-const CACHE_NAME = 'hajun-v1';
+const CACHE_NAME = 'hajun-v2';
 const CACHE_FILES = ['/hajun-100'];
 
 self.addEventListener('install', e => {
