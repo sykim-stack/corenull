@@ -544,8 +544,10 @@ function renderPhotos(media) {
     return;
   }
   const allUrls=photos.map(m=>m.file_url);
+  // allUrls를 전역 변수로 저장 (onclick에서 JSON.stringify 사용 시 따옴표 충돌 방지)
+  window._lbUrls = allUrls;
   grid.innerHTML=photos.map((m,idx)=>`
-    <div class="photo-item" onclick="openLightbox(${JSON.stringify(allUrls)},${idx})">
+    <div class="photo-item" onclick="openLightbox(window._lbUrls,${idx})">
       <img src="${m.file_url}" alt="${m.content||''}" loading="lazy">
       ${IS_OWNER?`
         <button class="item-edit" onclick="event.stopPropagation();openEditModal('${m.id}','${(m.content||'').replace(/'/g,"\\'")}')">✏️</button>
