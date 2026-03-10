@@ -503,6 +503,7 @@ async function loadData() {
     allMediaData = data.media || [];
     renderMilestones(data.milestones||[]);
     renderPhotos(allMediaData);
+    renderVideos(allMediaData);
   } catch(e){console.error('loadData:',e);}
   await loadPosts();
   if(IS_OWNER) document.getElementById('uploadFab').style.display='flex';
@@ -991,66 +992,78 @@ function closePwaBanner() {
 let videoItems = [];
 
 function parseVideoUrl(url) {
-  // 유튜브
   let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
   if (m) return { platform: 'YouTube', embedUrl: `https://www.youtube.com/embed/${m[1]}` };
-  // 유튜브 쇼츠
   m = url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/);
   if (m) return { platform: 'YouTube Shorts', embedUrl: `https://www.youtube.com/embed/${m[1]}` };
-  // 틱톡
   m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
   if (m) return { platform: 'TikTok', embedUrl: `https://www.tiktok.com/embed/v2/${m[1]}` };
-  // 페이스북
   if (url.includes('facebook.com') || url.includes('fb.watch')) {
     return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false` };
   }
   return null;
 }
 
-function addVideo() {
+async function addVideo() {
   const url = document.getElementById('videoUrlInput').value.trim();
   if (!url) { showToast('링크를 입력해주세요'); return; }
   const parsed = parseVideoUrl(url);
   if (!parsed) { showToast('지원하지 않는 링크예요 (유튜브/틱톡/페이스북)'); return; }
-  videoItems.unshift({ ...parsed, url, id: Date.now() });
   document.getElementById('videoUrlInput').value = '';
-  renderVideos();
-  showToast(`${parsed.platform} 영상이 추가됐어요 🎬`);
+  showToast('저장 중... ⏳');
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_url:   url,
+        house_id:   HOUSE_ID,
+        media_type: 'video',
+        content:    parsed.platform
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '저장 실패');
+    // DB에서 다시 로드
+    await loadData();
+    showToast(`${parsed.platform} 영상이 저장됐어요 🎬`);
+  } catch(e) {
+    showToast('저장 실패: ' + e.message);
+  }
 }
 
-function renderVideos() {
+function renderVideos(media) {
+  const videos  = (media || allMediaData).filter(m => m.media_type === 'video');
   const section = document.getElementById('videoSection');
   const list    = document.getElementById('videoList');
   const form    = document.getElementById('videoForm');
-  if (videoItems.length === 0 && !IS_OWNER) { section.style.display='none'; return; }
+  if (videos.length === 0 && !IS_OWNER) { section.style.display='none'; return; }
   section.style.display = 'block';
   if (IS_OWNER) form.style.display = 'block';
-  if (videoItems.length === 0) {
+  if (videos.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><p>영상 링크를 추가해보세요</p></div>';
     return;
   }
-  list.innerHTML = videoItems.map(v => `
-    <div class="video-item">
-      <iframe class="video-embed" src="${v.embedUrl}" allowfullscreen allow="autoplay"></iframe>
+  list.innerHTML = videos.map(v => {
+    const parsed = parseVideoUrl(v.file_url);
+    if (!parsed) return '';
+    return `<div class="video-item">
+      <iframe class="video-embed" src="${parsed.embedUrl}" allowfullscreen allow="autoplay"></iframe>
       <div class="video-info">
-        <span class="video-platform">${v.platform}</span>
-        ${IS_OWNER ? `<button class="video-del-btn" onclick="removeVideo(${v.id})">🗑️</button>` : ''}
+        <span class="video-platform">${parsed.platform}</span>
+        ${IS_OWNER ? `<button class="video-del-btn" onclick="confirmDeleteMedia('${v.id}')">🗑️</button>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function removeVideo(id) {
-  openConfirm('영상을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', () => {
-    videoItems = videoItems.filter(v => v.id !== id);
-    renderVideos();
-    showToast('영상이 삭제됐어요');
-  });
+  confirmDeleteMedia(id);
 }
 
 // ── 초기화 ────────────────────────────────────────────
 initDday();
 loadData();
-renderVideos();
 </script>
 </body>
 </html>
