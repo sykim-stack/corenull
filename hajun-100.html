@@ -485,7 +485,7 @@ function renderPhotos(media) {
 function confirmDeleteMedia(mediaId) {
   openConfirm('사진을 삭제할까요?','삭제하면 되돌릴 수 없어요.', async()=>{
     try {
-      const res=await fetch('/api/media-delete',{
+      const res=await fetch('/api/media',{
         method:'DELETE',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({media_id:mediaId,house_id:HOUSE_ID})
@@ -509,7 +509,7 @@ async function submitEdit() {
   const mediaId = document.getElementById('editMediaId').value;
   const content = document.getElementById('editContent').value.trim();
   try {
-    const res=await fetch('/api/media-update',{
+    const res=await fetch('/api/media',{
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({media_id:mediaId,house_id:HOUSE_ID,content})
@@ -525,7 +525,7 @@ async function submitEdit() {
 // ── 피드 ──────────────────────────────────────────────
 async function loadPosts() {
   try {
-    const res=await fetch(`/api/event-posts?house_id=${HOUSE_ID}`);
+    const res=await fetch(`/api/posts?house_id=${HOUSE_ID}`);
     const posts=await res.json();
     renderPosts(Array.isArray(posts)?posts:[]);
   }catch(e){renderPosts([]);}
@@ -560,7 +560,7 @@ function renderPosts(posts) {
 function confirmDeletePost(postId) {
   openConfirm('메시지를 삭제할까요?','삭제하면 되돌릴 수 없어요.', async()=>{
     try {
-      const res=await fetch('/api/post-delete',{
+      const res=await fetch('/api/posts',{
         method:'DELETE',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({post_id:postId,house_id:HOUSE_ID})
@@ -580,7 +580,7 @@ async function submitPost() {
   try {
     const body={house_id:HOUSE_ID,author_name:author,content,lang,media_type:'text'};
     if(postPhotoBase64){body.file_base64=postPhotoBase64;body.media_type='photo';}
-    const res=await fetch('/api/event-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const res=await fetch('/api/posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(res.ok){
       document.getElementById('postAuthor').value='';
       document.getElementById('postContent').value='';
