@@ -226,7 +226,9 @@
     .video-url-btn{background:var(--brown);color:white;border:none;border-radius:12px;padding:12px 18px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;white-space:nowrap;}
     .video-list{display:flex;flex-direction:column;gap:16px;}
     .video-item{background:white;border:1px solid rgba(139,94,60,.1);border-radius:16px;overflow:hidden;position:relative;}
-    .video-embed{width:100%;aspect-ratio:16/9;border:none;}
+    .video-embed{width:100%;aspect-ratio:16/9;border:none;scrollbar-width:none;}
+    .video-embed::-webkit-scrollbar{display:none;}
+    .video-embed.vertical{aspect-ratio:9/16;max-width:340px;margin:0 auto;display:block;}
     .video-info{padding:14px 16px;display:flex;align-items:center;gap:10px;}
     .video-platform{font-size:11px;background:var(--warm);padding:3px 10px;border-radius:10px;color:var(--muted);}
     .video-del-btn{margin-left:auto;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);}
@@ -1047,8 +1049,9 @@ function renderVideos(media) {
   list.innerHTML = videos.map(v => {
     const parsed = parseVideoUrl(v.file_url);
     if (!parsed) return '';
+    const isVertical = parsed.platform === 'TikTok';
     return `<div class="video-item">
-      <iframe class="video-embed" src="${parsed.embedUrl}" allowfullscreen allow="autoplay"></iframe>
+      <iframe class="video-embed ${isVertical?'vertical':''}" src="${parsed.embedUrl}" allowfullscreen allow="autoplay" scrolling="no"></iframe>
       <div class="video-info">
         <span class="video-platform">${parsed.platform}</span>
         ${IS_OWNER ? `<button class="video-del-btn" onclick="confirmDeleteMedia('${v.id}')">🗑️</button>` : ''}
