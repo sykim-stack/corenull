@@ -153,19 +153,31 @@
     #editModal .modal-box{border-radius:20px;max-height:80vh;}
 
     /* ── 라이트박스 ── */
-    .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:900;align-items:center;justify-content:center;flex-direction:column;}
+    .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:900;flex-direction:column;touch-action:pan-y;}
     .lightbox.open{display:flex;}
-    .lightbox-img{max-width:94vw;max-height:76vh;object-fit:contain;border-radius:8px;}
-    .lightbox-nav{display:flex;gap:16px;margin-top:14px;align-items:center;}
-    .lb-btn{background:rgba(255,255,255,.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
-    .lb-btn:hover{background:rgba(255,255,255,.3);}
-    .lb-counter{color:rgba(255,255,255,.6);font-size:13px;min-width:60px;text-align:center;}
-    .lb-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    /* 슬라이드 트랙 */
+    .lb-track-wrap{flex:1;width:100%;overflow:hidden;position:relative;display:flex;align-items:center;}
+    .lb-track{display:flex;height:100%;transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform;}
+    .lb-slide{min-width:100vw;height:100%;display:flex;align-items:center;justify-content:center;padding:60px 16px 16px;}
+    .lb-slide img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;user-select:none;-webkit-user-drag:none;}
+    /* 좌우 버튼 - 데스크탑만 */
+    .lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:white;width:44px;height:44px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;z-index:10;}
+    .lb-btn:hover{background:rgba(255,255,255,.35);}
+    .lb-btn.prev{left:12px;}
+    .lb-btn.next{right:12px;}
+    @media(max-width:480px){.lb-btn{display:none;}}
+    .lb-counter{position:absolute;top:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:13px;background:rgba(0,0,0,.4);padding:4px 14px;border-radius:20px;}
+    .lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
     .lb-close:hover{background:rgba(255,255,255,.3);}
-    .lb-thumbs{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;max-width:94vw;}
-    .lb-thumb{width:48px;height:48px;border-radius:6px;overflow:hidden;cursor:pointer;opacity:.5;transition:opacity .2s;border:2px solid transparent;flex-shrink:0;}
-    .lb-thumb.active{opacity:1;border-color:white;}
+    /* 하단 썸네일 */
+    .lb-thumbs{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;flex-shrink:0;justify-content:center;max-width:100vw;scrollbar-width:none;}
+    .lb-thumbs::-webkit-scrollbar{display:none;}
+    .lb-thumb{width:48px;height:48px;border-radius:8px;overflow:hidden;cursor:pointer;opacity:.45;transition:all .2s;border:2px solid transparent;flex-shrink:0;}
+    .lb-thumb.active{opacity:1;border-color:white;transform:scale(1.1);}
     .lb-thumb img{width:100%;height:100%;object-fit:cover;}
+    /* 스와이프 힌트 */
+    .lb-swipe-hint{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:11px;letter-spacing:2px;animation:fadeOut 2s 1.5s ease forwards;}
+    @keyframes fadeOut{from{opacity:1;}to{opacity:0;}}
 
     /* ── 확인 다이얼로그 ── */
     .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(44,26,14,.65);z-index:800;align-items:center;justify-content:center;padding:24px;}
@@ -380,11 +392,11 @@
 <!-- 라이트박스 -->
 <div class="lightbox" id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
-  <img class="lightbox-img" id="lbImg" src="" alt="">
-  <div class="lightbox-nav" id="lbNav">
-    <button class="lb-btn" onclick="lbPrev()">‹</button>
-    <span class="lb-counter" id="lbCounter"></span>
-    <button class="lb-btn" onclick="lbNext()">›</button>
+  <span class="lb-counter" id="lbCounter"></span>
+  <div class="lb-track-wrap" id="lbTrackWrap">
+    <div class="lb-track" id="lbTrack"></div>
+    <button class="lb-btn prev" onclick="lbPrev()">‹</button>
+    <button class="lb-btn next" onclick="lbNext()">›</button>
   </div>
   <div class="lb-thumbs" id="lbThumbs"></div>
 </div>
