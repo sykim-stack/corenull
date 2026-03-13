@@ -593,6 +593,28 @@ function renderMilestones(milestones, category) {
   }).join('');
 }
 
+// ── 갤러리 ────────────────────────────────────────────
+function renderPhotos(media) {
+  const photos=media.filter(m=>m.media_type==='photo');
+  const grid=document.getElementById('photoGrid');
+  if(photos.length===0){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:span 3;padding:48px 24px">
+      <div class="icon">📷</div><p>아직 사진이 없어요<br>첫 번째 사진을 올려주세요!</p></div>`;
+    return;
+  }
+  const allUrls=photos.map(m=>m.file_url);
+  // allUrls를 전역 변수로 저장 (onclick에서 JSON.stringify 사용 시 따옴표 충돌 방지)
+  window._lbUrls = allUrls;
+  grid.innerHTML=photos.map((m,idx)=>`
+    <div class="photo-item" onclick="openLightbox(window._lbUrls,${idx})">
+      <img src="${m.file_url}" alt="${m.content||''}" loading="lazy">
+      ${IS_OWNER?`
+        <button class="item-edit" onclick="event.stopPropagation();openEditModal('${m.id}','${(m.content||'').replace(/'/g,"\\'")}')">✏️</button>
+        <button class="item-del" onclick="event.stopPropagation();confirmDeleteMedia('${m.id}')">🗑️</button>
+      `:''}
+    </div>`).join('');
+}
+
 // ── 갤러리 삭제/수정 ──────────────────────────────────
 function confirmDeleteMedia(mediaId) {
   openConfirm('사진을 삭제할까요?','삭제하면 되돌릴 수 없어요.', async()=>{
