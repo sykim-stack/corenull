@@ -555,18 +555,16 @@ function renderMilestones(milestones, category) {
     daily:   [],
   };
 
-  const items = (milestones && milestones.length > 0)
-    ? milestones
-    : (defaults[category] || defaults['baby']);
-
-  const el = document.getElementById('milestoneList');
-  if (!el) return;
+  const items = milestones.length > 0 ? milestones : (defaults[category] || []);
 
   if (items.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
+    const empty = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
+    document.getElementById('recentMilestones').innerHTML = empty;
+    document.getElementById('allMilestones').innerHTML    = empty;
     return;
   }
 
+  // 날짜 있는 것 먼저, 없으면 뒤로
   const sorted = [...items].sort((a, b) => {
     if (!a.milestone_date && !b.milestone_date) return 0;
     if (!a.milestone_date) return 1;
@@ -576,45 +574,29 @@ function renderMilestones(milestones, category) {
 
   const today = new Date();
 
-  el.innerHTML = sorted.map((m, i) => {
-    const done = m.milestone_date && new Date(m.milestone_date) <= today;
-    return `
-    <div class="timeline-item" style="animation-delay:${i*0.07}s">
-      <div class="timeline-dot ${done ? 'done' : ''}"></div>
-      <div class="timeline-card">
-        <div class="timeline-icon">${m.memo || '⭐'}</div>
-        <div class="timeline-info">
-          <div class="timeline-title">${m.title}</div>
-          <div class="timeline-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
-        </div>
-        <div class="timeline-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
-      </div>
+  // 양쪽 타임라인 HTML
+  const html = `
+    <div class="timeline-wrap">
+      ${sorted.map((m, i) => {
+        const done = m.milestone_date && new Date(m.milestone_date) <= today;
+        const side = i % 2 === 0 ? 'left' : 'right';
+        return `
+        <div class="timeline-row ${side}" style="animation-delay:${i*0.07}s">
+          <div class="timeline-card">
+            <div class="milestone-icon">${m.memo || '⭐'}</div>
+            <div class="milestone-info">
+              <div class="milestone-title">${m.title}</div>
+              <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+            </div>
+            <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
+          </div>
+        </div>`;
+      }).join('')}
     </div>`;
-  }).join('');
-}function renderMilestones(milestones, category) {
-  const defaults = {
-    baby: [
-      { title:'태어난 날',    memo:'⭐', milestone_date: '2025-12-22' },
-      { title:'백일',         memo:'🎂', milestone_date: '2026-03-31' },
-      { title:'첫 뒤집기',    memo:'🔄', milestone_date: null },
-      { title:'첫 걸음마',    memo:'👣', milestone_date: null },
-      { title:'첫 단어',      memo:'💬', milestone_date: null },
-      { title:'첫 번째 생일', memo:'🎁', milestone_date: '2026-12-22' },
-    ],
-    pet:     [{ title:'입양일', memo:'🐾' }, { title:'첫 산책', memo:'🦮' }],
-    travel:  [{ title:'첫 여행', memo:'✈️' }, { title:'첫 해외', memo:'🌏' }],
-    fitness: [{ title:'시작일', memo:'💪' }, { title:'첫 목표 달성', memo:'🏆' }],
-    daily:   [],
-  };
 
-  const items = milestones.length > 0 ? milestones : (defaults[category] || []);
-
-  if (items.length === 0) {
-    const empty = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
-    document.getElementById('recentMilestones').innerHTML = empty;
-    document.getElementById('allMilestones').innerHTML    = empty;
-    return;
-  }
+  document.getElementById('recentMilestones').innerHTML = html;
+  document.getElementById('allMilestones').innerHTML    = html;
+}
 
   // 날짜 있는 것 먼저, 없으면 뒤로
   const sorted = [...items].sort((a, b) => {
