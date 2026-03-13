@@ -591,28 +591,63 @@ function renderMilestones(milestones, category) {
       </div>
     </div>`;
   }).join('');
-}
+}function renderMilestones(milestones, category) {
+  const defaults = {
+    baby: [
+      { title:'태어난 날',    memo:'⭐', milestone_date: '2025-12-22' },
+      { title:'백일',         memo:'🎂', milestone_date: '2026-03-31' },
+      { title:'첫 뒤집기',    memo:'🔄', milestone_date: null },
+      { title:'첫 걸음마',    memo:'👣', milestone_date: null },
+      { title:'첫 단어',      memo:'💬', milestone_date: null },
+      { title:'첫 번째 생일', memo:'🎁', milestone_date: '2026-12-22' },
+    ],
+    pet:     [{ title:'입양일', memo:'🐾' }, { title:'첫 산책', memo:'🦮' }],
+    travel:  [{ title:'첫 여행', memo:'✈️' }, { title:'첫 해외', memo:'🌏' }],
+    fitness: [{ title:'시작일', memo:'💪' }, { title:'첫 목표 달성', memo:'🏆' }],
+    daily:   [],
+  };
 
-// ── 갤러리 ────────────────────────────────────────────
-function renderPhotos(media) {
-  const photos=media.filter(m=>m.media_type==='photo');
-  const grid=document.getElementById('photoGrid');
-  if(photos.length===0){
-    grid.innerHTML=`<div class="empty-state" style="grid-column:span 3;padding:48px 24px">
-      <div class="icon">📷</div><p>아직 사진이 없어요<br>첫 번째 사진을 올려주세요!</p></div>`;
+  const items = milestones.length > 0 ? milestones : (defaults[category] || []);
+
+  if (items.length === 0) {
+    const empty = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
+    document.getElementById('recentMilestones').innerHTML = empty;
+    document.getElementById('allMilestones').innerHTML    = empty;
     return;
   }
-  const allUrls=photos.map(m=>m.file_url);
-  // allUrls를 전역 변수로 저장 (onclick에서 JSON.stringify 사용 시 따옴표 충돌 방지)
-  window._lbUrls = allUrls;
-  grid.innerHTML=photos.map((m,idx)=>`
-    <div class="photo-item" onclick="openLightbox(window._lbUrls,${idx})">
-      <img src="${m.file_url}" alt="${m.content||''}" loading="lazy">
-      ${IS_OWNER?`
-        <button class="item-edit" onclick="event.stopPropagation();openEditModal('${m.id}','${(m.content||'').replace(/'/g,"\\'")}')">✏️</button>
-        <button class="item-del" onclick="event.stopPropagation();confirmDeleteMedia('${m.id}')">🗑️</button>
-      `:''}
-    </div>`).join('');
+
+  // 날짜 있는 것 먼저, 없으면 뒤로
+  const sorted = [...items].sort((a, b) => {
+    if (!a.milestone_date && !b.milestone_date) return 0;
+    if (!a.milestone_date) return 1;
+    if (!b.milestone_date) return -1;
+    return new Date(a.milestone_date) - new Date(b.milestone_date);
+  });
+
+  const today = new Date();
+
+  // 양쪽 타임라인 HTML
+  const html = `
+    <div class="timeline-wrap">
+      ${sorted.map((m, i) => {
+        const done = m.milestone_date && new Date(m.milestone_date) <= today;
+        const side = i % 2 === 0 ? 'left' : 'right';
+        return `
+        <div class="timeline-row ${side}" style="animation-delay:${i*0.07}s">
+          <div class="timeline-card">
+            <div class="milestone-icon">${m.memo || '⭐'}</div>
+            <div class="milestone-info">
+              <div class="milestone-title">${m.title}</div>
+              <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+            </div>
+            <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  document.getElementById('recentMilestones').innerHTML = html;
+  document.getElementById('allMilestones').innerHTML    = html;
 }
 
 // ── 갤러리 삭제/수정 ──────────────────────────────────
