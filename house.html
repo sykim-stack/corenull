@@ -676,6 +676,7 @@ function renderPhotos(media) {
 }
 
 // ─── 마일스톤 ──────────────────────────────────────────
+// ─── 마일스톤 ──────────────────────────────────────────
 function renderMilestones(milestones, category) {
   const defaults = {
     baby: [
@@ -692,16 +693,18 @@ function renderMilestones(milestones, category) {
     daily:   [],
   };
 
-  const items = milestones.length > 0 ? milestones : (defaults[category] || []);
+  const items = (milestones && milestones.length > 0)
+    ? milestones
+    : (defaults[category] || defaults['baby']);
+
+  const empty = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
 
   if (items.length === 0) {
-    const empty = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
     document.getElementById('recentMilestones').innerHTML = empty;
     document.getElementById('allMilestones').innerHTML    = empty;
     return;
   }
 
-  // 날짜 있는 것 먼저, 없으면 뒤로
   const sorted = [...items].sort((a, b) => {
     if (!a.milestone_date && !b.milestone_date) return 0;
     if (!a.milestone_date) return 1;
@@ -711,28 +714,22 @@ function renderMilestones(milestones, category) {
 
   const today = new Date();
 
-  // 양쪽 타임라인 HTML
-  const html = `
-    <div class="timeline-wrap">
-      ${sorted.map((m, i) => {
-        const done = m.milestone_date && new Date(m.milestone_date) <= today;
-        const side = i % 2 === 0 ? 'left' : 'right';
-        return `
-        <div class="timeline-row ${side}" style="animation-delay:${i*0.07}s">
-          <div class="timeline-card">
-            <div class="milestone-icon">${m.memo || '⭐'}</div>
-            <div class="milestone-info">
-              <div class="milestone-title">${m.title}</div>
-              <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
-            </div>
-            <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
-          </div>
-        </div>`;
-      }).join('')}
+  const html = sorted.map((m, i) => {
+    const done = m.milestone_date && new Date(m.milestone_date) <= today;
+    return `
+    <div class="milestone-item" style="animation-delay:${i*0.07}s">
+      <div class="milestone-icon">${m.memo || '⭐'}</div>
+      <div class="milestone-info">
+        <div class="milestone-title">${m.title}</div>
+        <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+      </div>
+      <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
     </div>`;
+  }).join('');
 
   document.getElementById('recentMilestones').innerHTML = html;
-  document.getElement
+  document.getElementById('allMilestones').innerHTML    = html;
+}
 
 // ─── 댓글 ──────────────────────────────────────────────
 function renderComments(comments) {
@@ -746,7 +743,7 @@ function renderComments(comments) {
             <div class="comment-author">${c.author_name}</div>
             <div class="comment-flag">${c.lang==='ko'?'🇰🇷':c.lang==='vi'?'🇻🇳':'🌏'}</div>
           </div>
-          <div class="comment-text">${c.content}</div>
+          <div class="comment-text">${c.content_original || c.content || ''}</div>
           <div class="comment-time">${timeAgo(c.created_at)}</div>
         </div>`).join('');
 }
