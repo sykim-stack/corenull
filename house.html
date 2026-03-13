@@ -334,6 +334,33 @@
       from { opacity:0; transform: translateY(14px); }
       to   { opacity:1; transform: translateY(0); }
     }
+    .timeline-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.timeline-row {
+  display: flex;
+}
+
+.timeline-row.left  { justify-content: flex-start; }
+.timeline-row.right { justify-content: flex-end; }
+
+.timeline-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-bg, #fff);
+  border-radius: 16px;
+  padding: 14px 18px;
+  width: 85%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.timeline-row.left  .timeline-card { border-left: 3px solid #c8a97e; }
+.timeline-row.right .timeline-card { border-right: 3px solid #c8a97e; }
   </style>
 </head>
 <body>
@@ -652,39 +679,60 @@ function renderPhotos(media) {
 function renderMilestones(milestones, category) {
   const defaults = {
     baby: [
-      { title:'태어났어요',   icon:'👶', milestone_date: null, done: true  },
-      { title:'백일',         icon:'🎂', milestone_date: null, done: false },
-      { title:'첫 뒤집기',    icon:'🔄', milestone_date: null, done: false },
-      { title:'첫 걸음마',    icon:'👣', milestone_date: null, done: false },
-      { title:'첫 단어',      icon:'💬', milestone_date: null, done: false },
-      { title:'첫 번째 생일', icon:'🎁', milestone_date: null, done: false },
+      { title:'태어난 날',    memo:'⭐', milestone_date: '2025-12-22' },
+      { title:'백일',         memo:'🎂', milestone_date: '2026-03-31' },
+      { title:'첫 뒤집기',    memo:'🔄', milestone_date: null },
+      { title:'첫 걸음마',    memo:'👣', milestone_date: null },
+      { title:'첫 단어',      memo:'💬', milestone_date: null },
+      { title:'첫 번째 생일', memo:'🎁', milestone_date: '2026-12-22' },
     ],
-    pet:     [{ title:'입양일', icon:'🐾' }, { title:'첫 산책', icon:'🦮' }, { title:'첫 목욕', icon:'🛁' }],
-    travel:  [{ title:'첫 여행', icon:'✈️' }, { title:'첫 해외', icon:'🌏' }],
-    fitness: [{ title:'시작일', icon:'💪' }, { title:'첫 목표 달성', icon:'🏆' }],
+    pet:     [{ title:'입양일', memo:'🐾' }, { title:'첫 산책', memo:'🦮' }],
+    travel:  [{ title:'첫 여행', memo:'✈️' }, { title:'첫 해외', memo:'🌏' }],
+    fitness: [{ title:'시작일', memo:'💪' }, { title:'첫 목표 달성', memo:'🏆' }],
     daily:   [],
   };
 
   const items = milestones.length > 0 ? milestones : (defaults[category] || []);
 
-  const html = items.length === 0
-    ? `<div class="empty-state" style="grid-column:auto"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`
-    : items.map((m, i) => {
-        const done = m.done || (m.milestone_date && new Date(m.milestone_date) <= new Date());
+  if (items.length === 0) {
+    const empty = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
+    document.getElementById('recentMilestones').innerHTML = empty;
+    document.getElementById('allMilestones').innerHTML    = empty;
+    return;
+  }
+
+  // 날짜 있는 것 먼저, 없으면 뒤로
+  const sorted = [...items].sort((a, b) => {
+    if (!a.milestone_date && !b.milestone_date) return 0;
+    if (!a.milestone_date) return 1;
+    if (!b.milestone_date) return -1;
+    return new Date(a.milestone_date) - new Date(b.milestone_date);
+  });
+
+  const today = new Date();
+
+  // 양쪽 타임라인 HTML
+  const html = `
+    <div class="timeline-wrap">
+      ${sorted.map((m, i) => {
+        const done = m.milestone_date && new Date(m.milestone_date) <= today;
+        const side = i % 2 === 0 ? 'left' : 'right';
         return `
-        <div class="milestone-item" style="animation-delay:${i*0.07}s">
-          <div class="milestone-icon">${m.icon || '⭐'}</div>
-          <div class="milestone-info">
-            <div class="milestone-title">${m.title}</div>
-            <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+        <div class="timeline-row ${side}" style="animation-delay:${i*0.07}s">
+          <div class="timeline-card">
+            <div class="milestone-icon">${m.memo || '⭐'}</div>
+            <div class="milestone-info">
+              <div class="milestone-title">${m.title}</div>
+              <div class="milestone-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
+            </div>
+            <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
           </div>
-          <div class="milestone-badge ${done ? '' : 'pending'}">${done ? '완료' : '예정'}</div>
         </div>`;
-      }).join('');
+      }).join('')}
+    </div>`;
 
   document.getElementById('recentMilestones').innerHTML = html;
-  document.getElementById('allMilestones').innerHTML    = html;
-}
+  document.getElement
 
 // ─── 댓글 ──────────────────────────────────────────────
 function renderComments(comments) {
