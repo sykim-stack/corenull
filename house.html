@@ -695,26 +695,35 @@ function renderHomePreview(media) {
 // ═══════════════════════════════════════════
 // 8. 마일스톤
 // ═══════════════════════════════════════════
-function renderMilestones(milestones, category) {
-  const defaults = {
-    baby: [
-      { title:'태어난 날',    memo:'⭐', milestone_date:'2025-12-22' },
-      { title:'첫 미소',      memo:'😊', milestone_date:null },
-      { title:'백일',         memo:'🎂', milestone_date:'2026-03-31' },
-      { title:'첫 뒤집기',    memo:'🔄', milestone_date:null },
-      { title:'예방접종',     memo:'💉', milestone_date:null },
-      { title:'첫 걸음마',    memo:'👣', milestone_date:null },
-      { title:'첫 단어',      memo:'💬', milestone_date:null },
-      { title:'첫 번째 생일', memo:'🎁', milestone_date:'2026-12-22' },
-    ],
-  };
+const MILESTONE_DEFAULTS = {
+  baby: [
+    { title:'태어난 날',    memo:'⭐', milestone_date:'2025-12-22' },
+    { title:'첫 미소',      memo:'😊', milestone_date:null },
+    { title:'백일',         memo:'🎂', milestone_date:'2026-03-31' },
+    { title:'첫 뒤집기',    memo:'🔄', milestone_date:null },
+    { title:'예방접종',     memo:'💉', milestone_date:null },
+    { title:'첫 걸음마',    memo:'👣', milestone_date:null },
+    { title:'첫 단어',      memo:'💬', milestone_date:null },
+    { title:'첫 번째 생일', memo:'🎁', milestone_date:'2026-12-22' },
+  ],
+  pet:     [{ title:'입양일', memo:'🐾' }, { title:'첫 산책', memo:'🦮' }],
+  travel:  [{ title:'첫 여행', memo:'✈️' }, { title:'첫 해외', memo:'🌏' }],
+  fitness: [{ title:'시작일', memo:'💪' }, { title:'첫 목표 달성', memo:'🏆' }],
+  daily:   [],
+};
 
+function renderMilestones(milestones, category, targetId) {
   const items = (milestones && milestones.length > 0)
     ? milestones
-    : (defaults[category] || defaults['baby']);
+    : (MILESTONE_DEFAULTS[category] || MILESTONE_DEFAULTS['baby']);
 
-  const el = document.getElementById('milestoneList');
+  const el = document.getElementById(targetId || 'milestoneList');
   if (!el) return;
+
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
+    return;
+  }
 
   const sorted = [...items].sort((a, b) => {
     if (!a.milestone_date && !b.milestone_date) return 0;
@@ -724,50 +733,37 @@ function renderMilestones(milestones, category) {
   });
 
   const today = new Date();
-  const now   = new Date();
-
-  // 좌우 분리
   const leftItems  = sorted.filter((_, i) => i % 2 === 0);
   const rightItems = sorted.filter((_, i) => i % 2 === 1);
 
-  function cardHtml(m, side) {
+  function cardHtml(m) {
     const done    = m.milestone_date && new Date(m.milestone_date) <= today;
-    const isDday  = m.milestone_date && !done;
     const diffDay = m.milestone_date
-      ? Math.ceil((new Date(m.milestone_date) - now) / 86400000)
+      ? Math.ceil((new Date(m.milestone_date) - today) / 86400000)
       : null;
-    const isNext  = isDday && diffDay !== null && diffDay <= 30;
-
-    const dotClass  = done ? 'tl-dot done' : isNext ? 'tl-dot highlight' : 'tl-dot';
+    const isNext  = !done && diffDay !== null && diffDay <= 30;
+    const dotClass   = done ? 'tl-dot done' : isNext ? 'tl-dot highlight' : 'tl-dot';
     const badgeClass = done ? 'timeline-badge' : isNext ? 'timeline-badge dday' : 'timeline-badge pending';
-    const badgeText  = done ? '완료' : isNext ? `D-${diffDay}` : '예정';
+    const badgeText  = done ? '완료' : isNext && diffDay > 0 ? `D-${diffDay}` : isNext && diffDay === 0 ? 'D-DAY' : '예정';
     const cardClass  = isNext ? 'timeline-card dday' : 'timeline-card';
     const iconBg     = isNext ? 'background:#FEF3DC;' : '';
     const titleStyle = isNext ? 'color:var(--brown);' : '';
-
-    return `
-      <div class="${cardClass}">
-        <div class="${dotClass}"></div>
-        <div class="timeline-icon" style="${iconBg}">${m.memo || '⭐'}</div>
-        <div class="timeline-info">
-          <div class="timeline-title" style="${titleStyle}">${m.title}</div>
-          <div class="timeline-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div>
-          <span class="${badgeClass}">${badgeText}</span>
-        </div>
-      </div>`;
+    return `<div class="${cardClass}"><div class="${dotClass}"></div><div class="timeline-icon" style="${iconBg}">${m.memo || '⭐'}</div><div class="timeline-info"><div class="timeline-title" style="${titleStyle}">${m.title}</div><div class="timeline-date">${m.milestone_date ? formatDate(m.milestone_date) : '기록 예정'}</div><span class="${badgeClass}">${badgeText}</span></div></div>`;
   }
 
-  el.innerHTML = `
-    <div class="tl-grid">
-      <div class="tl-left-col">
-        ${leftItems.map(m => cardHtml(m, 'left')).join('')}
-      </div>
-      <div class="tl-center-line"></div>
-      <div class="tl-right-col">
-        ${rightItems.map(m => cardHtml(m, 'right')).join('')}
-      </div>
-    </div>
-  `;
+  el.innerHTML = `<div class="tl-grid"><div class="tl-left-col">${leftItems.map(m => cardHtml(m)).join('')}</div><div class="tl-center-line"></div><div class="tl-right-col">${rightItems.map(m => cardHtml(m)).join('')}</div></div>`;
+}
+
+function renderMilestonesHome(milestones, category) {
+  const items = (milestones && milestones.length > 0)
+    ? milestones
+    : (MILESTONE_DEFAULTS[category] || []);
+  const today   = new Date();
+  const done    = items.filter(m => m.milestone_date && new Date(m.milestone_date) <= today)
+    .sort((a, b) => new Date(b.milestone_date) - new Date(a.milestone_date)).slice(0, 2);
+  const pending = items.filter(m => !m.milestone_date || new Date(m.milestone_date) > today).slice(0, 2);
+  const preview = [...done, ...pending].slice(0, 3);
+  renderMilestones(preview.length ? preview : items.slice(0, 3), category, 'homeMilestoneList');
 }
 
 // 홈탭용: 완료된 것 최신순 2개
