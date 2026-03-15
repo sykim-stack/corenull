@@ -67,31 +67,29 @@
     .home-more-btn:hover{text-decoration:underline;}
 
 /* ── 타임라인 ── */
-.tl-grid { display: grid; grid-template-columns: 1fr 2px 1fr; position: relative; }
-.tl-center-line { background: linear-gradient(to bottom, var(--peach), var(--mint)); width: 2px; }
-.tl-left-col { display: flex; flex-direction: column; padding-right: 24px; }
-.tl-right-col { display: flex; flex-direction: column; padding-left: 24px; padding-top: 80px; }
+.tl-grid { display:grid; grid-template-columns:1fr 2px 1fr; }
+.tl-center-line { background:linear-gradient(to bottom,var(--peach),var(--mint)); }
+.tl-left-col { display:flex; flex-direction:column; padding-right:24px; }
+.tl-right-col { display:flex; flex-direction:column; padding-left:24px; padding-top:80px; }
 .timeline-card {
-    background: white; border: 1px solid rgba(139,94,60,.1);
-    border-radius: 16px; padding: 14px 18px;
-    display: flex; align-items: center; gap: 14px;
-    margin-bottom: 16px; position: relative;
+    background:white; border:1px solid rgba(139,94,60,.1);
+    border-radius:16px; padding:14px 18px;
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:16px; position:relative;
 }
-.timeline-card.dday { border-color: var(--gold); }
-.timeline-icon { font-size: 24px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--warm); border-radius: 12px; flex-shrink: 0; }
-.timeline-info { flex: 1; }
-.timeline-title { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 2px; }
-.timeline-date { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-.timeline-badge { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 10px; background: var(--mint); color: white; letter-spacing: 1px; }
-.timeline-badge.pending { background: var(--warm); color: var(--muted); }
-.timeline-badge.dday { background: var(--gold); color: white; }
-.timeline-photo { width: 60px; height: 60px; border-radius: 10px; background: #EDE3D5; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; overflow: hidden; }
-.timeline-photo img { width: 100%; height: 100%; object-fit: cover; }
-.tl-dot { position: absolute; right: -29px; top: 18px; width: 12px; height: 12px; border-radius: 50%; background: var(--peach); border: 2px solid white; box-shadow: 0 2px 6px rgba(139,94,60,.2); z-index: 2; }
-.tl-dot.done { background: var(--mint); }
-.tl-dot.highlight { background: var(--gold); width: 16px; height: 16px; right: -31px; top: 16px; box-shadow: 0 0 0 4px rgba(201,168,76,.2); }
-.tl-right-col .tl-dot { left: -29px; right: auto; }
-.tl-right-col .tl-dot.highlight { left: -31px; right: auto; }
+.timeline-card.dday { border-color:var(--gold); }
+.timeline-icon { font-size:24px; width:48px; height:48px; display:flex; align-items:center; justify-content:center; background:var(--warm); border-radius:12px; flex-shrink:0; }
+.timeline-info { flex:1; }
+.timeline-title { font-size:15px; font-weight:600; color:var(--dark); margin-bottom:2px; }
+.timeline-date { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.timeline-badge { display:inline-block; font-size:10px; padding:3px 10px; border-radius:10px; background:var(--mint); color:white; letter-spacing:1px; }
+.timeline-badge.pending { background:var(--warm); color:var(--muted); }
+.timeline-badge.dday { background:var(--gold); color:white; }
+.tl-dot { position:absolute; right:-29px; top:18px; width:12px; height:12px; border-radius:50%; background:var(--peach); border:2px solid white; box-shadow:0 2px 6px rgba(139,94,60,.2); z-index:2; }
+.tl-dot.done { background:var(--mint); }
+.tl-dot.highlight { background:var(--gold); width:16px; height:16px; right:-31px; top:16px; box-shadow:0 0 0 4px rgba(201,168,76,.2); }
+.tl-right-col .tl-dot { left:-29px; right:auto; }
+.tl-right-col .tl-dot.highlight { left:-31px; right:auto; }
 
     /* ── 사진첩탭: 전체 갤러리 ── */
     .gallery-bg{background:var(--warm);padding:40px 0 60px;}
@@ -339,7 +337,7 @@
      탭 3: 성장
      ──────────────────────────────────────── -->
 <div class="tab-content" id="tab-growth">
-  <div class="section">
+  <div class="section" style="max-width:1280px;">
     <div class="section-header">
       <div class="section-tag">GROWTH</div>
       <div class="section-title">성장 기록 🌱</div>
@@ -352,7 +350,7 @@
      탭 4: 메시지
      ──────────────────────────────────────── -->
 <div class="tab-content" id="tab-message">
-  <div class="section">
+  <div class="section" style="max-width:1280px;">
     <div class="section-header">
       <div class="section-tag">MESSAGES</div>
       <div class="section-title">메시지 💌</div>
@@ -384,7 +382,7 @@
      탭 5: 영상
      ──────────────────────────────────────── -->
 <div class="tab-content" id="tab-video">
-  <div class="section">
+  <div class="section" style="max-width:1280px;">
     <div class="section-header">
       <div class="section-tag">VIDEO</div>
       <div class="section-title">영상 모음 🎥</div>
@@ -695,26 +693,18 @@ function renderHomePreview(media) {
 // ═══════════════════════════════════════════
 // 8. 마일스톤
 // ═══════════════════════════════════════════
-function renderMilestones(milestones, category) {
-  const defaults = {
-    baby: [
-      { title:'태어난 날',    memo:'⭐', milestone_date:'2025-12-22' },
-      { title:'첫 미소',      memo:'😊', milestone_date:null },
-      { title:'백일',         memo:'🎂', milestone_date:'2026-03-31' },
-      { title:'첫 뒤집기',    memo:'🔄', milestone_date:null },
-      { title:'예방접종',     memo:'💉', milestone_date:null },
-      { title:'첫 걸음마',    memo:'👣', milestone_date:null },
-      { title:'첫 단어',      memo:'💬', milestone_date:null },
-      { title:'첫 번째 생일', memo:'🎁', milestone_date:'2026-12-22' },
-    ],
-  };
-
+ffunction renderMilestones(milestones, category, targetId) {
   const items = (milestones && milestones.length > 0)
     ? milestones
-    : (defaults[category] || defaults['baby']);
+    : (MILESTONE_DEFAULTS[category] || MILESTONE_DEFAULTS['baby']);
 
-  const el = document.getElementById('milestoneList');
+  const el = document.getElementById(targetId);
   if (!el) return;
+
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>기록을 추가해보세요</p></div>`;
+    return;
+  }
 
   const sorted = [...items].sort((a, b) => {
     if (!a.milestone_date && !b.milestone_date) return 0;
@@ -724,23 +714,19 @@ function renderMilestones(milestones, category) {
   });
 
   const today = new Date();
-  const now   = new Date();
-
-  // 좌우 분리
   const leftItems  = sorted.filter((_, i) => i % 2 === 0);
   const rightItems = sorted.filter((_, i) => i % 2 === 1);
 
-  function cardHtml(m, side) {
+  function cardHtml(m) {
     const done    = m.milestone_date && new Date(m.milestone_date) <= today;
-    const isDday  = m.milestone_date && !done;
     const diffDay = m.milestone_date
-      ? Math.ceil((new Date(m.milestone_date) - now) / 86400000)
+      ? Math.ceil((new Date(m.milestone_date) - today) / 86400000)
       : null;
-    const isNext  = isDday && diffDay !== null && diffDay <= 30;
+    const isNext  = !done && diffDay !== null && diffDay <= 30;
 
-    const dotClass  = done ? 'tl-dot done' : isNext ? 'tl-dot highlight' : 'tl-dot';
+    const dotClass   = done ? 'tl-dot done' : isNext ? 'tl-dot highlight' : 'tl-dot';
     const badgeClass = done ? 'timeline-badge' : isNext ? 'timeline-badge dday' : 'timeline-badge pending';
-    const badgeText  = done ? '완료' : isNext ? `D-${diffDay}` : '예정';
+    const badgeText  = done ? '완료' : isNext && diffDay > 0 ? `D-${diffDay}` : isNext && diffDay === 0 ? 'D-DAY' : '예정';
     const cardClass  = isNext ? 'timeline-card dday' : 'timeline-card';
     const iconBg     = isNext ? 'background:#FEF3DC;' : '';
     const titleStyle = isNext ? 'color:var(--brown);' : '';
@@ -759,15 +745,10 @@ function renderMilestones(milestones, category) {
 
   el.innerHTML = `
     <div class="tl-grid">
-      <div class="tl-left-col">
-        ${leftItems.map(m => cardHtml(m, 'left')).join('')}
-      </div>
+      <div class="tl-left-col">${leftItems.map(m => cardHtml(m)).join('')}</div>
       <div class="tl-center-line"></div>
-      <div class="tl-right-col">
-        ${rightItems.map(m => cardHtml(m, 'right')).join('')}
-      </div>
-    </div>
-  `;
+      <div class="tl-right-col">${rightItems.map(m => cardHtml(m)).join('')}</div>
+    </div>`;
 }
 
 // 홈탭용: 완료된 것 최신순 2개
