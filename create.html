@@ -14,118 +14,126 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     body{background:var(--cream);color:var(--text);font-family:'Gowun Dodum',serif;min-height:100vh;}
 
-    .hero{min-height:40vh;background:linear-gradient(160deg,#FDE8D8,#F7D4C0,#EFBFA8);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;}
+    /* ── 히어로 ── */
+    .hero{min-height:35vh;background:linear-gradient(160deg,#FDE8D8,#F7D4C0,#EFBFA8);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;position:relative;overflow:hidden;}
+    .hero-circle{position:absolute;border-radius:50%;opacity:.12;}
+    .hero-circle:nth-child(1){width:300px;height:300px;background:var(--pink);top:-80px;right:-80px;}
+    .hero-circle:nth-child(2){width:200px;height:200px;background:var(--mint);bottom:-40px;left:-40px;}
     .hero-badge{background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.6);border-radius:30px;padding:8px 20px;font-size:11px;letter-spacing:3px;color:var(--brown);margin-bottom:20px;}
     .hero-title{font-family:'Noto Serif KR',serif;font-size:32px;font-weight:700;color:var(--dark);margin-bottom:10px;}
     .hero-sub{font-size:13px;color:var(--brown);opacity:.8;letter-spacing:1px;}
 
-    .form-wrap{max-width:480px;margin:0 auto;padding:40px 20px 80px;}
+    /* ── 폼 ── */
+    .form-wrap{max-width:480px;margin:0 auto;padding:48px 24px 80px;}
 
-    /* 카테고리 선택 */
-    .category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
-    .cat-btn{background:white;border:2px solid rgba(139,94,60,.15);border-radius:16px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .2s;}
-    .cat-btn:hover{border-color:var(--brown);}
-    .cat-btn.active{border-color:var(--brown);background:var(--warm);}
-    .cat-btn .cat-icon{font-size:28px;margin-bottom:6px;}
-    .cat-btn .cat-label{font-size:12px;color:var(--text);}
+    .section-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;margin-top:32px;}
+    .section-label:first-child{margin-top:0;}
 
-    /* 입력 필드 */
-    .field{margin-bottom:20px;}
-    .field label{display:block;font-size:12px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
-    .field input,.field textarea,.field select{
+    .field{margin-bottom:16px;}
+    .field input,.field textarea{
       width:100%;background:white;border:1px solid rgba(139,94,60,.15);
-      border-radius:14px;padding:14px 16px;font-family:'Gowun Dodum',serif;
-      font-size:15px;color:var(--dark);outline:none;transition:border-color .2s;
+      border-radius:14px;padding:16px 18px;
+      font-family:'Gowun Dodum',serif;font-size:15px;color:var(--dark);
+      outline:none;transition:border-color .2s;resize:none;
     }
     .field input:focus,.field textarea:focus{border-color:var(--brown);}
-    .field .hint{font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:1px;}
+    .field input::placeholder,.field textarea::placeholder{color:var(--muted);}
+    .field .hint{font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:1px;padding-left:4px;}
 
-    /* 섹션 타이틀 */
-    .section-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;margin-top:32px;}
+    /* ── 공개 여부 토글 ── */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;background:white;border:1px solid rgba(139,94,60,.15);border-radius:14px;padding:16px 18px;}
+    .toggle-label{font-size:14px;color:var(--dark);}
+    .toggle-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+    .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
+    .toggle-switch input{opacity:0;width:0;height:0;}
+    .toggle-track{position:absolute;inset:0;background:rgba(139,94,60,.2);border-radius:12px;cursor:pointer;transition:background .2s;}
+    .toggle-switch input:checked + .toggle-track{background:var(--mint);}
+    .toggle-track::after{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .2s;}
+    .toggle-switch input:checked + .toggle-track::after{transform:translateX(20px);}
 
-    /* 제출 버튼 */
+    /* ── 제출 버튼 ── */
     .submit-btn{width:100%;background:var(--brown);color:white;border:none;border-radius:16px;padding:18px;font-family:'Gowun Dodum',serif;font-size:16px;letter-spacing:2px;cursor:pointer;transition:background .2s;margin-top:32px;}
     .submit-btn:hover{background:var(--dark);}
     .submit-btn:disabled{background:var(--muted);cursor:not-allowed;}
 
-    /* 결과 카드 */
-    .result-card{display:none;background:white;border:1px solid rgba(139,94,60,.15);border-radius:24px;padding:28px;margin-top:32px;}
-    .result-card.show{display:block;}
-    .result-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:600;color:var(--dark);margin-bottom:6px;text-align:center;}
-    .result-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px;}
-    .result-row{background:var(--warm);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
-    .result-row-label{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
-    .result-row-value{font-size:13px;color:var(--dark);word-break:break-all;}
-    .copy-btn{background:none;border:1px solid rgba(139,94,60,.2);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--brown);cursor:pointer;float:right;margin-top:-2px;font-family:'Gowun Dodum',serif;}
-    .result-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
-    .result-btn{display:block;text-align:center;padding:14px;border-radius:14px;font-size:14px;font-family:'Gowun Dodum',serif;cursor:pointer;text-decoration:none;}
-    .result-btn.primary{background:var(--brown);color:white;border:none;}
-    .result-btn.secondary{background:none;border:1px solid rgba(139,94,60,.2);color:var(--brown);}
+    /* ── 결과 카드 ── */
+    .result-card{display:none;background:white;border:1px solid rgba(139,94,60,.15);border-radius:24px;padding:28px 24px;margin-top:32px;}
+    .result-card.show{display:block;animation:fadeUp .4s ease;}
+    .result-emoji{font-size:48px;text-align:center;margin-bottom:12px;}
+    .result-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:600;color:var(--dark);text-align:center;margin-bottom:6px;}
+    .result-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.6;}
 
+    .result-row{background:var(--warm);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+    .result-row-label{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;}
+    .result-row-value{font-size:13px;color:var(--dark);word-break:break-all;line-height:1.5;}
+    .copy-btn{float:right;background:none;border:1px solid rgba(139,94,60,.2);border-radius:8px;padding:3px 10px;font-size:11px;color:var(--brown);cursor:pointer;font-family:'Gowun Dodum',serif;margin-top:-2px;}
+    .copy-btn:hover{background:var(--peach);}
+
+    .result-warn{background:#FFF8E7;border:1px solid #F0D080;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:12px;color:#8B6914;line-height:1.7;}
+
+    .result-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+    .result-btn{display:block;text-align:center;padding:14px;border-radius:14px;font-size:14px;font-family:'Gowun Dodum',serif;cursor:pointer;text-decoration:none;transition:all .2s;}
+    .result-btn.primary{background:var(--brown);color:white;border:none;}
+    .result-btn.primary:hover{background:var(--dark);}
+    .result-btn.secondary{background:none;border:1px solid rgba(139,94,60,.2);color:var(--brown);}
+    .result-btn.secondary:hover{background:var(--warm);}
+    .result-btn.chat{background:#0068FF;color:white;border:none;}
+    .result-btn.chat:hover{opacity:.9;}
+
+    /* ── 토스트 ── */
     .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--dark);color:white;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
   </style>
 </head>
 <body>
 
 <div class="hero">
+  <div class="hero-circle"></div>
+  <div class="hero-circle"></div>
   <div class="hero-badge">🏠 CoreNull</div>
   <div class="hero-title">새 집 만들기</div>
-  <div class="hero-sub">소중한 기억을 담을 공간을 만들어요</div>
+  <div class="hero-sub">소중한 기억을 담을 나만의 공간</div>
 </div>
 
 <div class="form-wrap">
 
-  <!-- 카테고리 -->
-  <div class="section-label">어떤 집인가요?</div>
-  <div class="category-grid">
-    <div class="cat-btn active" data-cat="baby" onclick="selectCat(this)">
-      <div class="cat-icon">👶</div>
-      <div class="cat-label">아기</div>
-    </div>
-    <div class="cat-btn" data-cat="pet" onclick="selectCat(this)">
-      <div class="cat-icon">🐾</div>
-      <div class="cat-label">반려동물</div>
-    </div>
-    <div class="cat-btn" data-cat="travel" onclick="selectCat(this)">
-      <div class="cat-icon">✈️</div>
-      <div class="cat-label">여행</div>
-    </div>
-    <div class="cat-btn" data-cat="fitness" onclick="selectCat(this)">
-      <div class="cat-icon">💪</div>
-      <div class="cat-label">피트니스</div>
-    </div>
-    <div class="cat-btn" data-cat="daily" onclick="selectCat(this)">
-      <div class="cat-icon">🏠</div>
-      <div class="cat-label">일상</div>
-    </div>
-  </div>
-
-  <!-- 이름 -->
   <div class="section-label">집 이름</div>
   <div class="field">
-    <input type="text" id="houseName" placeholder="예: 김하준, 뭉치, 제주 여행" maxlength="20">
-    <div class="hint">* 나중에 URL이 됩니다 (예: /김하준-ab3c)</div>
+    <input type="text" id="houseName" placeholder="예: 김하준의 집, 우리 가족" maxlength="20">
+    <div class="hint">* URL에 사용됩니다 (예: corenull.vercel.app/김하준-ab3c)</div>
   </div>
 
-  <!-- 설명 -->
+  <div class="section-label">한줄 소개 (선택)</div>
   <div class="field">
-    <input type="text" id="houseDesc" placeholder="한 줄 소개 (선택)" maxlength="40">
+    <input type="text" id="houseDesc" placeholder="예: 하준이의 소중한 성장 기록" maxlength="40">
   </div>
 
-  <!-- 날짜 (baby일 때만 표시) -->
-  <div id="birthDateWrap" class="field">
-    <label>태어난 날</label>
-    <input type="date" id="birthDate">
+  <div class="section-label">공개 설정</div>
+  <div class="toggle-row">
+    <div>
+      <div class="toggle-label">공개 집</div>
+      <div class="toggle-sub">링크가 있으면 누구나 방문 가능</div>
+    </div>
+    <label class="toggle-switch">
+      <input type="checkbox" id="isPublic" checked>
+      <div class="toggle-track"></div>
+    </label>
   </div>
 
-  <!-- 제출 -->
   <button class="submit-btn" id="submitBtn" onclick="createHouse()">집 만들기 🏠</button>
 
   <!-- 결과 카드 -->
   <div class="result-card" id="resultCard">
-    <div class="result-title" id="resultTitle">🎉 집이 만들어졌어요!</div>
-    <div class="result-sub">아래 링크를 저장해두세요</div>
+    <div class="result-emoji">🎉</div>
+    <div class="result-title" id="resultTitle">집이 만들어졌어요!</div>
+    <div class="result-sub">아래 링크를 꼭 저장해두세요<br>관리자 링크는 다시 확인할 수 없어요</div>
+
+    <div class="result-warn">
+      ⚠️ 관리자 링크는 지금만 확인 가능해요.<br>
+      반드시 복사해서 저장해두세요!
+    </div>
 
     <div class="result-row">
       <div class="result-row-label">방문자 링크</div>
@@ -134,7 +142,7 @@
     </div>
 
     <div class="result-row">
-      <div class="result-row-label">관리자 링크 (본인만 보관)</div>
+      <div class="result-row-label">관리자 링크 🔑</div>
       <button class="copy-btn" onclick="copyText('adminUrl')">복사</button>
       <div class="result-row-value" id="adminUrl"></div>
     </div>
@@ -147,7 +155,8 @@
 
     <div class="result-actions">
       <a class="result-btn primary" id="goAdminBtn" href="#">관리자로 입장 →</a>
-      <a class="result-btn secondary" id="goChatBtn" href="#" style="display:none">CoreChat으로 공유 →</a>
+      <a class="result-btn secondary" id="goGuestBtn" href="#">방문자 페이지 보기</a>
+      <a class="result-btn chat" id="goChatBtn" href="#" style="display:none">CoreChat으로 공유 →</a>
     </div>
   </div>
 
@@ -156,91 +165,84 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  let selectedCat = 'baby';
-
-  function selectCat(el) {
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    selectedCat = el.dataset.cat;
-    // 날짜 필드: baby만 표시
-    document.getElementById('birthDateWrap').style.display =
-      selectedCat === 'baby' ? 'block' : 'none';
+function getDeviceId() {
+  let id = localStorage.getItem('cr_device_id');
+  if (!id) {
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+    localStorage.setItem('cr_device_id', id);
   }
+  return id;
+}
 
-  // device_id
-  function getDeviceId() {
-    let id = localStorage.getItem('cr_device_id');
-    if (!id) {
-      id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-      localStorage.setItem('cr_device_id', id);
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function copyText(elId) {
+  const text = document.getElementById(elId).textContent.trim();
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('복사됐어요 📋'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('복사됐어요 📋');
+    });
+}
+
+async function createHouse() {
+  const name = document.getElementById('houseName').value.trim();
+  if (!name) { showToast('집 이름을 입력해주세요'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '만드는 중... ⏳';
+
+  try {
+    const res = await fetch('/api/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        description: document.getElementById('houseDesc').value.trim() || null,
+        is_public:   document.getElementById('isPublic').checked,
+        device_id:   getDeviceId(),
+      })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || '생성 실패');
+
+    // 결과 표시
+    const base     = 'https://corenull.vercel.app';
+    const guestUrl = base + data.house_url;
+    const adminUrl = base + data.admin_url;
+
+    document.getElementById('guestUrl').textContent   = guestUrl;
+    document.getElementById('adminUrl').textContent   = adminUrl;
+    document.getElementById('goAdminBtn').href        = data.admin_url;
+    document.getElementById('goGuestBtn').href        = data.house_url;
+    document.getElementById('resultTitle').textContent = `🎉 ${name} 집이 만들어졌어요!`;
+
+    if (data.invite_code) {
+      document.getElementById('chatCode').textContent     = data.invite_code;
+      document.getElementById('chatRow').style.display    = 'block';
+      document.getElementById('goChatBtn').href           = data.chat_url;
+      document.getElementById('goChatBtn').style.display  = 'block';
     }
-    return id;
+
+    document.getElementById('resultCard').classList.add('show');
+    document.getElementById('resultCard').scrollIntoView({ behavior:'smooth' });
+
+  } catch(e) {
+    showToast('오류: ' + e.message);
+    btn.disabled    = false;
+    btn.textContent = '집 만들기 🏠';
   }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-  }
-
-  function copyText(elId) {
-    const text = document.getElementById(elId).textContent;
-    navigator.clipboard.writeText(text)
-      .then(() => showToast('복사됐어요 📋'))
-      .catch(() => showToast('복사 실패'));
-  }
-
-  async function createHouse() {
-    const name = document.getElementById('houseName').value.trim();
-    if (!name) { showToast('집 이름을 입력해주세요'); return; }
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = '만드는 중... ⏳';
-
-    try {
-      const res = await fetch('/api/invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          category:    selectedCat,
-          birth_date:  document.getElementById('birthDate').value || null,
-          description: document.getElementById('houseDesc').value.trim() || null,
-          device_id:   getDeviceId(),
-        })
-      });
-
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || '생성 실패');
-
-      // 결과 표시
-      const base = 'https://corenull.vercel.app';
-      const guestUrl = base + data.house_url;
-      const adminUrl = base + data.admin_url;
-
-      document.getElementById('guestUrl').textContent = guestUrl;
-      document.getElementById('adminUrl').textContent = adminUrl;
-      document.getElementById('goAdminBtn').href = data.admin_url;
-
-      if (data.invite_code) {
-        document.getElementById('chatCode').textContent = data.invite_code;
-        document.getElementById('chatRow').style.display = 'block';
-        document.getElementById('goChatBtn').href = data.chat_url;
-        document.getElementById('goChatBtn').style.display = 'block';
-      }
-
-      document.getElementById('resultTitle').textContent =
-        `🎉 ${name} 집이 만들어졌어요!`;
-      document.getElementById('resultCard').classList.add('show');
-      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
-
-    } catch(e) {
-      showToast('오류: ' + e.message);
-      btn.disabled = false;
-      btn.textContent = '집 만들기 🏠';
-    }
-  }
+}
 </script>
 </body>
 </html>
