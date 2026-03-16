@@ -98,6 +98,12 @@
 </div>
 
 <div class="form-wrap">
+<!-- 집 이름 위에 추가 -->
+<div class="section-label">내 닉네임</div>
+<div class="field">
+  <input type="text" id="userNickname" placeholder="예: 상열이, 아빠" maxlength="10">
+  <div class="hint">* 채팅방에서 사용할 이름 (나중에 변경 가능)</div>
+</div>
 
   <div class="section-label">집 이름</div>
   <div class="field">
@@ -210,6 +216,7 @@ async function createHouse() {
         description: document.getElementById('houseDesc').value.trim() || null,
         is_public:   document.getElementById('isPublic').checked,
         device_id:   getDeviceId(),
+        nickname:    document.getElementById('userNickname').value.trim() || null,  // 추가
       })
     });
 
@@ -242,6 +249,9 @@ async function createHouse() {
     btn.disabled    = false;
     btn.textContent = '집 만들기 🏠';
   }
+  // createHouse() 성공 후 추가
+const nickname = document.getElementById('userNickname').value.trim();
+if (nickname) localStorage.setItem('cr_nickname', nickname);
 }
 </script>
 </body>

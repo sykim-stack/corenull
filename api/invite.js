@@ -1,6 +1,6 @@
 // ============================================================
-// CoreNull | api/invite.js
-// 집 생성 + CoreChat 방 자동생성 + owner_key 발급
+// CoreNull | api/invite.js v1.1
+// 집 생성 + CoreChat 방 자동생성 + 임시 아이디 연동
 // ============================================================
 
 export default async function handler(req, res) {
@@ -10,63 +10,67 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { name, category, birth_date, description, device_id } = req.body;
-  if (!name || !category || !device_id)
-    return res.status(400).json({ error: 'name, category, device_id 필수' });
+  const { name, description, is_public, device_id, nickname } = req.body;
+  if (!name || !device_id)
+    return res.status(400).json({ error: 'name, device_id 필수' });
 
   const key     = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const baseUrl = process.env.SUPABASE_URL;
+
   const headers = {
     'apikey':          key,
     'Authorization':   `Bearer ${key}`,
     'Content-Type':    'application/json',
-    'Accept-Profile':  'corenull',
-    'Content-Profile': 'corenull',
     'Prefer':          'return=representation'
   };
+  const cnHeaders = {
+    ...headers,
+    'Accept-Profile':  'corenull',
+    'Content-Profile': 'corenull',
+  };
 
-  // ── 1. slug 생성 (이름 기반 + 랜덤 4자리) ──
-  const slugBase = name
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣]/g, '')
-    .slice(0, 10);
+  // ── 1. core_users 닉네임 업데이트 ──
+  if (nickname) {
+    try {
+      await fetch(`${baseUrl}/rest/v1/core_users?device_id=eq.${device_id}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ nickname })
+      });
+    } catch(e) {
+      console.error('[invite] nickname 업데이트 실패 (무시):', e);
+    }
+  }
+
+  // ── 2. slug 생성 ──
+  const slugBase   = name.toLowerCase().replace(/[^a-z0-9가-힣]/g, '').slice(0, 10);
   const slugSuffix = Math.random().toString(36).slice(2, 6);
-  const slug = `${slugBase}-${slugSuffix}`;
+  const slug       = `${slugBase}-${slugSuffix}`;
 
-  // ── 2. owner_key 생성 (관리자 접근용) ──
+  // ── 3. owner_key 생성 ──
   const owner_key = Math.random().toString(36).slice(2, 10) +
                     Math.random().toString(36).slice(2, 10);
-
-  // ── 3. 백일 계산 (baby 카테고리) ──
-  let hundred_date = null;
-  if (category === 'baby' && birth_date) {
-    const bd = new Date(birth_date);
-    bd.setDate(bd.getDate() + 99); // 태어난 날 포함 100일
-    hundred_date = bd.toISOString().split('T')[0];
-  }
 
   // ── 4. houses INSERT ──
   let house;
   try {
     const houseRes = await fetch(`${baseUrl}/rest/v1/houses`, {
       method: 'POST',
-      headers,
+      headers: cnHeaders,
       body: JSON.stringify({
         name,
         slug,
-        category,
         description:  description || null,
-        birth_date:   birth_date  || null,
-        hundred_date,
         owner_key,
-        is_public:    true,
-        house_type:   category === 'baby' ? 'baby' : 'personal',
+        is_public:    is_public !== false,
+        house_type:   'family',
+        category:     'daily',
       })
     });
     const houseData = await houseRes.json();
     if (!houseRes.ok) throw new Error(JSON.stringify(houseData));
     house = Array.isArray(houseData) ? houseData[0] : houseData;
-  } catch (e) {
+  } catch(e) {
     console.error('[invite] house INSERT 실패:', e);
     return res.status(500).json({ error: '집 생성 실패', detail: e.message });
   }
@@ -75,48 +79,38 @@ export default async function handler(req, res) {
   let chatRoom = null;
   try {
     const invite_code = Math.random().toString(36).slice(2, 8).toUpperCase();
-    const chatRes = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/chat_rooms`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey':        key,
-          'Authorization': `Bearer ${key}`,
-          'Content-Type':  'application/json',
-          'Prefer':        'return=representation'
-        },
-        body: JSON.stringify({
-          invite_code,
-          room_type:        'family',
-          owner_device_id:  device_id,
-          space_id:         house.id,
-        })
-      }
-    );
+    const chatRes = await fetch(`${baseUrl}/rest/v1/chat_rooms`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        invite_code,
+        room_type:       'family',
+        owner_device_id: device_id,
+        space_id:        house.id,
+      })
+    });
     const chatData = await chatRes.json();
     if (chatRes.ok) {
       chatRoom = Array.isArray(chatData) ? chatData[0] : chatData;
-
-      // ── 6. houses.space_id 연결 ──
+      // houses.space_id 연결
       await fetch(`${baseUrl}/rest/v1/houses?id=eq.${house.id}`, {
         method: 'PATCH',
-        headers,
+        headers: cnHeaders,
         body: JSON.stringify({ space_id: chatRoom.id })
       });
     }
-  } catch (e) {
+  } catch(e) {
     console.error('[invite] CoreChat 방 생성 실패 (무시):', e);
-    // 집은 생성됐으니 실패해도 계속 진행
   }
 
   return res.status(200).json({
-    success:    true,
-    house_id:   house.id,
+    success:     true,
+    house_id:    house.id,
     slug,
     owner_key,
-    house_url:  `/${slug}`,
-    admin_url:  `/${slug}?owner=${owner_key}`,
+    house_url:   `/${slug}`,
+    admin_url:   `/${slug}?owner=${owner_key}`,
     invite_code: chatRoom?.invite_code || null,
-    chat_url:   chatRoom ? `https://corering.vercel.app/?room=${chatRoom.invite_code}` : null,
+    chat_url:    chatRoom ? `https://corering.vercel.app/?room=${chatRoom.invite_code}` : null,
   });
 }
