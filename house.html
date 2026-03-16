@@ -269,16 +269,57 @@
 <!-- ── 탭 네비게이션 ── -->
 <nav class="tab-nav">
   <div class="tab-inner">
-    <button class="tab-btn active" onclick="switchTab('home')"><span class="tab-icon">🏠</span>홈</button>
+    <button class="tab-btn active" onclick="switchTab('lobby')"><span class="tab-icon">🛋️</span>거실</button>
+    <button class="tab-btn" onclick="switchTab('home')"><span class="tab-icon">👶</span>하준의 방</button>
     <button class="tab-btn" onclick="switchTab('gallery')"><span class="tab-icon">📷</span>사진첩</button>
     <button class="tab-btn" onclick="switchTab('growth')"><span class="tab-icon">🌱</span>성장</button>
-    <button class="tab-btn" onclick="switchTab('message')"><span class="tab-icon">💌</span>메시지</button>
     <button class="tab-btn" onclick="switchTab('video')"><span class="tab-icon">🎬</span>영상</button>
   </div>
 </nav>
 
-<!-- 탭 1: 홈 -->
-<div class="tab-content active" id="tab-home">
+<!-- 탭 1: 거실 (기존 홈+메시지 통합) -->
+<div class="tab-content active" id="tab-lobby">
+
+  <!-- 공지 배너 -->
+  <div id="lobbyBanner" style="background:linear-gradient(135deg,#F9EDD8,#F5D9C0);border-bottom:1px solid rgba(139,94,60,.12);padding:16px 24px;display:flex;align-items:center;gap:14px;max-width:1280px;margin:0 auto;">
+    <div style="font-size:28px;">🎂</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:600;color:var(--brown);" id="bannerTitle">백일이 다가오고 있어요</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="bannerSub">소중한 순간을 함께 기록해요</div>
+    </div>
+    <div style="background:var(--brown);color:white;border-radius:20px;padding:6px 16px;font-size:12px;letter-spacing:1px;white-space:nowrap;" id="bannerBadge">D-15</div>
+  </div>
+
+  <!-- 방명록/메시지 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">GUESTBOOK</div>
+      <div class="section-title">방명록 💌</div>
+    </div>
+    <div class="feed-list" id="feedList"></div>
+    <div class="post-form">
+      <div class="post-form-title" id="postFormTitle">메시지를 남겨주세요</div>
+      <input type="text" id="postAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="ai-btn" id="msgAiKo" onclick="getMessageSuggestions('ko')">✨ 한국어 추천</button>
+        <button class="ai-btn" id="msgAiVi" onclick="getMessageSuggestions('vi')">✨ Gợi ý tiếng Việt</button>
+      </div>
+      <div class="ai-suggestions" id="msgSuggestions" style="display:none"></div>
+      <textarea id="postContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea>
+      <div class="post-form-actions">
+        <button class="post-photo-btn" onclick="document.getElementById('postPhotoInput').click()">📷</button>
+        <input type="file" id="postPhotoInput" accept="image/*" style="display:none" onchange="previewPostPhoto(this)">
+        <button class="post-submit" onclick="submitPost()">남기기</button>
+      </div>
+      <div id="postPhotoPreview" style="margin-top:10px;display:none">
+        <img id="postPhotoImg" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 탭 2: 하준의 방 (기존 홈) -->
+<div class="tab-content" id="tab-home">
   <div class="section" style="padding-bottom:20px">
     <div class="section-header">
       <div class="section-tag">RECENT</div>
@@ -297,7 +338,7 @@
   </div>
 </div>
 
-<!-- 탭 2: 사진첩 -->
+<!-- 탭 3: 사진첩 -->
 <div class="tab-content" id="tab-gallery">
   <div class="gallery-bg">
     <div class="section" style="padding-bottom:0">
@@ -310,7 +351,7 @@
   </div>
 </div>
 
-<!-- 탭 3: 성장 -->
+<!-- 탭 4: 성장 -->
 <div class="tab-content" id="tab-growth">
   <div class="section">
     <div class="section-header">
@@ -318,35 +359,6 @@
       <div class="section-title">성장 기록 🌱</div>
     </div>
     <div id="milestoneList"></div>
-  </div>
-</div>
-
-<!-- 탭 4: 메시지 -->
-<div class="tab-content" id="tab-message">
-  <div class="section">
-    <div class="section-header">
-      <div class="section-tag">MESSAGES</div>
-      <div class="section-title">메시지 💌</div>
-    </div>
-    <div class="feed-list" id="feedList"></div>
-    <div class="post-form">
-      <div class="post-form-title" id="postFormTitle">메시지를 남겨주세요</div>
-      <input type="text" id="postAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)">
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button class="ai-btn" id="msgAiKo" onclick="getMessageSuggestions('ko')">✨ 한국어 추천</button>
-        <button class="ai-btn" id="msgAiVi" onclick="getMessageSuggestions('vi')">✨ Gợi ý tiếng Việt</button>
-      </div>
-      <div class="ai-suggestions" id="msgSuggestions" style="display:none"></div>
-      <textarea id="postContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea>
-      <div class="post-form-actions">
-        <button class="post-photo-btn" onclick="document.getElementById('postPhotoInput').click()">📷</button>
-        <input type="file" id="postPhotoInput" accept="image/*" style="display:none" onchange="previewPostPhoto(this)">
-        <button class="post-submit" onclick="submitPost()">메시지 남기기</button>
-      </div>
-      <div id="postPhotoPreview" style="margin-top:10px;display:none">
-        <img id="postPhotoImg" style="width:100%;border-radius:12px;max-height:200px;object-fit:cover">
-      </div>
-    </div>
   </div>
 </div>
 
@@ -473,11 +485,10 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  const idx = ['home','gallery','growth','message','video'].indexOf(name);
+  const idx = ['lobby','home','gallery','growth','video'].indexOf(name);
   document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
 }
-
 // ── 유틸 ─────────────────────────────────────────────────────
 function resizeImage(file, maxWidth=1200) {
   return new Promise(resolve => {
@@ -542,6 +553,7 @@ async function loadData() {
     }
     await loadPosts();
     initDday(data.house);
+    initLobbyBanner(data.house);
   } catch(e) {
     console.error('loadData:', e);
     showToast('데이터를 불러오지 못했어요');
@@ -597,7 +609,26 @@ function initDday(house) {
     `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`
   ).join('');
 }
-
+// ── 거실 배너 ─────────────────────────────────────────────────
+function initLobbyBanner(house) {
+  if (!house.hundred_date) return;
+  const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
+  const badge = document.getElementById('bannerBadge');
+  const title = document.getElementById('bannerTitle');
+  const sub   = document.getElementById('bannerSub');
+  if (!badge) return;
+  if (diff > 0) {
+    badge.textContent = `D-${diff}`;
+    title.textContent = '백일이 다가오고 있어요 🎂';
+    sub.textContent   = `${house.name || '하준'}의 백일까지 ${diff}일 남았어요`;
+  } else if (diff === 0) {
+    badge.textContent = 'D-DAY 🎉';
+    title.textContent = '오늘이 백일이에요!';
+    sub.textContent   = '축하해요 🎂🎉';
+  } else {
+    document.getElementById('lobbyBanner').style.display = 'none';
+  }
+}
 // ── 홈탭 미리보기 ────────────────────────────────────────────
 function renderHomePreview(media) {
   const photos = media.filter(m => m.media_type === 'photo').slice(0, 6);
