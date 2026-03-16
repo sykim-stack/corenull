@@ -45,22 +45,25 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: '비공개 집입니다' });
   }
 
-  const [mediaRes, commentsRes, milestonesRes] = await Promise.all([
+  const [mediaRes, commentsRes, milestonesRes, roomsRes] = await Promise.all([
     fetch(`${baseUrl}/rest/v1/media?house_id=eq.${house.id}&status=eq.approved&order=created_at.desc`, { headers }),
     fetch(`${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&order=created_at.desc&limit=20`, { headers }),
-    fetch(`${baseUrl}/rest/v1/milestones?house_id=eq.${house.id}&order=milestone_date.asc`, { headers })
+    fetch(`${baseUrl}/rest/v1/milestones?house_id=eq.${house.id}&order=milestone_date.asc`, { headers }),
+    fetch(`${baseUrl}/rest/v1/rooms?house_id=eq.${house.id}&is_hidden=eq.false&order=order_num.asc`, { headers })
   ]);
-
-  const [media, comments, milestones] = await Promise.all([
+  
+  const [media, comments, milestones, rooms] = await Promise.all([
     mediaRes.json(),
     commentsRes.json(),
-    milestonesRes.json()
+    milestonesRes.json(),
+    roomsRes.json()
   ]);
-
+  
   return res.status(200).json({
     house,
     media:      Array.isArray(media)      ? media      : [],
     comments:   Array.isArray(comments)   ? comments   : [],
-    milestones: Array.isArray(milestones) ? milestones : []
+    milestones: Array.isArray(milestones) ? milestones : [],
+    rooms:      Array.isArray(rooms)      ? rooms      : []
   });
 }
