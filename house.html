@@ -58,6 +58,39 @@
     .section-tag{font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
     .section-title{font-family:'Noto Serif KR',serif;font-size:26px;font-weight:600;color:var(--dark);}
 
+    /* ── 거실 ── */
+    .lobby-banner{display:none;background:linear-gradient(135deg,#FDE8D8,#F5C6A8);border-bottom:1px solid rgba(139,94,60,.12);}
+    .lobby-banner-inner{max-width:1280px;margin:0 auto;padding:20px 40px;display:flex;align-items:center;gap:16px;}
+    .lobby-banner-emoji{font-size:36px;flex-shrink:0;}
+    .lobby-banner-text{flex:1;}
+    .lobby-banner-title{font-size:15px;font-weight:600;color:var(--brown);}
+    .lobby-banner-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+    .lobby-banner-badge{background:var(--brown);color:white;border-radius:24px;padding:8px 20px;font-family:'Noto Serif KR',serif;font-size:20px;font-weight:600;letter-spacing:2px;white-space:nowrap;}
+
+    .lobby-body{max-width:1280px;margin:0 auto;padding:40px 40px 0;}
+    .lobby-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .lobby-section-label{font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+    .lobby-section-title{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:600;color:var(--dark);}
+    .lobby-more-btn{background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:6px 16px;font-size:12px;color:var(--brown);cursor:pointer;font-family:'Gowun Dodum',serif;transition:all .2s;}
+    .lobby-more-btn:hover{background:var(--warm);}
+
+    .lobby-photo-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:40px;}
+    .lobby-photo-cell{aspect-ratio:1;border-radius:12px;overflow:hidden;cursor:pointer;background:#EDE3D5;}
+    .lobby-photo-cell img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+    .lobby-photo-cell:hover img{transform:scale(1.05);}
+
+    .lobby-milestone{display:none;margin-bottom:40px;}
+    .lobby-milestone-card{background:linear-gradient(135deg,#FEF3DC,#FDE8D8);border:1px solid rgba(201,168,76,.3);border-radius:20px;padding:20px 24px;display:flex;align-items:center;gap:16px;}
+    .lobby-milestone-icon{width:56px;height:56px;background:white;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;box-shadow:0 4px 12px rgba(139,94,60,.12);}
+    .lobby-milestone-info{flex:1;}
+    .lobby-milestone-name{font-size:16px;font-weight:600;color:var(--dark);margin-bottom:4px;}
+    .lobby-milestone-date{font-size:12px;color:var(--muted);}
+    .lobby-milestone-badge{background:var(--gold);color:white;border-radius:20px;padding:6px 16px;font-size:13px;font-weight:600;white-space:nowrap;}
+
+    .lobby-guestbook{max-width:1280px;margin:0 auto;padding:0 40px 60px;}
+    .lobby-guestbook-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+    .lobby-guestbook-count{font-size:12px;color:var(--muted);}
+
     /* ── 홈탭: 최근사진 미리보기 ── */
     .home-gallery-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:1280px;margin:0 auto 8px;padding:0 40px;}
     .home-gallery-preview .photo-item{aspect-ratio:1;border-radius:4px;overflow:hidden;cursor:pointer;background:#EDE3D5;}
@@ -93,7 +126,6 @@
     .photo-item:first-child{grid-column:span 2;grid-row:span 2;}
     .photo-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
     .photo-item:hover img{transform:scale(1.05);}
-    /* 삭제/수정 버튼 — 모바일 항상 표시 */
     .photo-item .item-del{position:absolute;top:6px;right:6px;width:26px;height:26px;background:rgba(44,26,14,.7);color:white;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
     .photo-item .item-edit{position:absolute;top:6px;right:36px;width:26px;height:26px;background:rgba(139,94,60,.8);color:white;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
 
@@ -245,8 +277,14 @@
     .empty-state p{font-size:13px;line-height:1.7;}
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fadeDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes fadeLeft{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
     @media(min-width:480px){.hero-name{font-size:56px;}.photo-frame{width:220px;height:220px;}}
+    @media(max-width:600px){
+      .lobby-body{padding:24px 16px 0;}
+      .lobby-guestbook{padding:0 16px 40px;}
+      .section{padding:40px 16px;}
+      .home-gallery-preview{padding:0 16px;}
+      .photo-grid{padding:0 16px;}
+    }
   </style>
 </head>
 <body>
@@ -277,24 +315,59 @@
   </div>
 </nav>
 
-<!-- 탭 1: 거실 (기존 홈+메시지 통합) -->
+<!-- ── 탭 1: 거실 ── -->
 <div class="tab-content active" id="tab-lobby">
 
-  <!-- 공지 배너 -->
-  <div id="lobbyBanner" style="background:linear-gradient(135deg,#F9EDD8,#F5D9C0);border-bottom:1px solid rgba(139,94,60,.12);padding:16px 24px;display:flex;align-items:center;gap:14px;max-width:1280px;margin:0 auto;">
-    <div style="font-size:28px;">🎂</div>
-    <div style="flex:1;">
-      <div style="font-size:13px;font-weight:600;color:var(--brown);" id="bannerTitle">백일이 다가오고 있어요</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="bannerSub">소중한 순간을 함께 기록해요</div>
+  <!-- D-DAY 배너 -->
+  <div class="lobby-banner" id="lobbyBanner">
+    <div class="lobby-banner-inner">
+      <div class="lobby-banner-emoji">🎂</div>
+      <div class="lobby-banner-text">
+        <div class="lobby-banner-title" id="bannerTitle">백일이 다가오고 있어요</div>
+        <div class="lobby-banner-sub" id="bannerSub">소중한 순간을 함께 기록해요</div>
+      </div>
+      <div class="lobby-banner-badge" id="bannerBadge">D-15</div>
     </div>
-    <div style="background:var(--brown);color:white;border-radius:20px;padding:6px 16px;font-size:12px;letter-spacing:1px;white-space:nowrap;" id="bannerBadge">D-15</div>
   </div>
 
-  <!-- 방명록/메시지 -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-tag">GUESTBOOK</div>
-      <div class="section-title">방명록 💌</div>
+  <!-- 최근 사진 + 마일스톤 -->
+  <div class="lobby-body">
+
+    <!-- 최근 사진 3장 -->
+    <div style="margin-bottom:40px;">
+      <div class="lobby-section-head">
+        <div>
+          <div class="lobby-section-label">RECENT PHOTOS</div>
+          <div class="lobby-section-title">최근 사진</div>
+        </div>
+        <button class="lobby-more-btn" onclick="switchTab('gallery')">더 보기 →</button>
+      </div>
+      <div class="lobby-photo-strip" id="lobbyPhotoStrip"></div>
+    </div>
+
+    <!-- 다음 마일스톤 -->
+    <div class="lobby-milestone" id="lobbyMilestone">
+      <div class="lobby-section-label" style="margin-bottom:12px;">NEXT MILESTONE</div>
+      <div class="lobby-milestone-card">
+        <div class="lobby-milestone-icon" id="lobbyMilestoneIcon">🎂</div>
+        <div class="lobby-milestone-info">
+          <div class="lobby-milestone-name" id="lobbyMilestoneName">백일</div>
+          <div class="lobby-milestone-date" id="lobbyMilestoneDate">2026년 3월 31일</div>
+        </div>
+        <div class="lobby-milestone-badge" id="lobbyMilestoneBadge">D-15</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 방명록 -->
+  <div class="lobby-guestbook">
+    <div class="lobby-guestbook-head">
+      <div>
+        <div class="lobby-section-label">GUESTBOOK</div>
+        <div class="lobby-section-title">방명록 💌</div>
+      </div>
+      <div class="lobby-guestbook-count" id="postCount"></div>
     </div>
     <div class="feed-list" id="feedList"></div>
     <div class="post-form">
@@ -318,7 +391,7 @@
   </div>
 </div>
 
-<!-- 탭 2: 하준의 방 (기존 홈) -->
+<!-- ── 탭 2: 하준의 방 ── -->
 <div class="tab-content" id="tab-home">
   <div class="section" style="padding-bottom:20px">
     <div class="section-header">
@@ -338,7 +411,7 @@
   </div>
 </div>
 
-<!-- 탭 3: 사진첩 -->
+<!-- ── 탭 3: 사진첩 ── -->
 <div class="tab-content" id="tab-gallery">
   <div class="gallery-bg">
     <div class="section" style="padding-bottom:0">
@@ -351,7 +424,7 @@
   </div>
 </div>
 
-<!-- 탭 4: 성장 -->
+<!-- ── 탭 4: 성장 ── -->
 <div class="tab-content" id="tab-growth">
   <div class="section">
     <div class="section-header">
@@ -362,7 +435,7 @@
   </div>
 </div>
 
-<!-- 탭 5: 영상 -->
+<!-- ── 탭 5: 영상 ── -->
 <div class="tab-content" id="tab-video">
   <div class="section">
     <div class="section-header">
@@ -489,6 +562,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
 }
+
 // ── 유틸 ─────────────────────────────────────────────────────
 function resizeImage(file, maxWidth=1200) {
   return new Promise(resolve => {
@@ -553,7 +627,7 @@ async function loadData() {
     }
     await loadPosts();
     initDday(data.house);
-    initLobbyBanner(data.house);
+    initLobby(data.house, data.milestones || []);
   } catch(e) {
     console.error('loadData:', e);
     showToast('데이터를 불러오지 못했어요');
@@ -609,26 +683,57 @@ function initDday(house) {
     `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`
   ).join('');
 }
-// ── 거실 배너 ─────────────────────────────────────────────────
-function initLobbyBanner(house) {
-  if (!house.hundred_date) return;
-  const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
-  const badge = document.getElementById('bannerBadge');
-  const title = document.getElementById('bannerTitle');
-  const sub   = document.getElementById('bannerSub');
-  if (!badge) return;
-  if (diff > 0) {
-    badge.textContent = `D-${diff}`;
-    title.textContent = '백일이 다가오고 있어요 🎂';
-    sub.textContent   = `${house.name || '하준'}의 백일까지 ${diff}일 남았어요`;
-  } else if (diff === 0) {
-    badge.textContent = 'D-DAY 🎉';
-    title.textContent = '오늘이 백일이에요!';
-    sub.textContent   = '축하해요 🎂🎉';
+
+// ── 거실 초기화 ───────────────────────────────────────────────
+function initLobby(house, milestones) {
+  // D-DAY 배너
+  if (house.hundred_date) {
+    const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
+    if (diff >= 0) {
+      const banner = document.getElementById('lobbyBanner');
+      banner.style.display = 'block';
+      document.getElementById('bannerBadge').textContent = diff === 0 ? 'D-DAY 🎉' : `D-${diff}`;
+      document.getElementById('bannerTitle').textContent = diff === 0
+        ? '오늘이 백일이에요! 🎉'
+        : `${house.name || '하준'}의 백일이 다가오고 있어요 🎂`;
+      document.getElementById('bannerSub').textContent = diff === 0
+        ? '축하해요! 소중한 순간을 함께해요'
+        : `백일까지 ${diff}일 남았어요 · 3월 31일`;
+    }
+  }
+
+  // 최근 사진 3장
+  const strip  = document.getElementById('lobbyPhotoStrip');
+  const photos = allMediaData.filter(m => m.media_type === 'photo').slice(0, 3);
+  if (photos.length) {
+    window._lbUrlsLobby = photos.map(m => m.file_url);
+    strip.innerHTML = photos.map((m, i) =>
+      `<div class="lobby-photo-cell" onclick="openLightbox(window._lbUrlsLobby,${i})">
+        <img src="${m.file_url}" alt="" loading="lazy">
+      </div>`
+    ).join('');
   } else {
-    document.getElementById('lobbyBanner').style.display = 'none';
+    strip.innerHTML = `<div style="grid-column:span 3;text-align:center;padding:32px;color:var(--muted);font-size:13px;">아직 사진이 없어요 📷</div>`;
+  }
+
+  // 다음 마일스톤 (DB 또는 기본값에서 가장 가까운 미래 항목)
+  const all = (milestones && milestones.length > 0)
+    ? milestones
+    : (MILESTONE_DEFAULTS[house.category] || MILESTONE_DEFAULTS['baby']);
+  const now  = new Date();
+  const next = all
+    .filter(m => m.milestone_date && new Date(m.milestone_date) >= now)
+    .sort((a,b) => new Date(a.milestone_date) - new Date(b.milestone_date))[0];
+  if (next) {
+    const diff = Math.ceil((new Date(next.milestone_date) - now) / 86400000);
+    document.getElementById('lobbyMilestone').style.display = 'block';
+    document.getElementById('lobbyMilestoneIcon').textContent  = next.memo || '⭐';
+    document.getElementById('lobbyMilestoneName').textContent  = next.title;
+    document.getElementById('lobbyMilestoneDate').textContent  = formatDate(next.milestone_date);
+    document.getElementById('lobbyMilestoneBadge').textContent = diff === 0 ? 'D-DAY' : `D-${diff}`;
   }
 }
+
 // ── 홈탭 미리보기 ────────────────────────────────────────────
 function renderHomePreview(media) {
   const photos = media.filter(m => m.media_type === 'photo').slice(0, 6);
@@ -754,7 +859,7 @@ async function submitEdit() {
   } catch(e) { showToast('오류가 발생했어요'); }
 }
 
-// ── 피드 / 메시지 ────────────────────────────────────────────
+// ── 피드 / 방명록 ────────────────────────────────────────────
 async function loadPosts() {
   try {
     const res   = await fetch(`/api/posts?house_id=${HOUSE_ID}`);
@@ -765,6 +870,8 @@ async function loadPosts() {
 
 function renderPosts(posts) {
   const el = document.getElementById('feedList');
+  const countEl = document.getElementById('postCount');
+  if (countEl) countEl.textContent = posts.length ? `${posts.length}개의 메시지` : '';
   if (!posts.length) {
     el.innerHTML = `<div class="empty-state"><div class="icon">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
     return;
