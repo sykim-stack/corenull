@@ -581,8 +581,17 @@ async function submitGuestbook(){
     }
   }catch(e){showToast('오류가 발생했어요');}
 }
-async function deleteComment(id){openConfirm('메시지를 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{await fetch('/api/posts',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({post_id:id,house_id:HOUSE_ID})});showToast('삭제됐어요');await loadData();});}
-
+async function deleteComment(id){
+  openConfirm('메시지를 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
+    await fetch('/api/comment',{           // ← /api/posts → /api/comment
+      method:'DELETE',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({comment_id:id,house_id:HOUSE_ID})
+    });
+    showToast('삭제됐어요');
+    await loadData();
+  });
+}
 // ── AI 문구 ──
 async function getAiMsg(lang){
   const btn=document.getElementById(lang==='vi'?'aiVi':'aiKo');if(!btn)return;btn.disabled=true;
@@ -617,19 +626,57 @@ async function submitWrite(){
   const catIds=Array.from(document.querySelectorAll('.cat-sel.on')).map(el=>el.dataset.id);
   if(!content&&!writeFiles.length){showToast('내용을 입력하거나 사진을 선택하세요');return;}
   if(!currentRoomId){showToast('방 탭에서 글을 써주세요');return;}
+  if(!IS_OWNER){showToast('집 주인만 글을 쓸 수 있어요');return;}
   const pw=document.getElementById('writeProgWrap'),pf=document.getElementById('writeProgFill'),pt=document.getElementById('writeProgText');
   pw.style.display='block';
   try{
     const mediaUrls=[];
-    for(let i=0;i<writeFiles.length;i++){pt.textContent=`사진 ${i+1}/${writeFiles.length} 업로드 중...`;pf.style.width=`${(i/writeFiles.length)*80}%`;const b64=await resizeImg(writeFiles[i]);const blob=await b64Blob(b64);const fd=new FormData();fd.append('file',blob,`w_${i}.jpg`);fd.append('upload_preset','corenull');const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});const cl=await cr.json();if(cl.secure_url)mediaUrls.push(cl.secure_url);}
+    for(let i=0;i<writeFiles.length;i++){
+      pt.textContent=`사진 ${i+1}/${writeFiles.length} 업로드 중...`;
+      pf.style.width=`${(i/writeFiles.length)*80}%`;
+      const b64=await resizeImg(writeFiles[i]);
+      const blob=await b64Blob(b64);
+      const fd=new FormData();
+      fd.append('file',blob,`w_${i}.jpg`);
+      fd.append('upload_preset','corenull');
+      const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});
+      const cl=await cr.json();
+      if(cl.secure_url)mediaUrls.push(cl.secure_url);
+    }
     pt.textContent='저장 중...';pf.style.width='90%';
-    const res=await fetch('/api/posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({house_id:HOUSE_ID,room_id:currentRoomId,content:content||null,media_urls:mediaUrls,category_ids:catIds})});
-    if(res.ok){pf.style.width='100%';pt.textContent='완료! ✅';showToast('글이 등록됐어요 ✏️');setTimeout(()=>{document.getElementById('writeModal').classList.remove('open');writeFiles=[];loadData();},600);}
-    else showToast('등록 실패');
-  }catch(e){showToast('오류: '+e.message);}finally{pw.style.display='none';}
+    const res=await fetch('/api/posts',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        house_id:HOUSE_ID,
+        room_id:currentRoomId,
+        content:content||null,
+        media_urls:mediaUrls,
+        category_ids:catIds,
+        owner_key:OWNER_KEY   // ← 추가
+      })
+    });
+    if(res.ok){
+      pf.style.width='100%';pt.textContent='완료! ✅';
+      showToast('글이 등록됐어요 ✏️');
+      setTimeout(()=>{document.getElementById('writeModal').classList.remove('open');writeFiles=[];loadData();},600);
+    } else {
+      const err=await res.json();showToast(err.error||'등록 실패');
+    }
+  }catch(e){showToast('오류: '+e.message);}
+  finally{pw.style.display='none';}
 }
-async function deletePost(postId){openConfirm('글을 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{await fetch('/api/posts',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({post_id:postId,house_id:HOUSE_ID})});showToast('삭제됐어요');await loadData();});}
-
+async function deletePost(postId){
+  openConfirm('글을 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
+    await fetch('/api/posts',{
+      method:'DELETE',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({post_id:postId,house_id:HOUSE_ID,owner_key:OWNER_KEY})  // ← owner_key 추가
+    });
+    showToast('삭제됐어요');
+    await loadData();
+  });
+}
 // ── 사진 업로드 ──
 function openUploadModal(){uploadFiles=[];document.getElementById('uploadContent').value='';document.getElementById('uploadDate').value='';document.getElementById('dropZone').style.display='flex';document.getElementById('uploadPrevWrap').style.display='none';document.getElementById('uploadProgWrap').style.display='none';document.getElementById('uploadSubmit').disabled=false;document.getElementById('uploadModal').classList.add('open');}
 async function handleUploadSelect(input){const files=Array.from(input.files);input.value='';uploadFiles=[...uploadFiles,...files].slice(0,10);const cells=document.getElementById('uploadPrevCells');cells.innerHTML=uploadFiles.map((f,i)=>{const url=URL.createObjectURL(f);return`<div class="prev-cell"><img src="${url}"><button class="prev-rm" onclick="removeUploadFile(${i})">✕</button></div>`;}).join('');document.getElementById('dropZone').style.display='none';document.getElementById('uploadPrevWrap').style.display='block';}
