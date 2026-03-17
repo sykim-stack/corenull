@@ -72,7 +72,7 @@ export default async function handler(req, res) {
 
   // 방명록 (event_posts에서 조회)
   const commentsRes = await fetch(
-    `${baseUrl}/rest/v1/event_posts?house_id=eq.${house.id}&order=created_at.desc&limit=20`,
+    `${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&order=created_at.desc&limit=20`,
     { headers }
   );
   const comments = await commentsRes.json();
