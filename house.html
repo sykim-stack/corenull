@@ -444,7 +444,6 @@ function buildTabs(house,rooms,milestones,comments){
   ...rooms.filter(r=>r.room_type==='event'),
   ...rooms.filter(r=>r.room_type==='storage'),  // [LATER] 창고 - 현재 비어있음
 ].filter(r=>r.room_type!=='storage');  // Phase 0: 창고 숨김
-  ];
   ordered.forEach((room,idx)=>{
     const meta=ROOM_META[room.room_type]||{icon:'🚪',label:room.room_name};
     const label=room.room_type==='event'?room.room_name:meta.label;
