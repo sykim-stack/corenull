@@ -51,22 +51,27 @@ export default async function handler(req, res) {
 
   // POST — 글 작성
   if (req.method === 'POST') {
-    const { house_id, room_id, content, media_urls, category_ids, author_name, owner_key } = req.body;
+    const { house_id, room_id, content, media_urls, category_ids, owner_key } = req.body;
     if (!house_id || !content) return res.status(400).json({ error: 'house_id, content required' });
-
-    // owner_key 검증
+  
     if (owner_key) {
       const hRes = await fetch(`${baseUrl}/rest/v1/houses?id=eq.${house_id}&owner_key=eq.${owner_key}&limit=1`, { headers });
       const h    = await hRes.json();
       if (!h[0]) return res.status(403).json({ error: '권한 없음' });
     }
+  
+    const postBody = {
+      house_id,
+      content: content.trim(),
+      media_urls: Array.isArray(media_urls) ? media_urls : [],
+    };
+    if (room_id) postBody.room_id = room_id;
 
     // post 생성
     const postBody = {
       house_id,
       content: content.trim(),
       media_urls: Array.isArray(media_urls) ? media_urls : [],
-      author_name: author_name || null,
     };
     if (room_id) postBody.room_id = room_id;
 
