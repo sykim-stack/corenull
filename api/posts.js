@@ -49,23 +49,23 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
   }
 
-  // POST — 글 작성
-  if (req.method === 'POST') {
-    const { house_id, room_id, content, media_urls, category_ids, owner_key } = req.body;
-    if (!house_id || !content) return res.status(400).json({ error: 'house_id, content required' });
-  
-    if (owner_key) {
-      const hRes = await fetch(`${baseUrl}/rest/v1/houses?id=eq.${house_id}&owner_key=eq.${owner_key}&limit=1`, { headers });
-      const h    = await hRes.json();
-      if (!h[0]) return res.status(403).json({ error: '권한 없음' });
-    }
-  
-    const postBody = {
-      house_id,
-      content: content.trim(),
-      media_urls: Array.isArray(media_urls) ? media_urls : [],
-    };
-    if (room_id) postBody.room_id = room_id;
+ // POST — 글 작성
+if (req.method === 'POST') {
+  const { house_id, room_id, content, media_urls, category_ids, owner_key } = req.body;
+  if (!house_id || !content) return res.status(400).json({ error: 'house_id, content required' });
+
+  if (owner_key) {
+    const hRes = await fetch(`${baseUrl}/rest/v1/houses?id=eq.${house_id}&owner_key=eq.${owner_key}&limit=1`, { headers });
+    const h    = await hRes.json();
+    if (!h[0]) return res.status(403).json({ error: '권한 없음' });
+  }
+
+  const postBody = {
+    house_id,
+    content: content.trim(),
+    media_urls: Array.isArray(media_urls) ? media_urls : [],
+  };
+  if (room_id) postBody.room_id = room_id;
 
     // post 생성
     const postBody = {
@@ -75,12 +75,11 @@ export default async function handler(req, res) {
     };
     if (room_id) postBody.room_id = room_id;
 
-    const pRes  = await fetch(`${baseUrl}/rest/v1/posts`, {
-      method: 'POST', headers, body: JSON.stringify(postBody)
-    });
-    const pData = await pRes.json();
-    const post  = Array.isArray(pData) ? pData[0] : pData;
-    if (!post?.id) return res.status(500).json({ error: '글 생성 실패', raw: pData });
+    const pText = await pRes.text();
+let pData;
+try { pData = JSON.parse(pText); } catch(e) { return res.status(500).json({ error: 'parse error', raw: pText }); }
+const post  = Array.isArray(pData) ? pData[0] : pData;
+if (!post?.id) return res.status(500).json({ error: '글 생성 실패', raw: pData });
 
     // category_ids 연결
     if (Array.isArray(category_ids) && category_ids.length > 0) {
