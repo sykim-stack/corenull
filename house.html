@@ -438,10 +438,12 @@ function buildTabs(house,rooms,milestones,comments){
   const tabContents=document.getElementById('tabContents');
   tabInner.innerHTML='';tabContents.innerHTML='';
   const ordered=[
-    ...rooms.filter(r=>r.room_type==='living'),
-    ...rooms.filter(r=>r.room_type==='room'),
-    ...rooms.filter(r=>r.room_type==='event'),
-    ...rooms.filter(r=>r.room_type==='library'),
+  ...rooms.filter(r=>r.room_type==='living'),
+  ...rooms.filter(r=>r.room_type==='room'),
+  ...rooms.filter(r=>r.room_type==='library'),
+  ...rooms.filter(r=>r.room_type==='event'),
+  ...rooms.filter(r=>r.room_type==='storage'),  // [LATER] 창고 - 현재 비어있음
+].filter(r=>r.room_type!=='storage');  // Phase 0: 창고 숨김
   ];
   ordered.forEach((room,idx)=>{
     const meta=ROOM_META[room.room_type]||{icon:'🚪',label:room.room_name};
