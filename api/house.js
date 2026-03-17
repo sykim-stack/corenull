@@ -1,3 +1,4 @@
+// api/house.js
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -24,58 +25,44 @@ export default async function handler(req, res) {
   const houses = await houseRes.json();
   const house  = houses[0];
 
-  if (!house) {
-    return res.status(404).json({ error: '존재하지 않는 집입니다' });
-  }
-
-  if (!house.is_public) {
-    return res.status(403).json({ error: '비공개 집입니다' });
-  }
+  if (!house) return res.status(404).json({ error: '존재하지 않는 집입니다' });
+  if (!house.is_public) return res.status(403).json({ error: '비공개 집입니다' });
 
   // 병렬 조회
-  const [mediaRes, milestonesRes, roomsRes, categoriesRes, postsRes] = await Promise.all([
+  const [mediaRes, milestonesRes, roomsRes, categoriesRes, postsRes, commentsRes] = await Promise.all([
     fetch(`${baseUrl}/rest/v1/media?house_id=eq.${house.id}&status=eq.approved&order=created_at.desc`, { headers }),
     fetch(`${baseUrl}/rest/v1/milestones?house_id=eq.${house.id}&order=milestone_date.asc`, { headers }),
     fetch(`${baseUrl}/rest/v1/rooms?house_id=eq.${house.id}&is_hidden=eq.false&order=order_num.asc`, { headers }),
     fetch(`${baseUrl}/rest/v1/categories?house_id=eq.${house.id}&order=order_num.asc`, { headers }),
     fetch(`${baseUrl}/rest/v1/posts?house_id=eq.${house.id}&order=created_at.desc&limit=50`, { headers }),
+    fetch(`${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&order=created_at.desc&limit=20`, { headers }),
   ]);
 
-  const [media, milestones, rooms, categories, posts] = await Promise.all([
+  const [media, milestones, rooms, categories, posts, comments] = await Promise.all([
     mediaRes.json(),
     milestonesRes.json(),
     roomsRes.json(),
     categoriesRes.json(),
     postsRes.json(),
+    commentsRes.json(),
   ]);
 
-  // posts에 category 연결
-  let postCategories = [];
-  if (Array.isArray(posts) && posts.length > 0) {
-    const postIds = posts.map(p => `post_id=eq.${p.id}`).join(',');
-    // post_categories는 OR 쿼리로 조회
-    const pcRes = await fetch(
+  // posts에 category_ids 연결
+  let postsWithCategories = Array.isArray(posts) ? posts : [];
+  if (postsWithCategories.length > 0) {
+    const postIds = postsWithCategories.map(p => `post_id=eq.${p.id}`).join(',');
+    const pcRes  = await fetch(
       `${baseUrl}/rest/v1/post_categories?or=(${postIds})&select=post_id,category_id`,
       { headers }
     );
     const pcData = await pcRes.json();
-    postCategories = Array.isArray(pcData) ? pcData : [];
+    const pc     = Array.isArray(pcData) ? pcData : [];
+
+    postsWithCategories = postsWithCategories.map(p => ({
+      ...p,
+      category_ids: pc.filter(x => x.post_id === p.id).map(x => x.category_id)
+    }));
   }
-
-  // posts에 category_ids 붙이기
-  const postsWithCategories = Array.isArray(posts) ? posts.map(p => ({
-    ...p,
-    category_ids: postCategories
-      .filter(pc => pc.post_id === p.id)
-      .map(pc => pc.category_id)
-  })) : [];
-
-  // 방명록 (event_posts에서 조회)
-  const commentsRes = await fetch(
-    `${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&order=created_at.desc&limit=20`,
-    { headers }
-  );
-  const comments = await commentsRes.json();
 
   return res.status(200).json({
     house,
