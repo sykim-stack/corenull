@@ -12,50 +12,50 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
       'Accept-Profile': 'corenull',
       'Content-Profile': 'corenull',
+      'Prefer': 'return=representation',
     };
   
     // GET — 분류 목록
     if (req.method === 'GET') {
       const { house_id } = req.query;
       if (!house_id) return res.status(400).json({ error: 'house_id required' });
-      const r = await fetch(
-        `${baseUrl}/rest/v1/categories?house_id=eq.${house_id}&order=order_num.asc`,
-        { headers }
-      );
-      const data = await r.json();
-      return res.status(200).json(Array.isArray(data) ? data : []);
+      const r    = await fetch(`${baseUrl}/rest/v1/categories?house_id=eq.${house_id}&order=order_num.asc`, { headers });
+      const text = await r.text();
+      try {
+        const data = JSON.parse(text);
+        return res.status(r.status).json(Array.isArray(data) ? data : []);
+      } catch(e) {
+        return res.status(500).json({ error: 'parse error', raw: text });
+      }
     }
   
     // POST — 분류 생성
-// POST — 분류 생성
-if (req.method === 'POST') {
-    const { house_id, name, color } = req.body;
-    if (!house_id || !name) return res.status(400).json({ error: 'house_id, name required' });
-  
-    const CAT_COLORS = ['#8FBFAB','#E8A0A8','#C9A84C','#8B5E3C','#7BA7BC','#D4956A'];
-    const autoColor  = color || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
-  
-    try {
-      const r = await fetch(`${baseUrl}/rest/v1/categories`, {
+    if (req.method === 'POST') {
+      const { house_id, name, color } = req.body;
+      if (!house_id || !name) return res.status(400).json({ error: 'house_id, name required' });
+      const CAT_COLORS = ['#8FBFAB','#E8A0A8','#C9A84C','#8B5E3C','#7BA7BC','#D4956A'];
+      const autoColor  = color || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
+      const r    = await fetch(`${baseUrl}/rest/v1/categories`, {
         method: 'POST',
-        headers: { ...headers, 'Prefer': 'return=representation' },
+        headers,
         body: JSON.stringify({ house_id, name: name.trim(), color: autoColor, order_num: 99 })
       });
-      const text = await r.text(); // json() 대신 text()로
-      return res.status(200).json({ debug: text, status: r.status });
-    } catch(e) {
-      return res.status(500).json({ error: e.message });
+      const text = await r.text();
+      try {
+        const data = JSON.parse(text);
+        const cat  = Array.isArray(data) ? data[0] : data;
+        if (!cat?.id) return res.status(500).json({ error: '분류 생성 실패', raw: text, status: r.status });
+        return res.status(200).json(cat);
+      } catch(e) {
+        return res.status(500).json({ error: 'parse error', raw: text, status: r.status });
+      }
     }
-  }
   
-    // DELETE — 분류 삭제
+    // DELETE
     if (req.method === 'DELETE') {
       const { category_id, house_id } = req.body;
       if (!category_id || !house_id) return res.status(400).json({ error: 'category_id, house_id required' });
-      await fetch(
-        `${baseUrl}/rest/v1/categories?id=eq.${category_id}&house_id=eq.${house_id}`,
-        { method: 'DELETE', headers }
-      );
+      await fetch(`${baseUrl}/rest/v1/categories?id=eq.${category_id}&house_id=eq.${house_id}`, { method: 'DELETE', headers });
       return res.status(200).json({ success: true });
     }
   
