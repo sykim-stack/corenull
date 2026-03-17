@@ -27,23 +27,26 @@ export default async function handler(req, res) {
     }
   
     // POST — 분류 생성
-    if (req.method === 'POST') {
-      const { house_id, name, color } = req.body;
-      if (!house_id || !name) return res.status(400).json({ error: 'house_id, name required' });
+// POST — 분류 생성
+if (req.method === 'POST') {
+    const { house_id, name, color } = req.body;
+    if (!house_id || !name) return res.status(400).json({ error: 'house_id, name required' });
   
-      const CAT_COLORS = ['#8FBFAB','#E8A0A8','#C9A84C','#8B5E3C','#7BA7BC','#D4956A'];
-      const autoColor  = color || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
+    const CAT_COLORS = ['#8FBFAB','#E8A0A8','#C9A84C','#8B5E3C','#7BA7BC','#D4956A'];
+    const autoColor  = color || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
   
+    try {
       const r = await fetch(`${baseUrl}/rest/v1/categories`, {
         method: 'POST',
         headers: { ...headers, 'Prefer': 'return=representation' },
         body: JSON.stringify({ house_id, name: name.trim(), color: autoColor, order_num: 99 })
       });
-      const data = await r.json();
-      const cat  = Array.isArray(data) ? data[0] : data;
-      if (!cat?.id) return res.status(500).json({ error: '분류 생성 실패', detail: data });
-      return res.status(200).json(cat);
+      const text = await r.text(); // json() 대신 text()로
+      return res.status(200).json({ debug: text, status: r.status });
+    } catch(e) {
+      return res.status(500).json({ error: e.message });
     }
+  }
   
     // DELETE — 분류 삭제
     if (req.method === 'DELETE') {
