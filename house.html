@@ -510,13 +510,29 @@ function filterCat(catId,el){
 }
 function renderPostList(posts){
   const el=document.getElementById('postList');if(!el)return;
-  if(!posts.length){el.innerHTML=`<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${IS_OWNER?'<br>첫 번째 글을 써보세요!':''}</p></div>`;return;}
+  if(!posts.length){
+    el.innerHTML=`<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${IS_OWNER?'<br>첫 번째 글을 써보세요!':''}</p></div>`;
+    return;
+  }
   el.innerHTML=posts.map((p,i)=>{
-    const tags=(p.category_ids||[]).map(cid=>{const c=CATEGORIES.find(x=>x.id===cid);return c?`<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>`:''}).join('');
+    const tags=(p.category_ids||[]).map(cid=>{
+      const c=CATEGORIES.find(x=>x.id===cid);
+      return c?`<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>`:'';
+    }).join('');
     const imgs=p.media_urls||[];
     const gc=imgs.length===1?'one':imgs.length===2?'two':'multi';
-    const media=imgs.length?`<div class="post-imgs ${gc}">${imgs.slice(0,3).map((url,idx)=>`<img src="${url}" loading="lazy" onclick='openLightbox(${JSON.stringify(imgs)},${idx})'>`).join('')}</div>`:'';
-    return`<div class="post-item" style="animation-delay:${i*.05}s">${tags?`<div class="post-tags">${tags}</div>`:''${p.content?`<div class="post-body">${p.content}</div>`:''}}${media}<div class="post-foot"><span class="post-time">${timeAgo(p.created_at)}</span>${IS_OWNER?`<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>`:''}</div></div>`;
+    const media=imgs.length
+      ?`<div class="post-imgs ${gc}">${imgs.slice(0,3).map((url,idx)=>`<img src="${url}" loading="lazy" onclick='openLightbox(${JSON.stringify(imgs)},${idx})'>`).join('')}</div>`
+      :'';
+    return`<div class="post-item" style="animation-delay:${i*.05}s">
+      ${tags?`<div class="post-tags">${tags}</div>`:''}
+      ${p.content?`<div class="post-body">${p.content}</div>`:''}
+      ${media}
+      <div class="post-foot">
+        <span class="post-time">${timeAgo(p.created_at)}</span>
+        ${IS_OWNER?`<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>`:''}
+      </div>
+    </div>`;
   }).join('');
 }
 
