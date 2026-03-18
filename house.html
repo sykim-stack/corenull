@@ -16,7 +16,21 @@
     body{background:var(--cream);color:var(--text);font-family:'Gowun Dodum',serif;min-height:100vh;overflow-x:hidden;}
 
     /* ── 히어로 ── */
-    .hero{min-height:100vh;background:linear-gradient(160deg,#FDE8D8 0%,#F7D4C0 40%,#EFBFA8 100%);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:60px 24px;}
+    .hero {
+  min-height: 44vh;
+  background: linear-gradient(160deg,#FDE8D8 0%,#F7D4C0 40%,#EFBFA8 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 60px 24px;
+  transition: min-height .3s ease;
+}
+.hero.has-cover {
+  min-height: 100vh;
+}
     .hero-circles{position:absolute;inset:0;pointer-events:none;}
     .hero-circles span{position:absolute;border-radius:50%;opacity:.15;}
     .hero-circles span:nth-child(1){width:400px;height:400px;background:var(--pink);top:-100px;right:-100px;animation:float1 8s ease-in-out infinite;}
@@ -413,6 +427,7 @@ allPosts=data.posts||[];
 
 // ── 히어로 ──
 const CAT_META={baby:{badge:'👶 BABY HOUSE',emoji:'👶',ph:'👶'},pet:{badge:'🐾 PET HOUSE',emoji:'🐾',ph:'🐾'},travel:{badge:'✈️ TRAVEL',emoji:'✈️',ph:'✈️'},fitness:{badge:'💪 FITNESS',emoji:'💪',ph:'💪'},daily:{badge:'🏠 DAILY',emoji:'🏠',ph:'🏠'}};
+// CHANGE START
 function applyHero(house){
   const cat=CAT_META[house.category]||CAT_META['daily'];
   const name=house.name||SLUG;
@@ -422,9 +437,14 @@ function applyHero(house){
   document.getElementById('heroSub').textContent=house.description||'';
   document.getElementById('footerName').textContent=name;
   document.getElementById('footerEi').textContent=cat.emoji;
-  if(house.cover_url)document.getElementById('heroFrame').innerHTML=`<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
-  else document.getElementById('heroPlaceholder').textContent=cat.ph;
+  if(house.cover_url){
+    document.getElementById('heroFrame').innerHTML=`<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
+    document.querySelector('.hero').classList.add('has-cover'); // ← 추가
+  } else {
+    document.getElementById('heroPlaceholder').textContent=cat.ph;
+  }
 }
+// CHANGE END
 function initDday(house){
   if(!house.birth_date&&!house.start_date)return;
   const start=new Date(house.birth_date||house.start_date),now=new Date();
