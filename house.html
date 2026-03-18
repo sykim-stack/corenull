@@ -354,6 +354,7 @@ let writeFiles = [], uploadFiles = [];
 let lbImages = [], lbIndex = 0;
 let activeCat = null, currentRoomId = null;
 let gbPhotoB64 = null;
+let uploadRoomId = null; // ← 추가: 이벤트 탭 room_id 추적
 
 const ROOM_META = {
   living:  { icon:'🛋️', label:'거실' },
@@ -438,12 +439,11 @@ function buildTabs(house,rooms,milestones,comments){
   const tabContents=document.getElementById('tabContents');
   tabInner.innerHTML='';tabContents.innerHTML='';
   const ordered=[
-  ...rooms.filter(r=>r.room_type==='living'),
-  ...rooms.filter(r=>r.room_type==='room'),
-  ...rooms.filter(r=>r.room_type==='library'),
-  ...rooms.filter(r=>r.room_type==='event'),
-
-].filter(r=>r.room_type!=='storage');  // Phase 0: 창고 숨김
+    ...rooms.filter(r=>r.room_type==='living'),
+    ...rooms.filter(r=>r.room_type==='room'),
+    ...rooms.filter(r=>r.room_type==='library'),
+    ...rooms.filter(r=>r.room_type==='event'),
+  ].filter(r=>r.room_type!=='storage'); // Phase 0: 창고 숨김
   ordered.forEach((room,idx)=>{
     const meta=ROOM_META[room.room_type]||{icon:'🚪',label:room.room_name};
     const label=room.room_type==='event'?room.room_name:meta.label;
@@ -451,8 +451,7 @@ function buildTabs(house,rooms,milestones,comments){
     const btn=document.createElement('button');
     btn.className='tab-btn'+(idx===0?' active':'');
     btn.innerHTML=`<span class="ti">${meta.icon}</span>${label}`;
-    btn.dataset.tab = tabId   // ← 여기 추가
-
+    btn.dataset.tab=tabId;
     btn.onclick=()=>switchTab(tabId);
     tabInner.appendChild(btn);
     const div=document.createElement('div');
@@ -465,65 +464,28 @@ function buildTabs(house,rooms,milestones,comments){
     if(room.room_type==='library')renderLibrary(div);
   });
 }
-// CHANGE START
+
 function switchTab(tabId){
-
-document.querySelectorAll('.tab-content')
-  .forEach(el=>el.classList.remove('active'))
-
-document.querySelectorAll('.tab-btn')
-  .forEach(el=>el.classList.remove('active'))
-
-document.getElementById(tabId)?.classList.add('active')
-
-const btn=[...document.querySelectorAll('.tab-btn')]
-  .find(b=>b.dataset.tab===tabId)
-
-if(btn) btn.classList.add('active')
-
-window.scrollTo({top:0,behavior:'smooth'})
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById(tabId)?.classList.add('active');
+  const btn=[...document.querySelectorAll('.tab-btn')].find(b=>b.dataset.tab===tabId);
+  if(btn)btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
 }
-// CHANGE END
+
 function switchToRoomType(type){const r=ROOMS.find(r=>r.room_type===type);if(r)switchTab(`tab-${r.id}`);}
 
 // ── 거실 ──
 function renderLobby(container,house,milestones,comments){
-
-let bannerHtml=''
-
-if(house.hundred_date){
-
-  const diff=Math.ceil((new Date(house.hundred_date)-new Date())/86400000)
-
-  if(diff>=0){
-
-    const badge=diff===0?'D-DAY 🎉':`D-${diff}`
-    const title=diff===0
-      ?'오늘이 백일이에요! 🎉'
-      :`${house.name}의 백일이 다가오고 있어요 🎂`
-
-    const sub=diff===0
-      ?'축하해요!'
-      :`백일까지 ${diff}일 남았어요 · ${fmtDate(house.hundred_date)}`
-      bannerHtml=`<div class="lobby-banner">
-        <div class="lobby-banner-inner">
-
-          <div class="lobby-badge">
-            ${badge}
-          </div>
-
-          <div>
-            <div style="font-size:14px;font-weight:600;">
-              ${title}
-            </div>
-
-            <div style="font-size:12px;color:var(--muted)">
-              ${sub}
-            </div>
-          </div>
-
-        </div>
-      </div>`;
+  let bannerHtml='';
+  if(house.hundred_date){
+    const diff=Math.ceil((new Date(house.hundred_date)-new Date())/86400000);
+    if(diff>=0){
+      const badge=diff===0?'D-DAY 🎉':`D-${diff}`;
+      const title=diff===0?'오늘이 백일이에요! 🎉':`${house.name}의 백일이 다가오고 있어요 🎂`;
+      const sub=diff===0?'축하해요!':`백일까지 ${diff}일 남았어요 · ${fmtDate(house.hundred_date)}`;
+      bannerHtml=`<div class="lobby-banner"><div class="lobby-banner-inner"><div class="lobby-badge">${badge}</div><div><div style="font-size:14px;font-weight:600;">${title}</div><div style="font-size:12px;color:var(--muted)">${sub}</div></div></div></div>`;
     }
   }
   const photos=allMedia.filter(m=>m.media_type==='photo').slice(0,3);
@@ -535,13 +497,7 @@ if(house.hundred_date){
   let msHtml='';
   if(nextM){const diff=Math.ceil((new Date(nextM.milestone_date)-now)/86400000);msHtml=`<div class="sec-label" style="margin-bottom:10px;">NEXT MILESTONE</div><div class="ms-card"><div class="ms-icon">${nextM.memo||'⭐'}</div><div class="ms-info"><div class="ms-name">${nextM.title}</div><div class="ms-date">${fmtDate(nextM.milestone_date)}</div></div><div class="ms-badge">${diff===0?'D-DAY':`D-${diff}`}</div></div>`;}
   const feedHtml=comments.length?comments.map((c,i)=>`<div class="feed-item" style="animation-delay:${i*.06}s"><div class="feed-head"><div class="feed-av">${(c.author_name||'?')[0]}</div><div class="feed-name">${c.author_name||'익명'}</div><div class="feed-flag">${c.lang==='vi'?'🇻🇳':'🇰🇷'}</div>${IS_OWNER?`<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>`:''}</div>${c.media_url?`<div class="feed-img"><img src="${c.media_url}"></div>`:''}<div class="feed-body">${c.content_original||''}</div><div class="feed-time">${timeAgo(c.created_at)}</div></div>`).join(''):`<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
-  container.innerHTML=`${bannerHtml}  
-  <div class="section">
-    <div class="empty">
-      <div class="ei">🛋️</div>
-      <p>거실 피드는 곧 연결됩니다</p>
-    </div>
-  </div><div class="section"><div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div><div class="photo-strip">${photoHtml}</div>${msHtml}<div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length?comments.length+'개':''}</div></div><div class="feed-list">${feedHtml}</div><div class="gb-form"><div class="gb-title" id="gbTitle">${house.category==='baby'?house.name+'에게 메시지를 남겨주세요 🎂':'메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div></div>`;
+  container.innerHTML=`${bannerHtml}<div class="section"><div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div><div class="photo-strip">${photoHtml}</div>${msHtml}<div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length?comments.length+'개':''}</div></div><div class="feed-list">${feedHtml}</div><div class="gb-form"><div class="gb-title" id="gbTitle">${house.category==='baby'?house.name+'에게 메시지를 남겨주세요 🎂':'메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div></div>`;
 }
 
 // ── 방 ──
@@ -569,18 +525,8 @@ function renderPostList(posts){
     }).join('');
     const imgs=p.media_urls||[];
     const gc=imgs.length===1?'one':imgs.length===2?'two':'multi';
-    const media=imgs.length
-      ?`<div class="post-imgs ${gc}">${imgs.slice(0,3).map((url,idx)=>`<img src="${url}" loading="lazy" onclick='openLightbox(${JSON.stringify(imgs)},${idx})'>`).join('')}</div>`
-      :'';
-    return`<div class="post-item" style="animation-delay:${i*.05}s">
-      ${tags?`<div class="post-tags">${tags}</div>`:''}
-      ${p.content?`<div class="post-body">${p.content}</div>`:''}
-      ${media}
-      <div class="post-foot">
-        <span class="post-time">${timeAgo(p.created_at)}</span>
-        ${IS_OWNER?`<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>`:''}
-      </div>
-    </div>`;
+    const media=imgs.length?`<div class="post-imgs ${gc}">${imgs.slice(0,3).map((url,idx)=>`<img src="${url}" loading="lazy" onclick='openLightbox(${JSON.stringify(imgs)},${idx})'>`).join('')}</div>`:'';
+    return`<div class="post-item" style="animation-delay:${i*.05}s">${tags?`<div class="post-tags">${tags}</div>`:''}${p.content?`<div class="post-body">${p.content}</div>`:''}${media}<div class="post-foot"><span class="post-time">${timeAgo(p.created_at)}</span>${IS_OWNER?`<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>`:''}</div></div>`;
   }).join('');
 }
 
@@ -591,7 +537,7 @@ function renderLibrary(container){
   const lbUrls=photos.map(m=>m.file_url);
   const photoGrid=photos.length?`<div class="lib-grid">${photos.map((m,i)=>`<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy">${IS_OWNER?`<button class="lib-edit" onclick="event.stopPropagation();openEditModal('${m.id}','${(m.content||'').replace(/'/g,"\\'")}')">✏️</button><button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>`:''}</div>`).join('')}</div>`:`<div class="empty"><div class="ei">📷</div><p>아직 사진이 없어요</p></div>`;
   const videoList=videos.length?videos.map(v=>{const p=parseVideoUrl(v.file_url);if(!p)return'';return`<div class="video-item"><iframe class="video-embed ${p.platform==='TikTok'?'vert':''}" src="${p.embedUrl}" allowfullscreen></iframe><div class="video-info"><span class="video-plat">${p.platform}</span>${IS_OWNER?`<button class="video-del" onclick="confirmDelMedia('${v.id}')">🗑️</button>`:''}</div></div>`;}).join(''):`<div class="empty"><div class="ei">🎬</div><p>아직 영상이 없어요</p></div>`;
-  container.innerHTML=`<div class="section"><div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GALLERY</div><div class="sec-title">사진첩 📷</div></div>${IS_OWNER?`<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>`:''}</div>${photoGrid}<div class="sec-head" style="margin-top:40px;margin-bottom:16px;"><div><div class="sec-label">VIDEO</div><div class="sec-title">영상 🎬</div></div>${IS_OWNER?`<button class="more-btn" onclick="document.getElementById('videoModal').classList.add('open')">+ 영상 추가</button>`:''}</div><div class="video-list">${videoList}</div></div>`;
+  container.innerHTML=`<div class="section"><div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GALLERY</div><div class="sec-title">사진첩 📷</div></div>${IS_OWNER?`<button class="more-btn" onclick="openUploadModal(null)">+ 사진 추가</button>`:''}</div>${photoGrid}<div class="sec-head" style="margin-top:40px;margin-bottom:16px;"><div><div class="sec-label">VIDEO</div><div class="sec-title">영상 🎬</div></div>${IS_OWNER?`<button class="more-btn" onclick="document.getElementById('videoModal').classList.add('open')">+ 영상 추가</button>`:''}</div><div class="video-list">${videoList}</div></div>`;
 }
 
 // ── 이벤트 ──
@@ -601,66 +547,57 @@ function renderEvent(container,room){
   const eventPhotos=allMedia.filter(m=>m.media_type==='photo'&&m.room_id===room.id);
   const lbUrls=eventPhotos.map(m=>m.file_url);
   const photoHtml=eventPhotos.length?`<div class="lib-grid">${eventPhotos.map((m,i)=>`<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy">${IS_OWNER?`<button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>`:''}</div>`).join('')}</div>`:`<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
+  // ← room.id 전달
   container.innerHTML=`<div class="section"><div class="ev-header"><div class="ev-title">${room.room_name}</div>${room.event_date?`<div class="ev-date">${fmtDate(room.event_date)}</div>`:''} ${ddayText?`<div class="ev-dday">${ddayText}</div>`:''}</div><div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">PHOTOS</div><div class="sec-title">사진</div></div>${IS_OWNER?`<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>`:''}</div>${photoHtml}</div>`;
 }
 
 // ── 방명록 ──
 function previewGbPhoto(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{gbPhotoB64=e.target.result;document.getElementById('gbPrevImg').src=e.target.result;document.getElementById('gbPrevWrap').style.display='block';};r.readAsDataURL(file);}
-// CHANGE START
-async function submitGuestbook() {
+
+async function submitGuestbook(){
   const author  = document.getElementById('gbAuthor')?.value.trim();
   const content = document.getElementById('gbContent')?.value.trim();
-  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
+  if(!author||!content){showToast('이름과 메시지를 입력해주세요');return;}
 
   let media_url = null;
-
-  // 사진 있으면 Cloudinary 업로드
-  if (gbPhotoB64) {
-    try {
+  if(gbPhotoB64){
+    try{
       showToast('사진 업로드 중... ⏳');
-      const blob = await b64Blob(gbPhotoB64);
-      const fd = new FormData();
-      fd.append('file', blob, 'gb.jpg');
-      fd.append('upload_preset', 'corenull');
-      const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
-      const cl = await cr.json();
-      if (cl.secure_url) media_url = cl.secure_url;
-    } catch (e) {
-      showToast('사진 업로드 실패'); return;
-    }
+      const blob=await b64Blob(gbPhotoB64);
+      const fd=new FormData();
+      fd.append('file',blob,'gb.jpg');
+      fd.append('upload_preset','corenull');
+      const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});
+      const cl=await cr.json();
+      if(cl.secure_url)media_url=cl.secure_url;
+    }catch(e){showToast('사진 업로드 실패');return;}
   }
 
-  try {
-    const res = await fetch('/api/comment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url })
+  try{
+    const res=await fetch('/api/comment',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({house_id:HOUSE_ID,author_name:author,content,media_url})
     });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      document.getElementById('gbAuthor').value  = '';
-      document.getElementById('gbContent').value = '';
-      document.getElementById('gbPrevWrap').style.display = 'none';
-      gbPhotoB64 = null;
+    const data=await res.json();
+    if(res.ok&&data.success){
+      document.getElementById('gbAuthor').value='';
+      document.getElementById('gbContent').value='';
+      document.getElementById('gbPrevWrap').style.display='none';
+      gbPhotoB64=null;
       showToast('메시지가 등록됐어요 💌');
       await loadData();
-    } else {
-      showToast(data.error || '등록 실패');
-    }
-  } catch(e) { showToast('오류가 발생했어요'); }
+    }else{showToast(data.error||'등록 실패');}
+  }catch(e){showToast('오류가 발생했어요');}
 }
-// CHANGE END
+
 async function deleteComment(id){
   openConfirm('메시지를 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
-    await fetch('/api/comment',{           // ← /api/posts → /api/comment
-      method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({comment_id:id,house_id:HOUSE_ID})
-    });
-    showToast('삭제됐어요');
-    await loadData();
+    await fetch('/api/comment',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({comment_id:id,house_id:HOUSE_ID})});
+    showToast('삭제됐어요');await loadData();
   });
 }
+
 // ── AI 문구 ──
 async function getAiMsg(lang){
   const btn=document.getElementById(lang==='vi'?'aiVi':'aiKo');if(!btn)return;btn.disabled=true;
@@ -705,49 +642,37 @@ async function submitWrite(){
       pf.style.width=`${(i/writeFiles.length)*80}%`;
       const b64=await resizeImg(writeFiles[i]);
       const blob=await b64Blob(b64);
-      const fd=new FormData();
-      fd.append('file',blob,`w_${i}.jpg`);
-      fd.append('upload_preset','corenull');
+      const fd=new FormData();fd.append('file',blob,`w_${i}.jpg`);fd.append('upload_preset','corenull');
       const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});
       const cl=await cr.json();
       if(cl.secure_url)mediaUrls.push(cl.secure_url);
     }
     pt.textContent='저장 중...';pf.style.width='90%';
-    const res=await fetch('/api/posts',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        house_id:HOUSE_ID,
-        room_id:currentRoomId,
-        content:content||null,
-        media_urls:mediaUrls,
-        category_ids:catIds,
-        owner_key:OWNER_KEY   // ← 추가
-      })
-    });
-    if(res.ok){
-      pf.style.width='100%';pt.textContent='완료! ✅';
-      showToast('글이 등록됐어요 ✏️');
-      setTimeout(()=>{document.getElementById('writeModal').classList.remove('open');writeFiles=[];loadData();},600);
-    } else {
-      const err=await res.json();showToast(err.error||'등록 실패');
-    }
+    const res=await fetch('/api/posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({house_id:HOUSE_ID,room_id:currentRoomId,content:content||null,media_urls:mediaUrls,category_ids:catIds,owner_key:OWNER_KEY})});
+    if(res.ok){pf.style.width='100%';pt.textContent='완료! ✅';showToast('글이 등록됐어요 ✏️');setTimeout(()=>{document.getElementById('writeModal').classList.remove('open');writeFiles=[];loadData();},600);}
+    else{const err=await res.json();showToast(err.error||'등록 실패');}
   }catch(e){showToast('오류: '+e.message);}
   finally{pw.style.display='none';}
 }
 async function deletePost(postId){
   openConfirm('글을 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
-    await fetch('/api/posts',{
-      method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({post_id:postId,house_id:HOUSE_ID,owner_key:OWNER_KEY})  // ← owner_key 추가
-    });
-    showToast('삭제됐어요');
-    await loadData();
+    await fetch('/api/posts',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({post_id:postId,house_id:HOUSE_ID,owner_key:OWNER_KEY})});
+    showToast('삭제됐어요');await loadData();
   });
 }
-// ── 사진 업로드 ──
-function openUploadModal(){uploadFiles=[];document.getElementById('uploadContent').value='';document.getElementById('uploadDate').value='';document.getElementById('dropZone').style.display='flex';document.getElementById('uploadPrevWrap').style.display='none';document.getElementById('uploadProgWrap').style.display='none';document.getElementById('uploadSubmit').disabled=false;document.getElementById('uploadModal').classList.add('open');}
+
+// ── 사진 업로드 ── (roomId 파라미터 추가)
+function openUploadModal(roomId){
+  uploadRoomId=roomId||null; // ← room_id 저장
+  uploadFiles=[];
+  document.getElementById('uploadContent').value='';
+  document.getElementById('uploadDate').value='';
+  document.getElementById('dropZone').style.display='flex';
+  document.getElementById('uploadPrevWrap').style.display='none';
+  document.getElementById('uploadProgWrap').style.display='none';
+  document.getElementById('uploadSubmit').disabled=false;
+  document.getElementById('uploadModal').classList.add('open');
+}
 async function handleUploadSelect(input){const files=Array.from(input.files);input.value='';uploadFiles=[...uploadFiles,...files].slice(0,10);const cells=document.getElementById('uploadPrevCells');cells.innerHTML=uploadFiles.map((f,i)=>{const url=URL.createObjectURL(f);return`<div class="prev-cell"><img src="${url}"><button class="prev-rm" onclick="removeUploadFile(${i})">✕</button></div>`;}).join('');document.getElementById('dropZone').style.display='none';document.getElementById('uploadPrevWrap').style.display='block';}
 function removeUploadFile(idx){uploadFiles.splice(idx,1);if(!uploadFiles.length){document.getElementById('dropZone').style.display='flex';document.getElementById('uploadPrevWrap').style.display='none';}else{const cells=document.getElementById('uploadPrevCells');cells.innerHTML=uploadFiles.map((f,i)=>{const url=URL.createObjectURL(f);return`<div class="prev-cell"><img src="${url}"><button class="prev-rm" onclick="removeUploadFile(${i})">✕</button></div>`;}).join('');}}
 async function submitUpload(){
@@ -758,7 +683,22 @@ async function submitUpload(){
   const eventDate=document.getElementById('uploadDate').value||null;
   const total=uploadFiles.length;
   try{
-    for(let i=0;i<total;i++){pt.textContent=`${i+1} / ${total} 업로드 중...`;pf.style.width=`${(i/total)*100}%`;const b64=await resizeImg(uploadFiles[i]);const blob=await b64Blob(b64);const fd=new FormData();fd.append('file',blob,`p_${i}.jpg`);fd.append('upload_preset','corenull');const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});const cl=await cr.json();if(!cl.secure_url)throw new Error('Cloudinary 실패');await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({file_url:cl.secure_url,house_id:HOUSE_ID,content,event_date:eventDate,media_type:'photo'})});pf.style.width=`${((i+1)/total)*100}%`;}
+    for(let i=0;i<total;i++){
+      pt.textContent=`${i+1} / ${total} 업로드 중...`;pf.style.width=`${(i/total)*100}%`;
+      const b64=await resizeImg(uploadFiles[i]);const blob=await b64Blob(b64);
+      const fd=new FormData();fd.append('file',blob,`p_${i}.jpg`);fd.append('upload_preset','corenull');
+      const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});
+      const cl=await cr.json();if(!cl.secure_url)throw new Error('Cloudinary 실패');
+      await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        file_url:cl.secure_url,
+        house_id:HOUSE_ID,
+        content,
+        event_date:eventDate,
+        media_type:'photo',
+        room_id:uploadRoomId  // ← room_id 전달
+      })});
+      pf.style.width=`${((i+1)/total)*100}%`;
+    }
     pt.textContent='완료! ✅';showToast(`사진 ${total}장 업로드됐어요 📷`);
     setTimeout(()=>{document.getElementById('uploadModal').classList.remove('open');uploadFiles=[];loadData();},700);
   }catch(e){showToast('업로드 실패: '+e.message);}finally{btn.disabled=false;}
