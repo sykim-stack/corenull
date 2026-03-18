@@ -442,7 +442,7 @@ function buildTabs(house,rooms,milestones,comments){
   ...rooms.filter(r=>r.room_type==='room'),
   ...rooms.filter(r=>r.room_type==='library'),
   ...rooms.filter(r=>r.room_type==='event'),
-  ...rooms.filter(r=>r.room_type==='storage'),  // [LATER] 창고 - 현재 비어있음
+
 ].filter(r=>r.room_type!=='storage');  // Phase 0: 창고 숨김
   ordered.forEach((room,idx)=>{
     const meta=ROOM_META[room.room_type]||{icon:'🚪',label:room.room_name};
@@ -451,6 +451,8 @@ function buildTabs(house,rooms,milestones,comments){
     const btn=document.createElement('button');
     btn.className='tab-btn'+(idx===0?' active':'');
     btn.innerHTML=`<span class="ti">${meta.icon}</span>${label}`;
+    btn.dataset.tab = tabId   // ← 여기 추가
+
     btn.onclick=()=>switchTab(tabId);
     tabInner.appendChild(btn);
     const div=document.createElement('div');
@@ -463,26 +465,65 @@ function buildTabs(house,rooms,milestones,comments){
     if(room.room_type==='library')renderLibrary(div);
   });
 }
+// CHANGE START
 function switchTab(tabId){
-  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  const idx=Array.from(document.querySelectorAll('.tab-content')).findIndex(el=>el.id===tabId);
-  document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
-  window.scrollTo({top:0,behavior:'smooth'});
+
+document.querySelectorAll('.tab-content')
+  .forEach(el=>el.classList.remove('active'))
+
+document.querySelectorAll('.tab-btn')
+  .forEach(el=>el.classList.remove('active'))
+
+document.getElementById(tabId)?.classList.add('active')
+
+const btn=[...document.querySelectorAll('.tab-btn')]
+  .find(b=>b.dataset.tab===tabId)
+
+if(btn) btn.classList.add('active')
+
+window.scrollTo({top:0,behavior:'smooth'})
 }
+// CHANGE END
 function switchToRoomType(type){const r=ROOMS.find(r=>r.room_type===type);if(r)switchTab(`tab-${r.id}`);}
 
 // ── 거실 ──
 function renderLobby(container,house,milestones,comments){
-  let bannerHtml='';
-  if(house.hundred_date){
-    const diff=Math.ceil((new Date(house.hundred_date)-new Date())/86400000);
-    if(diff>=0){
-      const badge=diff===0?'D-DAY 🎉':`D-${diff}`;
-      const title=diff===0?'오늘이 백일이에요! 🎉':`${house.name}의 백일이 다가오고 있어요 🎂`;
-      const sub=diff===0?'축하해요!':`백일까지 ${diff}일 남았어요 · ${fmtDate(house.hundred_date)}`;
-      bannerHtml=`<div class="lobby-banner"><div class="lobby-banner-inner"><div style="font-size:30px;flex-shrink:0;">🎂</div><div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--brown);">${title}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">${sub}</div></div><div class="lobby-badge">${badge}</div></div></div>`;
+
+let bannerHtml=''
+
+if(house.hundred_date){
+
+  const diff=Math.ceil((new Date(house.hundred_date)-new Date())/86400000)
+
+  if(diff>=0){
+
+    const badge=diff===0?'D-DAY 🎉':`D-${diff}`
+    const title=diff===0
+      ?'오늘이 백일이에요! 🎉'
+      :`${house.name}의 백일이 다가오고 있어요 🎂`
+
+    const sub=diff===0
+      ?'축하해요!'
+      :`백일까지 ${diff}일 남았어요 · ${fmtDate(house.hundred_date)}`
+      bannerHtml=`<div class="lobby-banner">
+        <div class="lobby-banner-inner">
+
+          <div class="lobby-badge">
+            ${badge}
+          </div>
+
+          <div>
+            <div style="font-size:14px;font-weight:600;">
+              ${title}
+            </div>
+
+            <div style="font-size:12px;color:var(--muted)">
+              ${sub}
+            </div>
+          </div>
+
+        </div>
+      </div>`;
     }
   }
   const photos=allMedia.filter(m=>m.media_type==='photo').slice(0,3);
@@ -494,7 +535,13 @@ function renderLobby(container,house,milestones,comments){
   let msHtml='';
   if(nextM){const diff=Math.ceil((new Date(nextM.milestone_date)-now)/86400000);msHtml=`<div class="sec-label" style="margin-bottom:10px;">NEXT MILESTONE</div><div class="ms-card"><div class="ms-icon">${nextM.memo||'⭐'}</div><div class="ms-info"><div class="ms-name">${nextM.title}</div><div class="ms-date">${fmtDate(nextM.milestone_date)}</div></div><div class="ms-badge">${diff===0?'D-DAY':`D-${diff}`}</div></div>`;}
   const feedHtml=comments.length?comments.map((c,i)=>`<div class="feed-item" style="animation-delay:${i*.06}s"><div class="feed-head"><div class="feed-av">${(c.author_name||'?')[0]}</div><div class="feed-name">${c.author_name||'익명'}</div><div class="feed-flag">${c.lang==='vi'?'🇻🇳':'🇰🇷'}</div>${IS_OWNER?`<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>`:''}</div>${c.media_url?`<div class="feed-img"><img src="${c.media_url}"></div>`:''}<div class="feed-body">${c.content_original||''}</div><div class="feed-time">${timeAgo(c.created_at)}</div></div>`).join(''):`<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
-  container.innerHTML=`${bannerHtml}<div class="section"><div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div><div class="photo-strip">${photoHtml}</div>${msHtml}<div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length?comments.length+'개':''}</div></div><div class="feed-list">${feedHtml}</div><div class="gb-form"><div class="gb-title" id="gbTitle">${house.category==='baby'?house.name+'에게 메시지를 남겨주세요 🎂':'메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div></div>`;
+  container.innerHTML=`${bannerHtml}  
+  <div class="section">
+    <div class="empty">
+      <div class="ei">🛋️</div>
+      <p>거실 피드는 곧 연결됩니다</p>
+    </div>
+  </div><div class="section"><div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div><div class="photo-strip">${photoHtml}</div>${msHtml}<div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length?comments.length+'개':''}</div></div><div class="feed-list">${feedHtml}</div><div class="gb-form"><div class="gb-title" id="gbTitle">${house.category==='baby'?house.name+'에게 메시지를 남겨주세요 🎂':'메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div></div>`;
 }
 
 // ── 방 ──
@@ -559,18 +606,38 @@ function renderEvent(container,room){
 
 // ── 방명록 ──
 function previewGbPhoto(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{gbPhotoB64=e.target.result;document.getElementById('gbPrevImg').src=e.target.result;document.getElementById('gbPrevWrap').style.display='block';};r.readAsDataURL(file);}
-async function submitGuestbook(){
+// CHANGE START
+async function submitGuestbook() {
   const author  = document.getElementById('gbAuthor')?.value.trim();
   const content = document.getElementById('gbContent')?.value.trim();
-  if(!author||!content){showToast('이름과 메시지를 입력해주세요');return;}
-  try{
+  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
+
+  let media_url = null;
+
+  // 사진 있으면 Cloudinary 업로드
+  if (gbPhotoB64) {
+    try {
+      showToast('사진 업로드 중... ⏳');
+      const blob = await b64Blob(gbPhotoB64);
+      const fd = new FormData();
+      fd.append('file', blob, 'gb.jpg');
+      fd.append('upload_preset', 'corenull');
+      const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
+      const cl = await cr.json();
+      if (cl.secure_url) media_url = cl.secure_url;
+    } catch (e) {
+      showToast('사진 업로드 실패'); return;
+    }
+  }
+
+  try {
     const res = await fetch('/api/comment', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url })
     });
     const data = await res.json();
-    if(res.ok && data.success){
+    if (res.ok && data.success) {
       document.getElementById('gbAuthor').value  = '';
       document.getElementById('gbContent').value = '';
       document.getElementById('gbPrevWrap').style.display = 'none';
@@ -580,8 +647,9 @@ async function submitGuestbook(){
     } else {
       showToast(data.error || '등록 실패');
     }
-  }catch(e){showToast('오류가 발생했어요');}
+  } catch(e) { showToast('오류가 발생했어요'); }
 }
+// CHANGE END
 async function deleteComment(id){
   openConfirm('메시지를 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
     await fetch('/api/comment',{           // ← /api/posts → /api/comment

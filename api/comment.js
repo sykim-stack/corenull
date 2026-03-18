@@ -25,36 +25,36 @@ export default async function handler(req, res) {
     return res.status(200).json({ comments: data });
   }
 
-  // POST — 댓글 저장
-  if (req.method === 'POST') {
-    const { house_id, author_name, content } = req.body;
+ // CHANGE START
+// POST — 댓글 저장
+if (req.method === 'POST') {
+  const { house_id, author_name, content, media_url } = req.body;  // ← media_url 추가
 
-    if (!house_id || !author_name || !content) {
-      return res.status(400).json({ error: 'house_id, author_name, content required' });
-    }
-    if (content.length > 500) {
-      return res.status(400).json({ error: '댓글은 500자 이내로 작성해주세요' });
-    }
-
-    const isKorean = /[ㄱ-ㅎ가-힣]/.test(content);
-    const isVietnamese = /[àáảãạăắặằẳẵâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i.test(content);
-    const lang = isKorean ? 'ko' : isVietnamese ? 'vi' : 'other';
-
-    const { data, error } = await supabase
-      .schema('corenull')
-      .from('comments')
-      .insert({
-        house_id,
-        author_name,
-        content_original: content,   // ← 여기 수정
-        lang
-      })
-      .select()
-      .single();
-
-    if (error) return res.status(500).json({ error: error.message });
-    return res.status(200).json({ success: true, comment: data });
+  if (!house_id || !author_name || !content) {
+    return res.status(400).json({ error: 'house_id, author_name, content required' });
+  }
+  if (content.length > 500) {
+    return res.status(400).json({ error: '댓글은 500자 이내로 작성해주세요' });
   }
 
-  return res.status(405).end();
+  const isKorean = /[ㄱ-ㅎ가-힣]/.test(content);
+  const isVietnamese = /[àáảãạăắặằẳẵâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i.test(content);
+  const lang = isKorean ? 'ko' : isVietnamese ? 'vi' : 'other';
+
+  const { data, error } = await supabase
+    .schema('corenull')
+    .from('comments')
+    .insert({
+      house_id,
+      author_name,
+      content_original: content,
+      lang,
+      media_url: media_url || null   // ← 추가
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(200).json({ success: true, comment: data });
 }
+// CHANGE END
