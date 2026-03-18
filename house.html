@@ -396,9 +396,13 @@ async function loadData(){
     const res=await fetch(`/api/house?slug=${SLUG}`);
     const data=await res.json();
     if(!data.house){showToast('집을 찾을 수 없어요');return;}
-    HOUSE_DATA=data.house;HOUSE_ID=data.house.id;
-    ROOMS=data.rooms||[];CATEGORIES=data.categories||[];
-    allMedia=data.media||[];allPosts=data.posts||[];
+// CHANGE START
+HOUSE_DATA=data.house; HOUSE_ID=data.house.id;
+ROOMS=data.rooms||[];
+CATEGORIES=[...(data.categories||[])]; // ← 매번 새로 덮어씌움
+allMedia=data.media||[];
+allPosts=data.posts||[];
+// CHANGE END
     IS_OWNER=!!(OWNER_KEY&&data.house.owner_key&&OWNER_KEY===data.house.owner_key);
     applyHero(data.house);
     initDday(data.house);
@@ -605,19 +609,28 @@ async function getAiMsg(lang){
 }
 
 // ── 글쓰기 ──
+// CHANGE START
 function openWriteModal(){
   writeFiles=[];
   document.getElementById('writeContent').value='';
   document.getElementById('writePrevWrap').style.display='none';
   document.getElementById('writeProgWrap').style.display='none';
   const wrap=document.getElementById('writeCatWrap');
+  wrap.innerHTML=''; // ← 먼저 초기화
   wrap.innerHTML=CATEGORIES.map(c=>`<span class="cat-sel" data-id="${c.id}" onclick="this.classList.toggle('on')">${c.name}</span>`).join('')+`<button class="cat-new" onclick="addNewCat()">+ 새 분류</button>`;
   document.getElementById('writeModal').classList.add('open');
 }
+// CHANGE START
 async function addNewCat(){
   const name=prompt('새 분류 이름');if(!name?.trim())return;
-  try{const res=await fetch('/api/categories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({house_id:HOUSE_ID,name:name.trim()})});const data=await res.json();if(data.id){CATEGORIES.push(data);openWriteModal();}}catch(e){showToast('분류 생성 실패');}
+  try{
+    const res=await fetch('/api/categories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({house_id:HOUSE_ID,name:name.trim()})});
+    if(!res.ok){showToast('분류 생성 실패');return;}
+    await loadData(); // push 대신 loadData로 새로 불러옴
+    openWriteModal(); // 그 다음 모달 재열기
+  }catch(e){showToast('분류 생성 실패');}
 }
+// CHANGE END
 async function handleWritePhoto(input){
   const files=Array.from(input.files);input.value='';
   writeFiles=[...writeFiles,...files].slice(0,5);
