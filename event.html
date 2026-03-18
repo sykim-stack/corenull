@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>이벤트 · CoreNull</title>
+  <title>하준이 백일 · CoreNull</title>
+
+  <!-- OG 태그 -->
+  <meta property="og:title" content="🎂 하준이 백일잔치">
+  <meta property="og:description" content="2026년 3월 31일 · 하준이의 백일을 함께 축하해주세요 🎉">
+  <meta property="og:url" content="https://corenull.vercel.app/event?slug=hajun&room=f97d186d-43ce-4623-a4fc-a6b04008a0df">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://corenull.vercel.app/hajun-og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <style>
@@ -30,10 +39,11 @@
     .photo-frame-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;}
     .hero-name{font-family:'Noto Serif KR',serif;font-size:42px;font-weight:700;color:var(--dark);letter-spacing:6px;margin-bottom:8px;animation:fadeUp .8s .3s ease both;text-shadow:0 2px 20px rgba(139,94,60,.15);}
     .hero-sub{font-size:13px;letter-spacing:2px;color:var(--brown);opacity:.8;margin-bottom:32px;animation:fadeUp .8s .4s ease both;}
-    .dday-wrap{display:flex;gap:16px;animation:fadeUp .8s .5s ease both;flex-wrap:wrap;justify-content:center;margin-bottom:24px;}
+    .dday-wrap{display:flex;gap:12px;animation:fadeUp .8s .5s ease both;flex-wrap:wrap;justify-content:center;margin-bottom:24px;}
     .dday-box{background:rgba(255,255,255,.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.7);border-radius:16px;padding:16px 20px;text-align:center;min-width:80px;}
     .dday-num{font-family:'Noto Serif KR',serif;font-size:32px;font-weight:700;color:var(--brown);line-height:1;}
     .dday-label{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:4px;}
+    .dday-box.highlight .dday-num{color:var(--gold);}
     .share-btn{background:var(--brown);color:white;border:none;border-radius:24px;padding:12px 28px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;letter-spacing:1px;animation:fadeUp .8s .6s ease both;}
     .share-btn:hover{background:var(--dark);}
     .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--brown);opacity:.5;font-size:11px;letter-spacing:2px;animation:bounce 2s ease-in-out infinite;}
@@ -118,7 +128,6 @@
 </head>
 <body>
 
-<!-- 히어로 -->
 <div class="hero">
   <div class="hero-circles"><span></span><span></span><span></span></div>
   <div class="hero-badge" id="heroBadge">🎂 EVENT</div>
@@ -132,24 +141,20 @@
   <div class="scroll-hint"><span>↓</span><span>SCROLL</span></div>
 </div>
 
-<!-- 집으로 가기 -->
 <a class="back-btn" id="backBtn" href="#">← 집으로 돌아가기</a>
 
-<!-- 사진 갤러리 -->
 <div class="section" id="gallerySection" style="display:none;">
   <div class="sec-label">GALLERY</div>
   <div class="sec-title">📷 사진</div>
   <div class="gallery-grid" id="galleryGrid"></div>
 </div>
 
-<!-- 마일스톤 -->
 <div class="section" id="msSection" style="display:none;">
   <div class="sec-label">MILESTONE</div>
   <div class="sec-title">⭐ 기념일</div>
   <div class="ms-list" id="msList"></div>
 </div>
 
-<!-- 축하 메시지 -->
 <div class="section">
   <div class="sec-label">GUESTBOOK</div>
   <div class="sec-title">💌 축하 메시지</div>
@@ -167,12 +172,10 @@
   </div>
 </div>
 
-<!-- 푸터 -->
 <div class="footer">
   <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
 </div>
 
-<!-- 라이트박스 -->
 <div class="lightbox" id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
   <span class="lb-counter" id="lbCounter"></span>
@@ -186,24 +189,23 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── URL 파라미터 ──
 const params  = new URLSearchParams(location.search);
 const SLUG    = params.get('slug') || 'hajun';
 const ROOM_ID = params.get('room');
 
-let HOUSE_ID  = null;
-let allMedia  = [];
+let HOUSE_ID   = null;
+let HOUSE_NAME = '';
+let ROOM_NAME  = '';
+let allMedia   = [];
 let gbPhotoB64 = null;
-let lbImages  = [], lbIndex = 0;
+let lbImages   = [], lbIndex = 0;
 
-// ── 유틸 ──
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function fmtDate(str){if(!str)return'';const d=new Date(str);return`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
 function timeAgo(str){const diff=Date.now()-new Date(str).getTime();const m=Math.floor(diff/60000),h=Math.floor(m/60),d=Math.floor(h/24);if(d>0)return`${d}일 전`;if(h>0)return`${h}시간 전`;if(m>0)return`${m}분 전`;return'방금';}
 async function b64Blob(b64){return await(await fetch(b64)).blob();}
 async function resizeImg(file,maxW=1200){return new Promise(resolve=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const s=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.85));};img.src=url;});}
 
-// ── 데이터 로드 ──
 async function loadData(){
   if(!ROOM_ID){
     document.getElementById('heroName').textContent='이벤트 없음';
@@ -214,21 +216,15 @@ async function loadData(){
     const res  = await fetch(`/api/house?slug=${SLUG}`);
     const data = await res.json();
     if(!data.house){showToast('집을 찾을 수 없어요');return;}
-
-    HOUSE_ID = data.house.id;
-
-    // 이벤트 방 찾기
+    HOUSE_ID   = data.house.id;
+    HOUSE_NAME = data.house.name || SLUG;
     const room = (data.rooms||[]).find(r=>r.id===ROOM_ID);
     if(!room){showToast('이벤트를 찾을 수 없어요');return;}
-
-    // 전체 미디어에서 이벤트 room_id 필터
-    allMedia = (data.media||[]).filter(m=>m.room_id===ROOM_ID && m.media_type==='photo');
-
-    // 집으로 돌아가기 링크
+    ROOM_NAME  = room.room_name;
+    allMedia   = (data.media||[]).filter(m=>m.room_id===ROOM_ID && m.media_type==='photo');
     document.getElementById('backBtn').href = `/${SLUG}`;
-
     applyHero(data.house, room);
-    renderDday(room);
+    renderDday(data.house, room);
     renderGallery();
     renderMilestones(data.milestones||[]);
     renderFeed(data.comments||[], data.house);
@@ -238,35 +234,44 @@ async function loadData(){
   }
 }
 
-// ── 히어로 ──
 function applyHero(house, room){
   document.title = `${room.room_name} · ${house.name}`;
   document.getElementById('heroBadge').textContent = `🎂 ${house.name}`;
   document.getElementById('heroName').textContent  = room.room_name;
-  document.getElementById('heroSub').textContent   = house.description || fmtDate(room.event_date);
+  document.getElementById('heroSub').textContent   = fmtDate(room.event_date);
   if(house.cover_url){
     document.getElementById('heroFrame').innerHTML = `<img src="${house.cover_url}" alt="${house.name}">`;
   }
 }
 
-// ── D-DAY ──
-function renderDday(room){
-  if(!room.event_date) return;
-  const now  = new Date();
-  const diff = Math.ceil((new Date(room.event_date) - now) / 86400000);
-  const ddayText = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : `D+${Math.abs(diff)}`;
-  const dateText = fmtDate(room.event_date);
-  document.getElementById('ddayWrap').innerHTML = `
-    <div class="dday-box"><div class="dday-num">${ddayText}</div><div class="dday-label">${dateText}</div></div>
-  `;
+// ── D-DAY + 태어난 날 동시 표시 ──
+function renderDday(house, room){
+  const boxes = [];
+
+  // 태어난 날부터 지난 날
+  if(house.birth_date){
+    const born  = new Date(house.birth_date);
+    const elapsed = Math.floor((new Date() - born) / 86400000);
+    boxes.push(`<div class="dday-box"><div class="dday-num">${elapsed}일</div><div class="dday-label">태어난 지</div></div>`);
+  }
+
+  // 이벤트 D-DAY
+  if(room.event_date){
+    const now  = new Date();
+    const diff = Math.ceil((new Date(room.event_date) - now) / 86400000);
+    const ddayText = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
+    boxes.push(`<div class="dday-box highlight"><div class="dday-num">${ddayText}</div><div class="dday-label">백일까지</div></div>`);
+    boxes.push(`<div class="dday-box"><div class="dday-num">100</div><div class="dday-label">${fmtDate(room.event_date)}</div></div>`);
+  }
+
+  document.getElementById('ddayWrap').innerHTML = boxes.join('');
 }
 
-// ── 사진 갤러리 ──
 function renderGallery(){
   const sec  = document.getElementById('gallerySection');
   const grid = document.getElementById('galleryGrid');
-  if(!allMedia.length){ sec.style.display='none'; return; }
-  sec.style.display = 'block';
+  if(!allMedia.length){sec.style.display='none';return;}
+  sec.style.display='block';
   const urls = allMedia.map(m=>m.file_url);
   grid.innerHTML = allMedia.map((m,i)=>
     `<div class="gallery-item" onclick='openLightbox(${JSON.stringify(urls)},${i})'>
@@ -275,19 +280,18 @@ function renderGallery(){
   ).join('');
 }
 
-// ── 마일스톤 ──
 function renderMilestones(milestones){
   const sec  = document.getElementById('msSection');
   const list = document.getElementById('msList');
-  if(!milestones.length){ sec.style.display='none'; return; }
-  sec.style.display = 'block';
+  if(!milestones.length){sec.style.display='none';return;}
+  sec.style.display='block';
   const now = new Date();
   list.innerHTML = milestones.map(m=>{
-    if(!m.milestone_date) return '';
-    const diff = Math.ceil((new Date(m.milestone_date) - now) / 86400000);
-    const isDone = diff < 0;
-    const badge = isDone ? '완료 ✓' : diff === 0 ? 'D-DAY' : `D-${diff}`;
-    return `<div class="ms-item">
+    if(!m.milestone_date)return'';
+    const diff   = Math.ceil((new Date(m.milestone_date)-now)/86400000);
+    const isDone = diff<0;
+    const badge  = isDone?'완료 ✓':diff===0?'D-DAY':`D-${diff}`;
+    return`<div class="ms-item">
       <div class="ms-icon">${m.memo||'⭐'}</div>
       <div class="ms-info">
         <div class="ms-name">${m.title}</div>
@@ -298,12 +302,11 @@ function renderMilestones(milestones){
   }).join('');
 }
 
-// ── 방명록 ──
 function renderFeed(comments, house){
   const list = document.getElementById('feedList');
   document.getElementById('gbTitle').textContent = `${house.name}에게 축하 메시지를 남겨주세요 🎉`;
   if(!comments.length){
-    list.innerHTML = `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 축하 메시지를 남겨주세요!</p></div>`;
+    list.innerHTML=`<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 축하 메시지를 남겨주세요!</p></div>`;
     return;
   }
   list.innerHTML = comments.map((c,i)=>`
@@ -314,13 +317,12 @@ function renderFeed(comments, house){
         <div class="feed-flag">${c.lang==='vi'?'🇻🇳':'🇰🇷'}</div>
       </div>
       ${c.media_url?`<div class="feed-img"><img src="${c.media_url}"></div>`:''}
-      <div class="feed-body">${c.content_original||''}</div>
+      <div class="feed-body">${(c.content_original||'').replace(/\n/g,'<br>')}</div>
       <div class="feed-time">${timeAgo(c.created_at)}</div>
     </div>
   `).join('');
 }
 
-// ── 방명록 폼 ──
 function previewGbPhoto(input){
   const file=input.files[0];if(!file)return;
   const r=new FileReader();
@@ -336,26 +338,22 @@ async function submitGuestbook(){
   const author  = document.getElementById('gbAuthor').value.trim();
   const content = document.getElementById('gbContent').value.trim();
   if(!author||!content){showToast('이름과 메시지를 입력해주세요');return;}
-
-  let media_url = null;
+  let media_url=null;
   if(gbPhotoB64){
     try{
       showToast('사진 업로드 중... ⏳');
       const blob=await b64Blob(gbPhotoB64);
-      const fd=new FormData();
-      fd.append('file',blob,'gb.jpg');
-      fd.append('upload_preset','corenull');
+      const fd=new FormData();fd.append('file',blob,'gb.jpg');fd.append('upload_preset','corenull');
       const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});
       const cl=await cr.json();
-      if(cl.secure_url) media_url=cl.secure_url;
+      if(cl.secure_url)media_url=cl.secure_url;
     }catch(e){showToast('사진 업로드 실패');return;}
   }
-
   try{
     const res=await fetch('/api/comment',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({house_id:HOUSE_ID, author_name:author, content, media_url})
+      body:JSON.stringify({house_id:HOUSE_ID,author_name:author,content,media_url})
     });
     const data=await res.json();
     if(res.ok&&data.success){
@@ -369,33 +367,31 @@ async function submitGuestbook(){
   }catch(e){showToast('오류가 발생했어요');}
 }
 
-// ── 공유 ──
+// ── 공유 — 메시지 개선 ──
 function shareEvent(){
   const url  = location.href;
-  const text = `${document.getElementById('heroName').textContent} 초대장\n👉 ${url}`;
+  const now  = new Date();
+  const diff = Math.ceil((new Date('2026-03-31') - now) / 86400000);
+  const ddayStr = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
+
+  const text = `${ROOM_NAME} 초대장 🎂\n${HOUSE_NAME}의 백일이 ${ddayStr}이에요!\n\n축하 메시지를 남겨주세요 💌\n👉 ${url}`;
+
   if(navigator.share && /android|iphone|ipad/i.test(navigator.userAgent)){
-    navigator.share({title:'CoreNull 이벤트', text, url}).catch(()=>copyLink(url));
+    navigator.share({title:`${ROOM_NAME} 초대장`, text, url}).catch(()=>copyLink(text));
   } else {
-    copyLink(url);
+    copyLink(text);
   }
 }
-function copyLink(url){
-  navigator.clipboard.writeText(url).then(()=>showToast('링크가 복사됐어요 📋')).catch(()=>showToast('복사 실패'));
+function copyLink(text){
+  navigator.clipboard.writeText(text)
+    .then(()=>showToast('초대장이 복사됐어요 📋 카카오톡에 붙여넣기 하세요'))
+    .catch(()=>showToast('복사 실패'));
 }
 
 // ── 라이트박스 ──
 let lbTX=0,lbDX=0,lbDrag=false;
-function openLightbox(images,idx){
-  lbImages=images;lbIndex=idx;
-  document.getElementById('lbTrack').innerHTML=images.map(url=>`<div class="lb-slide"><img src="${url}" draggable="false"></div>`).join('');
-  updateLb();
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function updateLb(){
-  document.getElementById('lbTrack').style.transform=`translateX(-${lbIndex*100}vw)`;
-  document.getElementById('lbCounter').textContent=`${lbIndex+1} / ${lbImages.length}`;
-}
+function openLightbox(images,idx){lbImages=images;lbIndex=idx;document.getElementById('lbTrack').innerHTML=images.map(url=>`<div class="lb-slide"><img src="${url}" draggable="false"></div>`).join('');updateLb();document.getElementById('lightbox').classList.add('open');document.body.style.overflow='hidden';}
+function updateLb(){document.getElementById('lbTrack').style.transform=`translateX(-${lbIndex*100}vw)`;document.getElementById('lbCounter').textContent=`${lbIndex+1} / ${lbImages.length}`;}
 function lbPrev(){if(lbIndex>0){lbIndex--;updateLb();}}
 function lbNext(){if(lbIndex<lbImages.length-1){lbIndex++;updateLb();}}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow='';}
