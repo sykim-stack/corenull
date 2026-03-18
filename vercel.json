@@ -3,6 +3,7 @@
     { "source": "/api/:path*",  "destination": "/api/:path*" },
     { "source": "/hajun-100",   "destination": "/hajun-100.html" },
     { "source": "/create",      "destination": "/create.html" },
+    { "source": "/event",       "destination": "/event.html" },
     { "source": "/:slug",       "destination": "/house.html" }
   ]
 }
