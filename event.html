@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이벤트 · CoreNull</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream:#FDF8F3; --warm:#F7EEE3; --peach:#F2C4A0;
+      --brown:#8B5E3C; --dark:#2C1A0E; --mint:#8FBFAB;
+      --pink:#E8A0A8; --gold:#C9A84C; --text:#3D2B1F; --muted:#9B8B7E;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--cream);color:var(--text);font-family:'Gowun Dodum',serif;min-height:100vh;overflow-x:hidden;}
+
+    /* ── 히어로 ── */
+    .hero{min-height:100vh;background:linear-gradient(160deg,#FDE8D8 0%,#F7D4C0 40%,#EFBFA8 100%);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:60px 24px;}
+    .hero-circles{position:absolute;inset:0;pointer-events:none;}
+    .hero-circles span{position:absolute;border-radius:50%;opacity:.15;}
+    .hero-circles span:nth-child(1){width:400px;height:400px;background:var(--pink);top:-100px;right:-100px;animation:float1 8s ease-in-out infinite;}
+    .hero-circles span:nth-child(2){width:250px;height:250px;background:var(--mint);bottom:-50px;left:-50px;animation:float2 10s ease-in-out infinite;}
+    .hero-circles span:nth-child(3){width:150px;height:150px;background:var(--gold);top:30%;left:10%;animation:float1 6s ease-in-out infinite reverse;}
+    @keyframes float1{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-20px) scale(1.05);}}
+    @keyframes float2{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-15px) rotate(5deg);}}
+    .hero-badge{background:rgba(255,255,255,.5);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.6);border-radius:30px;padding:8px 20px;font-size:11px;letter-spacing:3px;color:var(--brown);margin-bottom:28px;animation:fadeDown .8s ease both;}
+    .photo-frame{width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,#FDE8D8,#F5C6A8);border:4px solid rgba(255,255,255,.8);box-shadow:0 20px 60px rgba(139,94,60,.25);margin-bottom:28px;overflow:hidden;position:relative;animation:fadeUp .8s .2s ease both;}
+    .photo-frame img{width:100%;height:100%;object-fit:cover;}
+    .photo-frame-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:56px;}
+    .hero-name{font-family:'Noto Serif KR',serif;font-size:42px;font-weight:700;color:var(--dark);letter-spacing:6px;margin-bottom:8px;animation:fadeUp .8s .3s ease both;text-shadow:0 2px 20px rgba(139,94,60,.15);}
+    .hero-sub{font-size:13px;letter-spacing:2px;color:var(--brown);opacity:.8;margin-bottom:32px;animation:fadeUp .8s .4s ease both;}
+    .dday-wrap{display:flex;gap:16px;animation:fadeUp .8s .5s ease both;flex-wrap:wrap;justify-content:center;margin-bottom:24px;}
+    .dday-box{background:rgba(255,255,255,.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.7);border-radius:16px;padding:16px 20px;text-align:center;min-width:80px;}
+    .dday-num{font-family:'Noto Serif KR',serif;font-size:32px;font-weight:700;color:var(--brown);line-height:1;}
+    .dday-label{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:4px;}
+    .share-btn{background:var(--brown);color:white;border:none;border-radius:24px;padding:12px 28px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;letter-spacing:1px;animation:fadeUp .8s .6s ease both;}
+    .share-btn:hover{background:var(--dark);}
+    .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--brown);opacity:.5;font-size:11px;letter-spacing:2px;animation:bounce 2s ease-in-out infinite;}
+    @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(6px);}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes fadeDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* ── 공통 ── */
+    .section{max-width:760px;margin:0 auto;padding:40px 24px;}
+    .sec-label{font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+    .sec-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:600;color:var(--dark);margin-bottom:20px;}
+    .empty{text-align:center;padding:40px 24px;color:var(--muted);}
+    .empty .ei{font-size:36px;margin-bottom:10px;}
+    .empty p{font-size:13px;line-height:1.7;}
+
+    /* ── 사진 갤러리 ── */
+    .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:16px;overflow:hidden;margin-bottom:40px;}
+    .gallery-item{aspect-ratio:1;overflow:hidden;cursor:pointer;background:#EDE3D5;position:relative;}
+    .gallery-item:first-child{grid-column:span 2;grid-row:span 2;}
+    .gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+    .gallery-item:hover img{transform:scale(1.05);}
+
+    /* ── 마일스톤 ── */
+    .ms-list{display:flex;flex-direction:column;gap:12px;margin-bottom:40px;}
+    .ms-item{background:white;border:1px solid rgba(139,94,60,.1);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;}
+    .ms-icon{width:44px;height:44px;background:linear-gradient(135deg,#FEF3DC,#FDE8D8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .ms-info{flex:1;}
+    .ms-name{font-size:14px;font-weight:600;color:var(--dark);margin-bottom:2px;}
+    .ms-date{font-size:11px;color:var(--muted);}
+    .ms-badge{background:var(--gold);color:white;border-radius:16px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap;}
+    .ms-badge.done{background:var(--mint);}
+
+    /* ── 방명록 ── */
+    .feed-list{display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+    .feed-item{background:white;border:1px solid rgba(139,94,60,.1);border-radius:16px;padding:16px;animation:fadeUp .4s ease both;}
+    .feed-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .feed-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:14px;color:white;font-weight:700;flex-shrink:0;}
+    .feed-name{font-size:14px;font-weight:600;color:var(--dark);}
+    .feed-flag{font-size:11px;margin-left:auto;background:var(--warm);padding:3px 10px;border-radius:10px;color:var(--muted);}
+    .feed-body{font-size:13px;line-height:1.8;color:var(--text);margin-bottom:6px;}
+    .feed-img{width:100%;border-radius:10px;overflow:hidden;margin-bottom:8px;}
+    .feed-img img{width:100%;object-fit:cover;max-height:220px;}
+    .feed-time{font-size:11px;color:var(--muted);}
+
+    /* ── 방명록 폼 ── */
+    .gb-form{background:white;border:1px solid rgba(139,94,60,.12);border-radius:20px;padding:20px;}
+    .gb-title{font-size:14px;font-weight:600;color:var(--dark);margin-bottom:12px;}
+    .gb-input{width:100%;background:var(--warm);border:none;border-radius:12px;padding:12px 14px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--dark);outline:none;margin-bottom:10px;}
+    .gb-textarea{resize:none;height:80px;}
+    .gb-actions{display:flex;gap:8px;}
+    .gb-photo-btn{background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;}
+    .gb-submit{flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:12px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;}
+    .gb-submit:hover{background:var(--dark);}
+    .gb-prev{display:none;margin-top:8px;}
+    .gb-prev img{width:100%;border-radius:12px;max-height:160px;object-fit:cover;}
+
+    /* ── 집으로 가기 ── */
+    .back-btn{display:block;text-align:center;padding:16px;color:var(--muted);font-size:12px;letter-spacing:2px;cursor:pointer;text-decoration:none;}
+    .back-btn:hover{color:var(--brown);}
+
+    /* ── 푸터 ── */
+    .footer{background:linear-gradient(160deg,#2C1A0E,#4A2E1A);color:white;text-align:center;padding:40px 24px;}
+    .footer-sub{font-size:11px;opacity:.4;letter-spacing:1px;}
+
+    /* ── 라이트박스 ── */
+    .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:900;flex-direction:column;}
+    .lightbox.open{display:flex;}
+    .lb-wrap{flex:1;overflow:hidden;position:relative;display:flex;align-items:center;}
+    .lb-track{display:flex;height:100%;transition:transform .3s cubic-bezier(.4,0,.2,1);}
+    .lb-slide{min-width:100vw;height:100%;display:flex;align-items:center;justify-content:center;padding:56px 16px 16px;}
+    .lb-slide img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;}
+    .lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:white;width:44px;height:44px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .lb-btn.prev{left:12px;}.lb-btn.next{right:12px;}
+    .lb-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:white;width:38px;height:38px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+    .lb-counter{position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:12px;background:rgba(0,0,0,.4);padding:4px 14px;border-radius:20px;}
+    @media(max-width:480px){.lb-btn{display:none;}}
+
+    /* ── 토스트 ── */
+    .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--dark);color:white;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<!-- 히어로 -->
+<div class="hero">
+  <div class="hero-circles"><span></span><span></span><span></span></div>
+  <div class="hero-badge" id="heroBadge">🎂 EVENT</div>
+  <div class="photo-frame" id="heroFrame">
+    <div class="photo-frame-placeholder" id="heroPlaceholder">🎂</div>
+  </div>
+  <div class="hero-name" id="heroName">---</div>
+  <div class="hero-sub" id="heroSub">불러오는 중...</div>
+  <div class="dday-wrap" id="ddayWrap"></div>
+  <button class="share-btn" onclick="shareEvent()">🔗 초대장 공유</button>
+  <div class="scroll-hint"><span>↓</span><span>SCROLL</span></div>
+</div>
+
+<!-- 집으로 가기 -->
+<a class="back-btn" id="backBtn" href="#">← 집으로 돌아가기</a>
+
+<!-- 사진 갤러리 -->
+<div class="section" id="gallerySection" style="display:none;">
+  <div class="sec-label">GALLERY</div>
+  <div class="sec-title">📷 사진</div>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</div>
+
+<!-- 마일스톤 -->
+<div class="section" id="msSection" style="display:none;">
+  <div class="sec-label">MILESTONE</div>
+  <div class="sec-title">⭐ 기념일</div>
+  <div class="ms-list" id="msList"></div>
+</div>
+
+<!-- 축하 메시지 -->
+<div class="section">
+  <div class="sec-label">GUESTBOOK</div>
+  <div class="sec-title">💌 축하 메시지</div>
+  <div class="feed-list" id="feedList"></div>
+  <div class="gb-form">
+    <div class="gb-title" id="gbTitle">축하 메시지를 남겨주세요 🎉</div>
+    <input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)">
+    <textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea>
+    <div class="gb-actions">
+      <button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button>
+      <input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)">
+      <button class="gb-submit" onclick="submitGuestbook()">남기기</button>
+    </div>
+    <div class="gb-prev" id="gbPrev"><img id="gbPrevImg"></div>
+  </div>
+</div>
+
+<!-- 푸터 -->
+<div class="footer">
+  <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
+</div>
+
+<!-- 라이트박스 -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <span class="lb-counter" id="lbCounter"></span>
+  <div class="lb-wrap">
+    <div class="lb-track" id="lbTrack"></div>
+    <button class="lb-btn prev" onclick="lbPrev()">‹</button>
+    <button class="lb-btn next" onclick="lbNext()">›</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── URL 파라미터 ──
+const params  = new URLSearchParams(location.search);
+const SLUG    = params.get('slug') || 'hajun';
+const ROOM_ID = params.get('room');
+
+let HOUSE_ID  = null;
+let allMedia  = [];
+let gbPhotoB64 = null;
+let lbImages  = [], lbIndex = 0;
+
+// ── 유틸 ──
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function fmtDate(str){if(!str)return'';const d=new Date(str);return`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
+function timeAgo(str){const diff=Date.now()-new Date(str).getTime();const m=Math.floor(diff/60000),h=Math.floor(m/60),d=Math.floor(h/24);if(d>0)return`${d}일 전`;if(h>0)return`${h}시간 전`;if(m>0)return`${m}분 전`;return'방금';}
+async function b64Blob(b64){return await(await fetch(b64)).blob();}
+async function resizeImg(file,maxW=1200){return new Promise(resolve=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const s=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.85));};img.src=url;});}
+
+// ── 데이터 로드 ──
+async function loadData(){
+  if(!ROOM_ID){
+    document.getElementById('heroName').textContent='이벤트 없음';
+    document.getElementById('heroSub').textContent='room 파라미터가 필요합니다';
+    return;
+  }
+  try{
+    const res  = await fetch(`/api/house?slug=${SLUG}`);
+    const data = await res.json();
+    if(!data.house){showToast('집을 찾을 수 없어요');return;}
+
+    HOUSE_ID = data.house.id;
+
+    // 이벤트 방 찾기
+    const room = (data.rooms||[]).find(r=>r.id===ROOM_ID);
+    if(!room){showToast('이벤트를 찾을 수 없어요');return;}
+
+    // 전체 미디어에서 이벤트 room_id 필터
+    allMedia = (data.media||[]).filter(m=>m.room_id===ROOM_ID && m.media_type==='photo');
+
+    // 집으로 돌아가기 링크
+    document.getElementById('backBtn').href = `/${SLUG}`;
+
+    applyHero(data.house, room);
+    renderDday(room);
+    renderGallery();
+    renderMilestones(data.milestones||[]);
+    renderFeed(data.comments||[], data.house);
+  }catch(e){
+    console.error(e);
+    showToast('데이터를 불러오지 못했어요');
+  }
+}
+
+// ── 히어로 ──
+function applyHero(house, room){
+  document.title = `${room.room_name} · ${house.name}`;
+  document.getElementById('heroBadge').textContent = `🎂 ${house.name}`;
+  document.getElementById('heroName').textContent  = room.room_name;
+  document.getElementById('heroSub').textContent   = house.description || fmtDate(room.event_date);
+  if(house.cover_url){
+    document.getElementById('heroFrame').innerHTML = `<img src="${house.cover_url}" alt="${house.name}">`;
+  }
+}
+
+// ── D-DAY ──
+function renderDday(room){
+  if(!room.event_date) return;
+  const now  = new Date();
+  const diff = Math.ceil((new Date(room.event_date) - now) / 86400000);
+  const ddayText = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : `D+${Math.abs(diff)}`;
+  const dateText = fmtDate(room.event_date);
+  document.getElementById('ddayWrap').innerHTML = `
+    <div class="dday-box"><div class="dday-num">${ddayText}</div><div class="dday-label">${dateText}</div></div>
+  `;
+}
+
+// ── 사진 갤러리 ──
+function renderGallery(){
+  const sec  = document.getElementById('gallerySection');
+  const grid = document.getElementById('galleryGrid');
+  if(!allMedia.length){ sec.style.display='none'; return; }
+  sec.style.display = 'block';
+  const urls = allMedia.map(m=>m.file_url);
+  grid.innerHTML = allMedia.map((m,i)=>
+    `<div class="gallery-item" onclick='openLightbox(${JSON.stringify(urls)},${i})'>
+      <img src="${m.file_url}" loading="lazy">
+    </div>`
+  ).join('');
+}
+
+// ── 마일스톤 ──
+function renderMilestones(milestones){
+  const sec  = document.getElementById('msSection');
+  const list = document.getElementById('msList');
+  if(!milestones.length){ sec.style.display='none'; return; }
+  sec.style.display = 'block';
+  const now = new Date();
+  list.innerHTML = milestones.map(m=>{
+    if(!m.milestone_date) return '';
+    const diff = Math.ceil((new Date(m.milestone_date) - now) / 86400000);
+    const isDone = diff < 0;
+    const badge = isDone ? '완료 ✓' : diff === 0 ? 'D-DAY' : `D-${diff}`;
+    return `<div class="ms-item">
+      <div class="ms-icon">${m.memo||'⭐'}</div>
+      <div class="ms-info">
+        <div class="ms-name">${m.title}</div>
+        <div class="ms-date">${fmtDate(m.milestone_date)}</div>
+      </div>
+      <div class="ms-badge ${isDone?'done':''}">${badge}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── 방명록 ──
+function renderFeed(comments, house){
+  const list = document.getElementById('feedList');
+  document.getElementById('gbTitle').textContent = `${house.name}에게 축하 메시지를 남겨주세요 🎉`;
+  if(!comments.length){
+    list.innerHTML = `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 축하 메시지를 남겨주세요!</p></div>`;
+    return;
+  }
+  list.innerHTML = comments.map((c,i)=>`
+    <div class="feed-item" style="animation-delay:${i*.06}s">
+      <div class="feed-head">
+        <div class="feed-av">${(c.author_name||'?')[0]}</div>
+        <div class="feed-name">${c.author_name||'익명'}</div>
+        <div class="feed-flag">${c.lang==='vi'?'🇻🇳':'🇰🇷'}</div>
+      </div>
+      ${c.media_url?`<div class="feed-img"><img src="${c.media_url}"></div>`:''}
+      <div class="feed-body">${c.content_original||''}</div>
+      <div class="feed-time">${timeAgo(c.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+// ── 방명록 폼 ──
+function previewGbPhoto(input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    gbPhotoB64=e.target.result;
+    document.getElementById('gbPrevImg').src=e.target.result;
+    document.getElementById('gbPrev').style.display='block';
+  };
+  r.readAsDataURL(file);
+}
+
+async function submitGuestbook(){
+  const author  = document.getElementById('gbAuthor').value.trim();
+  const content = document.getElementById('gbContent').value.trim();
+  if(!author||!content){showToast('이름과 메시지를 입력해주세요');return;}
+
+  let media_url = null;
+  if(gbPhotoB64){
+    try{
+      showToast('사진 업로드 중... ⏳');
+      const blob=await b64Blob(gbPhotoB64);
+      const fd=new FormData();
+      fd.append('file',blob,'gb.jpg');
+      fd.append('upload_preset','corenull');
+      const cr=await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',{method:'POST',body:fd});
+      const cl=await cr.json();
+      if(cl.secure_url) media_url=cl.secure_url;
+    }catch(e){showToast('사진 업로드 실패');return;}
+  }
+
+  try{
+    const res=await fetch('/api/comment',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({house_id:HOUSE_ID, author_name:author, content, media_url})
+    });
+    const data=await res.json();
+    if(res.ok&&data.success){
+      document.getElementById('gbAuthor').value='';
+      document.getElementById('gbContent').value='';
+      document.getElementById('gbPrev').style.display='none';
+      gbPhotoB64=null;
+      showToast('메시지가 등록됐어요 💌');
+      await loadData();
+    }else{showToast(data.error||'등록 실패');}
+  }catch(e){showToast('오류가 발생했어요');}
+}
+
+// ── 공유 ──
+function shareEvent(){
+  const url  = location.href;
+  const text = `${document.getElementById('heroName').textContent} 초대장\n👉 ${url}`;
+  if(navigator.share && /android|iphone|ipad/i.test(navigator.userAgent)){
+    navigator.share({title:'CoreNull 이벤트', text, url}).catch(()=>copyLink(url));
+  } else {
+    copyLink(url);
+  }
+}
+function copyLink(url){
+  navigator.clipboard.writeText(url).then(()=>showToast('링크가 복사됐어요 📋')).catch(()=>showToast('복사 실패'));
+}
+
+// ── 라이트박스 ──
+let lbTX=0,lbDX=0,lbDrag=false;
+function openLightbox(images,idx){
+  lbImages=images;lbIndex=idx;
+  document.getElementById('lbTrack').innerHTML=images.map(url=>`<div class="lb-slide"><img src="${url}" draggable="false"></div>`).join('');
+  updateLb();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function updateLb(){
+  document.getElementById('lbTrack').style.transform=`translateX(-${lbIndex*100}vw)`;
+  document.getElementById('lbCounter').textContent=`${lbIndex+1} / ${lbImages.length}`;
+}
+function lbPrev(){if(lbIndex>0){lbIndex--;updateLb();}}
+function lbNext(){if(lbIndex<lbImages.length-1){lbIndex++;updateLb();}}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow='';}
+const lbEl=document.getElementById('lightbox');
+lbEl.addEventListener('touchstart',e=>{lbTX=e.touches[0].clientX;lbDrag=true;lbDX=0;},{passive:true});
+lbEl.addEventListener('touchmove',e=>{if(!lbDrag)return;lbDX=e.touches[0].clientX-lbTX;},{passive:true});
+lbEl.addEventListener('touchend',()=>{if(lbDX<-50)lbNext();else if(lbDX>50)lbPrev();lbDrag=false;});
+document.addEventListener('keydown',e=>{if(!document.getElementById('lightbox').classList.contains('open'))return;if(e.key==='ArrowLeft')lbPrev();if(e.key==='ArrowRight')lbNext();if(e.key==='Escape')closeLightbox();});
+
+loadData();
+</script>
+</body>
+</html>
