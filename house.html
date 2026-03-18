@@ -277,7 +277,12 @@
 
 <nav class="tab-nav"><div class="tab-inner" id="tabInner"></div></nav>
 <div id="tabContents"></div>
-
+<!-- house.html footer 바로 위에 추가 -->
+<div style="text-align:center;padding:20px 0 0;">
+  <button onclick="shareHouse()" style="background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);border-radius:20px;padding:9px 22px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;letter-spacing:1px;">
+    🔗 집 공유하기
+  </button>
+</div>
 <div class="footer">
   <div class="footer-ei" id="footerEi">🏠</div>
   <div class="footer-name" id="footerName">CoreNull</div>
@@ -607,7 +612,18 @@ function renderEvent(container,room){
   </div>`;
 }
 // CHANGE END
+function shareHouse() {
+  const name  = HOUSE_DATA?.name || SLUG;
+  const dday  = document.querySelector('.dday-num')?.textContent || '';
+  const ddayLabel = document.querySelector('.dday-label')?.textContent || '';
+  const url   = `https://corenull.vercel.app/${SLUG}`;
 
+  const text = `${name}의 집에 놀러오세요 🏠\n${dday} ${ddayLabel}\n\n👉 ${url}`;
+
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('🔗 링크가 복사됐어요!'))
+    .catch(() => showToast('복사 실패'));
+}
 // ── 방명록 ──
 function previewGbPhoto(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{gbPhotoB64=e.target.result;document.getElementById('gbPrevImg').src=e.target.result;document.getElementById('gbPrevWrap').style.display='block';};r.readAsDataURL(file);}
 
