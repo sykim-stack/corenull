@@ -584,15 +584,29 @@ function renderLibrary(container){
 }
 
 // ── 이벤트 ──
+// CHANGE START
 function renderEvent(container,room){
   const diff=room.event_date?Math.ceil((new Date(room.event_date)-new Date())/86400000):null;
   const ddayText=diff===null?'':diff>0?`D-${diff}`:diff===0?'D-DAY 🎉':'완료 🎂';
   const eventPhotos=allMedia.filter(m=>m.media_type==='photo'&&m.room_id===room.id);
   const lbUrls=eventPhotos.map(m=>m.file_url);
   const photoHtml=eventPhotos.length?`<div class="lib-grid">${eventPhotos.map((m,i)=>`<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy">${IS_OWNER?`<button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>`:''}</div>`).join('')}</div>`:`<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
-  // ← room.id 전달
-  container.innerHTML=`<div class="section"><div class="ev-header"><div class="ev-title">${room.room_name}</div>${room.event_date?`<div class="ev-date">${fmtDate(room.event_date)}</div>`:''} ${ddayText?`<div class="ev-dday">${ddayText}</div>`:''}</div><div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">PHOTOS</div><div class="sec-title">사진</div></div>${IS_OWNER?`<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>`:''}</div>${photoHtml}</div>`;
+  const eventUrl=`/event?slug=${SLUG}&room=${room.id}`;
+  container.innerHTML=`<div class="section">
+    <div class="ev-header">
+      <div class="ev-title">${room.room_name}</div>
+      ${room.event_date?`<div class="ev-date">${fmtDate(room.event_date)}</div>`:''}
+      ${ddayText?`<div class="ev-dday">${ddayText}</div>`:''}
+      <a href="${eventUrl}" target="_blank" style="display:inline-block;margin-top:14px;background:var(--gold);color:white;border-radius:20px;padding:8px 20px;font-size:12px;text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
+    </div>
+    <div class="sec-head" style="margin-bottom:16px;">
+      <div><div class="sec-label">PHOTOS</div><div class="sec-title">사진</div></div>
+      ${IS_OWNER?`<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>`:''}
+    </div>
+    ${photoHtml}
+  </div>`;
 }
+// CHANGE END
 
 // ── 방명록 ──
 function previewGbPhoto(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{gbPhotoB64=e.target.result;document.getElementById('gbPrevImg').src=e.target.result;document.getElementById('gbPrevWrap').style.display='block';};r.readAsDataURL(file);}
