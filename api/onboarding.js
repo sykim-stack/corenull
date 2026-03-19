@@ -1,5 +1,5 @@
 // api/onboarding.js
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 function getSupabaseWithDevice(req) {
   const device_id = req.headers['x-device-id'] || null;
@@ -10,7 +10,7 @@ function getSupabaseWithDevice(req) {
   return { supabase, device_id };
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-device-id');
@@ -47,9 +47,9 @@ module.exports = async function handler(req, res) {
   if (req.method === 'POST') {
     const { step, has_house, has_interest } = req.body;
     const updateData = { updated_at: new Date().toISOString() };
-    if (step !== undefined)          updateData.step         = step;
-    if (has_house !== undefined)     updateData.has_house    = has_house;
-    if (has_interest !== undefined)  updateData.has_interest = has_interest;
+    if (step !== undefined)         updateData.step         = step;
+    if (has_house !== undefined)    updateData.has_house    = has_house;
+    if (has_interest !== undefined) updateData.has_interest = has_interest;
 
     const { data, error } = await supabase
       .schema('corenull')
@@ -63,4 +63,4 @@ module.exports = async function handler(req, res) {
   }
 
   return res.status(405).end();
-};
+}
