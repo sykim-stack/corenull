@@ -1,26 +1,19 @@
 // api/onboarding.js
 import { createClient } from '@supabase/supabase-js';
 
-function getSupabaseWithDevice(req) {
-  // CHANGE START
-const device_id = req.headers['x-device-id'] || null;
-if (!device_id) return res.status(200).json({ has_interest: true }); // 헤더 없으면 스킵
-// CHANGE END
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-  return { supabase, device_id };
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-device-id');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { supabase, device_id } = getSupabaseWithDevice(req);
-  if (!device_id) return res.status(400).json({ error: 'x-device-id 헤더 필요' });
+  const device_id = req.headers['x-device-id'] || null;
+  if (!device_id) return res.status(200).json({ has_interest: true }); // ← 헤더 없으면 스킵
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
 
   await supabase.rpc('set_device', { p_device_id: device_id });
 
