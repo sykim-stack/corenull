@@ -2,7 +2,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 function getSupabaseWithDevice(req) {
-  const device_id = req.headers['x-device-id'] || null;
+  // CHANGE START
+const device_id = req.headers['x-device-id'] || null;
+if (!device_id) return res.status(200).json({ has_interest: true }); // 헤더 없으면 스킵
+// CHANGE END
   const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
