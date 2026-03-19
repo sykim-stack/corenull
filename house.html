@@ -325,12 +325,25 @@
 
 <div class="onboard-overlay" id="onboardOverlay">
   <div class="onboard-box">
-    <div class="onboard-step">STEP 1 OF 1</div>
-    <div class="onboard-title">관심사를 선택해주세요</div>
-    <div class="onboard-sub">3개 이상 선택하면 비슷한 관심사를 가진 집을 추천해드려요</div>
-    <div class="interest-grid" id="interestGrid"></div>
-    <button class="onboard-btn" id="onboardBtn" onclick="submitInterests()" disabled>계속하기</button>
-    <span class="onboard-skip" onclick="skipOnboarding()">나중에 할게요</span>
+    <div id="stepInterest">
+      <div class="onboard-step">STEP 1 OF 2</div>
+      <div class="onboard-title">관심사를 선택해주세요</div>
+      <div class="onboard-sub">3개 이상 선택하면 비슷한 관심사를 가진 집을 추천해드려요</div>
+      <div class="interest-grid" id="interestGrid"></div>
+      <button class="onboard-btn" id="onboardBtn" onclick="goStepHouse()" disabled>다음 →</button>
+      <span class="onboard-skip" onclick="skipOnboarding()">나중에 할게요</span>
+    </div>
+    <div id="stepHouse" style="display:none;">
+      <div class="onboard-step">STEP 2 OF 2</div>
+      <div class="onboard-title">이 집에 입장할까요?</div>
+      <div class="onboard-sub" id="houseStepSub">지금 보고 있는 집에 멤버로 등록됩니다</div>
+      <div style="background:var(--warm);border-radius:16px;padding:20px;margin-bottom:24px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;" id="houseStepEmoji">🏠</div>
+        <div style="font-family:'Noto Serif KR',serif;font-size:18px;font-weight:600;color:var(--dark);" id="houseStepName">---</div>
+      </div>
+      <button class="onboard-btn" onclick="joinCurrentHouse()">입장하기 🏠</button>
+      <span class="onboard-skip" onclick="skipOnboarding()">나중에 할게요</span>
+    </div>
   </div>
 </div>
 
@@ -417,7 +430,7 @@ function toggleInterest(el) {
   document.getElementById('onboardBtn').disabled = selectedInterests.length < 3;
 }
 
-async function submitInterests() {
+async function goStepHouse() {
   if (selectedInterests.length < 3) return;
   try {
     await fetch('/api/interests', {
@@ -425,8 +438,28 @@ async function submitInterests() {
       headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
       body: JSON.stringify({ interest_ids: selectedInterests })
     });
-    document.getElementById('onboardOverlay').classList.remove('open');
-  } catch (e) { console.error('[submit interests]', e); }
+  } catch (e) { console.error(e); }
+  document.getElementById('stepInterest').style.display = 'none';
+  document.getElementById('stepHouse').style.display = 'block';
+  if (HOUSE_DATA) {
+    const cat = { baby:'👶', pet:'🐾', travel:'✈️', fitness:'💪', daily:'🏠' };
+    document.getElementById('houseStepEmoji').textContent = cat[HOUSE_DATA.category] || '🏠';
+    document.getElementById('houseStepName').textContent = HOUSE_DATA.name || SLUG;
+    document.getElementById('houseStepSub').textContent = `${HOUSE_DATA.name || SLUG}에 멤버로 등록됩니다`;
+  }
+}
+
+async function joinCurrentHouse() {
+  if (!HOUSE_ID) { skipOnboarding(); return; }
+  try {
+    await fetch('/api/onboarding?action=join-house', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
+      body: JSON.stringify({ house_id: HOUSE_ID, role: 'member' })
+    });
+    showToast('환영해요! 🏠');
+  } catch (e) { console.error(e); }
+  document.getElementById('onboardOverlay').classList.remove('open');
 }
 
 function skipOnboarding() { document.getElementById('onboardOverlay').classList.remove('open'); }
@@ -739,13 +772,8 @@ lbEl.addEventListener('touchend', () => { if (lbDX < -50) lbNext(); else if (lbD
 lbEl.addEventListener('click', e => { if (e.target === lbEl) closeLightbox(); });
 document.addEventListener('keydown', e => { if (!document.getElementById('lightbox').classList.contains('open')) return; if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); if (e.key === 'Escape') closeLightbox(); });
 
-// CHANGE START
-loadData().then(() => {
-  if (typeof DEVICE_ID !== 'undefined' && DEVICE_ID) {
-    checkOnboarding();
-  }
-});
-// CHANGE END
+checkOnboarding();
+loadData();
 </script>
 </body>
 </html>
