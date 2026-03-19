@@ -423,6 +423,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// CHANGE START
 const SLUG      = location.pathname.replace(/^\//, '') || 'hajun';
 const OWNER_KEY = new URLSearchParams(location.search).get('owner');
 let IS_OWNER = false, HOUSE_ID = null, HOUSE_DATA = null;
@@ -431,7 +432,20 @@ let writeFiles = [], uploadFiles = [];
 let lbImages = [], lbIndex = 0;
 let activeCat = null, currentRoomId = null;
 let gbPhotoB64 = null;
-let uploadRoomId = null; // ← 추가: 이벤트 탭 room_id 추적
+let uploadRoomId = null;
+
+// device_id
+function getDeviceId(){
+  let id = localStorage.getItem('cn_device_id');
+  if(!id){
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+    localStorage.setItem('cn_device_id', id);
+  }
+  return id;
+}
+const DEVICE_ID = getDeviceId();
+let selectedInterests = [];
+// CHANGE END
 
 const ROOM_META = {
   living:  { icon:'🛋️', label:'거실' },
@@ -467,8 +481,6 @@ function timeAgo(str){const diff=Date.now()-new Date(str).getTime();const m=Math
 async function resizeImg(file,maxW=1200){return new Promise(resolve=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const s=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.85));};img.src=url;});}
 async function b64Blob(b64){return await(await fetch(b64)).blob();}
 
-// ── 온보딩 ──
-let selectedInterests = [];
 // CHANGE START
 function getDeviceId(){
   let id = localStorage.getItem('cn_device_id');
@@ -478,7 +490,6 @@ function getDeviceId(){
   }
   return id;
 }
-const DEVICE_ID = getDeviceId();
 // CHANGE END
 
 // CHANGE START
