@@ -263,7 +263,30 @@
     .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--dark);color:white;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     @media(min-width:480px){.hero-name{font-size:56px;}.photo-frame{width:220px;height:220px;}}
-  </style>
+/* ── 온보딩 모달 ── */
+.onboard-overlay{display:none;position:fixed;inset:0;background:rgba(44,26,14,.7);backdrop-filter:blur(8px);z-index:600;align-items:center;justify-content:center;padding:24px;}
+.onboard-overlay.open{display:flex;}
+.onboard-box{background:var(--cream);border-radius:28px;width:100%;max-width:480px;padding:36px 28px;animation:fadeUp .4s ease;}
+.onboard-step{font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;}
+.onboard-title{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:8px;}
+.onboard-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.7;}
+.interest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;}
+.interest-chip{background:var(--warm);border:2px solid transparent;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .2s;}
+.interest-chip.on{background:linear-gradient(135deg,#FDE8D8,#F5C6A8);border-color:var(--brown);}
+.interest-chip:hover{background:var(--peach);}
+.interest-emoji{font-size:24px;margin-bottom:4px;}
+.interest-name{font-size:11px;color:var(--text);letter-spacing:1px;}
+.onboard-btn{width:100%;background:var(--brown);color:white;border:none;border-radius:16px;padding:16px;font-family:'Gowun Dodum',serif;font-size:14px;cursor:pointer;letter-spacing:1px;}
+.onboard-btn:hover{background:var(--dark);}
+.onboard-btn:disabled{background:var(--muted);cursor:not-allowed;}
+.onboard-skip{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);cursor:pointer;}
+.onboard-skip:hover{color:var(--brown);}
+@media(max-width:480px){
+  .onboard-overlay{align-items:flex-end;padding:0;}
+  .onboard-box{border-radius:28px 28px 0 0;padding:28px 20px 40px;max-width:100%;}
+  .interest-grid{grid-template-columns:repeat(3,1fr);}
+}
+</style>
 </head>
 <body>
 
@@ -386,7 +409,17 @@
     </div>
   </div>
 </div>
-
+<!-- 온보딩 모달 -->
+<div class="onboard-overlay" id="onboardOverlay">
+  <div class="onboard-box">
+    <div class="onboard-step" id="onboardStep">STEP 1 OF 1</div>
+    <div class="onboard-title" id="onboardTitle">관심사를 선택해주세요</div>
+    <div class="onboard-sub" id="onboardSub">3개 이상 선택하면 비슷한 관심사를 가진 집을 추천해드려요</div>
+    <div class="interest-grid" id="interestGrid"></div>
+    <button class="onboard-btn" id="onboardBtn" onclick="submitInterests()" disabled>계속하기</button>
+    <span class="onboard-skip" onclick="skipOnboarding()">나중에 할게요</span>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -434,7 +467,59 @@ function timeAgo(str){const diff=Date.now()-new Date(str).getTime();const m=Math
 async function resizeImg(file,maxW=1200){return new Promise(resolve=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const s=Math.min(1,maxW/img.width);const c=document.createElement('canvas');c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);resolve(c.toDataURL('image/jpeg',.85));};img.src=url;});}
 async function b64Blob(b64){return await(await fetch(b64)).blob();}
 
-// ── 데이터 로드 ──
+// ── 온보딩 ──
+let selectedInterests = [];
+let DEVICE_ID = localStorage.getItem('cn_device_id') || (() => {
+  const id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+  localStorage.setItem('cn_device_id', id);
+  return id;
+})();
+
+async function checkOnboarding(){
+  try{
+    const res = await fetch('/api/onboarding', { headers: { 'x-device-id': DEVICE_ID } });
+    const data = await res.json();
+    if(!data.has_interest) await showInterestModal();
+  }catch(e){ console.error('[onboarding]', e); }
+}
+
+async function showInterestModal(){
+  try{
+    const res = await fetch('/api/interests', { headers: { 'x-device-id': DEVICE_ID } });
+    const interests = await res.json();
+    const grid = document.getElementById('interestGrid');
+    grid.innerHTML = interests.map(i => `
+      <div class="interest-chip" data-id="${i.id}" onclick="toggleInterest(this)">
+        <div class="interest-emoji">${i.emoji}</div>
+        <div class="interest-name">${i.name}</div>
+      </div>
+    `).join('');
+    document.getElementById('onboardOverlay').classList.add('open');
+  }catch(e){ console.error('[interest modal]', e); }
+}
+
+function toggleInterest(el){
+  el.classList.toggle('on');
+  selectedInterests = Array.from(document.querySelectorAll('.interest-chip.on')).map(e => e.dataset.id);
+  document.getElementById('onboardBtn').disabled = selectedInterests.length < 3;
+}
+
+async function submitInterests(){
+  if(selectedInterests.length < 3){ return; }
+  try{
+    await fetch('/api/interests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
+      body: JSON.stringify({ interest_ids: selectedInterests })
+    });
+    document.getElementById('onboardOverlay').classList.remove('open');
+  }catch(e){ console.error('[submit interests]', e); }
+}
+
+function skipOnboarding(){
+  document.getElementById('onboardOverlay').classList.remove('open');
+}
+//  데이터 로드 loadData()
 async function loadData(){
   try{
     const res=await fetch(`/api/house?slug=${SLUG}`);
@@ -819,6 +904,7 @@ lbEl.addEventListener('touchend',()=>{if(lbDX<-50)lbNext();else if(lbDX>50)lbPre
 lbEl.addEventListener('click',e=>{if(e.target===lbEl)closeLightbox();});
 document.addEventListener('keydown',e=>{if(!document.getElementById('lightbox').classList.contains('open'))return;if(e.key==='ArrowLeft')lbPrev();if(e.key==='ArrowRight')lbNext();if(e.key==='Escape')closeLightbox();});
 
+checkOnboarding();
 loadData();
 </script>
 </body>
