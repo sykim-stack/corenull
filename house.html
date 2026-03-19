@@ -405,6 +405,7 @@ async function resizeImg(file, maxW = 1200) { return new Promise(resolve => { co
 async function b64Blob(b64) { return await (await fetch(b64)).blob(); }
 
 async function checkOnboarding() {
+    return; // 임시 비활성화
   try {
     const res = await fetch('/api/onboarding', { headers: { 'x-device-id': DEVICE_ID } });
     if (!res.ok) return;
