@@ -409,6 +409,7 @@ async function checkOnboarding() {
     const res = await fetch('/api/onboarding', { headers: { 'x-device-id': DEVICE_ID } });
     if (!res.ok) return;
     const data = await res.json();
+    console.log('[onboarding]', data); // 이거 추가
     if (!data.has_interest) await showInterestModal();
   } catch (e) { console.error('[onboarding]', e); }
 }
