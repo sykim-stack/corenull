@@ -189,10 +189,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// CHANGE START - owner 인증
-const OWNER_KEY = params.get('owner') || null;
-let IS_OWNER = false;
-// CHANGE END  
 const params  = new URLSearchParams(location.search);
 const SLUG    = params.get('slug') || 'hajun';
 const ROOM_ID = params.get('room');
@@ -228,14 +224,6 @@ async function loadData(){
     allMedia   = (data.media||[]).filter(m=>m.room_id===ROOM_ID && m.media_type==='photo');
     document.getElementById('backBtn').href = `/${SLUG}`;
     applyHero(data.house, room);
-    // CHANGE START - owner 검증
-if (OWNER_KEY) {
-  const vRes = await fetch(`/api/house?slug=${SLUG}&owner=${OWNER_KEY}`);
-  const vData = await vRes.json();
-  IS_OWNER = vData.is_owner === true;
-  if (IS_OWNER) showOwnerUpload();
-}
-// CHANGE END
     renderDday(data.house, room);
     renderGallery();
     renderMilestones(data.milestones||[]);
@@ -333,80 +321,6 @@ function renderFeed(comments, house){
       <div class="feed-time">${timeAgo(c.created_at)}</div>
     </div>
   `).join('');
-// CHANGE START - 집주인 사진 업로드 UI
-function showOwnerUpload() {
-  // 갤러리 섹션 위에 업로드 버튼 삽입
-  const gallerySection = document.getElementById('gallerySection');
-  
-  const uploadDiv = document.createElement('div');
-  uploadDiv.className = 'section';
-  uploadDiv.innerHTML = `
-    <div class="sec-label">OWNER</div>
-    <div class="sec-title">📷 사진 추가</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="gb-submit" style="max-width:200px;" onclick="document.getElementById('ownerPhotoInput').click()">
-        📷 사진 선택
-      </button>
-      <input type="file" id="ownerPhotoInput" accept="image/*" multiple style="display:none" onchange="uploadOwnerPhotos(this)">
-      <div id="ownerUploadStatus" style="font-size:13px;color:var(--muted);align-self:center;"></div>
-    </div>
-  `;
-  
-  // gallerySection 앞에 삽입 (없으면 backBtn 뒤에)
-  const backBtn = document.getElementById('backBtn');
-  backBtn.parentNode.insertBefore(uploadDiv, gallerySection.style.display === 'none' ? backBtn.nextSibling : gallerySection);
-}
-
-async function uploadOwnerPhotos(input) {
-  const files = Array.from(input.files);
-  if (!files.length) return;
-  
-  const status = document.getElementById('ownerUploadStatus');
-  status.textContent = `0 / ${files.length} 업로드 중...`;
-  
-  let done = 0;
-  for (const file of files) {
-    try {
-      // 1. Cloudinary 업로드
-      const b64 = await resizeImg(file, 1600);
-      const blob = await b64Blob(b64);
-      const fd = new FormData();
-      fd.append('file', blob, 'event.jpg');
-      fd.append('upload_preset', 'corenull');
-      const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
-      const cl = await cr.json();
-      if (!cl.secure_url) throw new Error('Cloudinary 실패');
-
-      // 2. Supabase media 저장
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          house_id: HOUSE_ID,
-          room_id: ROOM_ID,
-          file_url: cl.secure_url,
-          media_type: 'photo',
-          content_type: 'manual'
-        })
-      });
-      if (!res.ok) throw new Error('DB 저장 실패');
-      
-      done++;
-      status.textContent = `${done} / ${files.length} 완료`;
-    } catch (e) {
-      console.error(e);
-      showToast(`사진 ${done + 1} 업로드 실패`);
-    }
-  }
-  
-  status.textContent = `✅ ${done}장 업로드 완료`;
-  showToast(`${done}장 추가됐어요 📷`);
-  
-  // 갤러리 새로고침
-  await loadData();
-  input.value = '';
-}
-// CHANGE END  
 }
 
 function previewGbPhoto(input){
