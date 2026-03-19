@@ -723,17 +723,8 @@ function switchTab(tabId) {
 
 function switchToRoomType(type) { const r = ROOMS.find(r => r.room_type === type); if (r) switchTab(`tab-${r.id}`); }
 
-function renderLobby(container, house, milestones, comments) {
-  let bannerHtml = '';
-  if (house.hundred_date) {
-    const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
-    if (diff >= 0) {
-      const badge = diff === 0 ? 'D-DAY 🎉' : `D-${diff}`;
-      const title = diff === 0 ? '오늘이 백일이에요! 🎉' : `${house.name}의 백일이 다가오고 있어요 🎂`;
-      const sub = diff === 0 ? '축하해요!' : `백일까지 ${diff}일 남았어요 · ${fmtDate(house.hundred_date)}`;
-      bannerHtml = `<div class="lobby-banner"><div class="lobby-banner-inner"><div class="lobby-badge">${badge}</div><div><div style="font-size:14px;font-weight:600;">${title}</div><div style="font-size:12px;color:var(--muted)">${sub}</div></div></div></div>`;
-    }
-  }function renderLobby(container, house, milestones, comments) {
+
+  function renderLobby(container, house, milestones, comments) {
   // ── 배너 ──
   let bannerHtml = '';
   if (house.hundred_date) {
