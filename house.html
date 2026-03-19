@@ -724,6 +724,16 @@ function switchTab(tabId) {
 function switchToRoomType(type) { const r = ROOMS.find(r => r.room_type === type); if (r) switchTab(`tab-${r.id}`); }
 
 function renderLobby(container, house, milestones, comments) {
+  let bannerHtml = '';
+  if (house.hundred_date) {
+    const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
+    if (diff >= 0) {
+      const badge = diff === 0 ? 'D-DAY 🎉' : `D-${diff}`;
+      const title = diff === 0 ? '오늘이 백일이에요! 🎉' : `${house.name}의 백일이 다가오고 있어요 🎂`;
+      const sub = diff === 0 ? '축하해요!' : `백일까지 ${diff}일 남았어요 · ${fmtDate(house.hundred_date)}`;
+      bannerHtml = `<div class="lobby-banner"><div class="lobby-banner-inner"><div class="lobby-badge">${badge}</div><div><div style="font-size:14px;font-weight:600;">${title}</div><div style="font-size:12px;color:var(--muted)">${sub}</div></div></div></div>`;
+    }
+  }function renderLobby(container, house, milestones, comments) {
   // ── 배너 ──
   let bannerHtml = '';
   if (house.hundred_date) {
@@ -892,6 +902,17 @@ function renderLobby(container, house, milestones, comments) {
       </div>
 
     </div>`;
+}
+  const photos = allMedia.filter(m => m.media_type === 'photo').slice(0, 3);
+  const lbUrls = photos.map(m => m.file_url);
+  const photoHtml = photos.length ? photos.map((m, i) => `<div class="ps-cell" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy"></div>`).join('') : `<div style="grid-column:span 3;text-align:center;padding:24px;color:var(--muted);font-size:13px;">아직 사진이 없어요 📷</div>`;
+  const allM = (milestones && milestones.length) ? milestones : (MILESTONE_DEFAULTS[house.category] || MILESTONE_DEFAULTS['baby']);
+  const now = new Date();
+  const nextM = allM.filter(m => m.milestone_date && new Date(m.milestone_date) >= now).sort((a, b) => new Date(a.milestone_date) - new Date(b.milestone_date))[0];
+  let msHtml = '';
+  if (nextM) { const diff = Math.ceil((new Date(nextM.milestone_date) - now) / 86400000); msHtml = `<div class="sec-label" style="margin-bottom:10px;">NEXT MILESTONE</div><div class="ms-card"><div class="ms-icon">${nextM.memo || '⭐'}</div><div class="ms-info"><div class="ms-name">${nextM.title}</div><div class="ms-date">${fmtDate(nextM.milestone_date)}</div></div><div class="ms-badge">${diff === 0 ? 'D-DAY' : `D-${diff}`}</div></div>`; }
+  const feedHtml = comments.length ? comments.map((c, i) => `<div class="feed-item" style="animation-delay:${i * .06}s"><div class="feed-head"><div class="feed-av">${(c.author_name || '?')[0]}</div><div class="feed-name">${c.author_name || '익명'}</div><div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>${IS_OWNER ? `<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>` : ''}</div>${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}<div class="feed-body">${(c.content_original || '').replace(/\n/g, '<br>')}</div><div class="feed-time">${timeAgo(c.created_at)}</div></div>`).join('') : `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
+  container.innerHTML = `${bannerHtml}<div class="section"><div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div><div class="photo-strip">${photoHtml}</div>${msHtml}<div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length ? comments.length + '개' : ''}</div></div><div class="feed-list">${feedHtml}</div><div class="gb-form"><div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div></div>`;
 }
 
 function renderRoom(container, room) {
