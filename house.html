@@ -469,19 +469,29 @@ async function b64Blob(b64){return await(await fetch(b64)).blob();}
 
 // ── 온보딩 ──
 let selectedInterests = [];
-let DEVICE_ID = localStorage.getItem('cn_device_id') || (() => {
-  const id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
-  localStorage.setItem('cn_device_id', id);
+// CHANGE START
+function getDeviceId(){
+  let id = localStorage.getItem('cn_device_id');
+  if(!id){
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+    localStorage.setItem('cn_device_id', id);
+  }
   return id;
-})();
+}
+const DEVICE_ID = getDeviceId();
+// CHANGE END
 
+// CHANGE START
 async function checkOnboarding(){
+  if(!DEVICE_ID) return;
   try{
     const res = await fetch('/api/onboarding', { headers: { 'x-device-id': DEVICE_ID } });
+    if(!res.ok) return;
     const data = await res.json();
     if(!data.has_interest) await showInterestModal();
   }catch(e){ console.error('[onboarding]', e); }
 }
+// CHANGE END
 
 async function showInterestModal(){
   try{
