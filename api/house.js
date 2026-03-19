@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { slug, owner } = req.query;
+  const { slug } = req.query;
   if (!slug) return res.status(400).json({ error: 'slug required' });
 
   const baseUrl = process.env.SUPABASE_URL;
@@ -27,11 +27,6 @@ export default async function handler(req, res) {
 
   if (!house) return res.status(404).json({ error: '존재하지 않는 집입니다' });
   if (!house.is_public) return res.status(403).json({ error: '비공개 집입니다' });
-
-  // owner_key 서버사이드 검증 — 키 자체는 응답에 포함 안 함
-  const is_owner = owner && house.owner_key
-    ? owner === house.owner_key
-    : false;
 
   // 병렬 조회
   const [mediaRes, milestonesRes, roomsRes, categoriesRes, postsRes, commentsRes] = await Promise.all([
@@ -69,12 +64,8 @@ export default async function handler(req, res) {
     }));
   }
 
-  // house 응답에서 owner_key 제거 (보안)
-  const { owner_key: _removed, ...safeHouse } = house;
-
   return res.status(200).json({
-    house:      safeHouse,
-    is_owner,
+    house,
     media:      Array.isArray(media)      ? media      : [],
     milestones: Array.isArray(milestones) ? milestones : [],
     rooms:      Array.isArray(rooms)      ? rooms      : [],
