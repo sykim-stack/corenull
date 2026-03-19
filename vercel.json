@@ -1,7 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/:path*",  "destination": "/api/:path*" },
-    { "source": "/hajun-100",   "destination": "/event.html?slug=hajun&room=f97d186d-43ce-4623-a4fc-a6b04008a0df" },
+    { "source": "/hajun-100",   "destination": "/hajun-100.html" },
     { "source": "/create",      "destination": "/create.html" },
     { "source": "/event",       "destination": "/event.html" },
     { "source": "/:slug",       "destination": "/house.html" }
