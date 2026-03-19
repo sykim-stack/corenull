@@ -707,7 +707,8 @@ function buildTabs(house, rooms, milestones, comments) {
     div.className = 'tab-content' + (idx === 0 ? ' active' : '');
     div.id = tabId;
     tabContents.appendChild(div);
-    if (room.room_type === 'living') renderLobby(div, house, milestones, comments);
+    // buildTabs() 안에서 renderLobby 호출 부분 수정
+if (room.room_type === 'living') renderLobby(div, house, milestones, comments, ordered);
     if (room.room_type === 'room') renderRoom(div, room);
     if (room.room_type === 'event') renderEvent(div, room);
     if (room.room_type === 'library') renderLibrary(div);
@@ -725,7 +726,7 @@ function switchTab(tabId) {
 
 function switchToRoomType(type) { const r = ROOMS.find(r => r.room_type === type); if (r) switchTab(`tab-${r.id}`); }
 
-function renderLobby(container, house, milestones, comments) {
+function renderLobby(container, house, milestones, comments, rooms) {
   let bannerHtml = '';
   if (house.hundred_date) {
     const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
@@ -738,7 +739,7 @@ function renderLobby(container, house, milestones, comments) {
   }
 
   const ROOM_ICONS_MAP = { room: '👶', library: '📚', event: '🎂' };
-  const navRooms = ROOMS.filter(r => r.room_type !== 'living' && r.room_type !== 'storage');
+  const navRooms = (rooms || ROOMS).filter(r => r.room_type !== 'living' && r.room_type !== 'storage');
   const roomCardsHtml = navRooms.length ? `
     <div class="sec-head" style="margin-bottom:14px;">
       <div><div class="sec-label">ROOMS</div><div class="sec-title">방 둘러보기</div></div>
