@@ -825,11 +825,39 @@ function renderRoom(container, room) {
   renderPostList(allPosts);
 }
 
+// CHANGE START
 function filterCat(catId, el) {
   document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active'); activeCat = catId === 'all' ? null : catId;
-  renderPostList(activeCat ? allPosts.filter(p => p.category_ids && p.category_ids.includes(activeCat)) : allPosts);
+  el.classList.add('active');
+  activeCat = catId === 'all' ? null : catId;
+
+  // 이벤트 카테고리 선택 시 배너 노출
+  const eventCat = CATEGORIES.find(c => c.name === '이벤트');
+  const existingBanner = document.getElementById('eventBanner');
+  if (existingBanner) existingBanner.remove();
+
+  if (eventCat && catId === eventCat.id) {
+    const eventRoom = ROOMS.find(r => r.room_type === 'event');
+    if (eventRoom) {
+      const banner = document.createElement('div');
+      banner.id = 'eventBanner';
+      banner.style.cssText = 'background:linear-gradient(135deg,#FEF3DC,#FDE8D8);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
+      banner.innerHTML = `
+        <div style="font-size:13px;color:var(--brown);font-weight:600;">🎂 이벤트 페이지</div>
+        <a href="/event?slug=${SLUG}&room=${eventRoom.id}" target="_blank"
+          style="background:var(--gold);color:white;border-radius:20px;padding:7px 16px;font-size:12px;text-decoration:none;">
+          열기 →
+        </a>`;
+      const postList = document.getElementById('postList');
+      postList.parentNode.insertBefore(banner, postList);
+    }
+  }
+
+  renderPostList(activeCat
+    ? allPosts.filter(p => p.category_ids && p.category_ids.includes(activeCat))
+    : allPosts);
 }
+// CHANGE END
 
 function renderPostList(posts) {
   const el = document.getElementById('postList'); if (!el) return;
