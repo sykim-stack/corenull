@@ -136,6 +136,26 @@
     /* ── 토스트 ── */
     .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--dark);color:white;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.story-list{display:flex;flex-direction:column;gap:32px;margin-bottom:40px;}
+.story-date-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.story-date-label::after{content:'';flex:1;height:1px;background:rgba(139,94,60,.1);}
+.story-card{background:white;border:1px solid rgba(139,94,60,.1);border-radius:20px;overflow:hidden;}
+.story-imgs{display:grid;gap:2px;}
+.story-imgs.one img{width:100%;max-height:360px;object-fit:cover;cursor:pointer;transition:transform .3s;}
+.story-imgs.two{grid-template-columns:1fr 1fr;}
+.story-imgs.two img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;}
+.story-imgs.multi{grid-template-columns:1fr 1fr;}
+.story-imgs.multi img:first-child{grid-column:span 2;max-height:280px;object-fit:cover;cursor:pointer;}
+.story-imgs.multi img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;}
+.story-imgs img{transition:transform .3s;}
+.story-imgs img:hover{transform:scale(1.02);}
+.story-body{padding:16px 18px;}
+.story-content{font-size:14px;line-height:1.8;color:var(--text);margin-bottom:6px;white-space:pre-wrap;}
+.story-meta{font-size:11px;color:var(--muted);}
+.hero-photo-full{width:100%;max-height:480px;object-fit:cover;display:block;}
+
+
   </style>
 </head>
 <body>
@@ -309,6 +329,15 @@ async function loadData() {
     ROOM_NAME  = room.room_name;
     EVENT_DATE = room.event_date || '';
     allMedia   = (data.media || []).filter(m => m.room_id === ROOM_ID && m.media_type === 'photo');
+    // CHANGE START: loadData() 안 allMedia 저장 아래에 추가
+const eventCatId = (data.categories || []).find(c => c.name === '이벤트')?.id;
+window.allEventPosts = eventCatId
+  ? (data.posts || []).filter(p =>
+      p.room_id === ROOM_ID ||
+      (p.category_ids && p.category_ids.includes(eventCatId))
+    )
+  : [];
+// CHANGE END
 
     document.getElementById('backBtn').href = `/${SLUG}`;
 
@@ -360,19 +389,75 @@ function renderDday(house, room) {
 }
 
 // ── 갤러리 ──
+// CHANGE START: renderGallery() 전체 교체
 function renderGallery() {
-  const sec  = document.getElementById('gallerySection');
-  const grid = document.getElementById('galleryGrid');
-  if (!allMedia.length) { sec.style.display = 'none'; return; }
-  sec.style.display = 'block';
-  const urls = allMedia.map(m => m.file_url);
-  grid.innerHTML = allMedia.map((m, i) =>
-    `<div class="gallery-item" onclick='openLightbox(${JSON.stringify(urls)},${i})'>
-      <img src="${m.file_url}" loading="lazy">
-    </div>`
-  ).join('');
-}
+  const sec = document.getElementById('gallerySection');
 
+  // media + posts 합치기 → 날짜순 정렬
+  const mediaItems = allMedia.map(m => ({
+    urls: [m.file_url],
+    content: m.content || '',
+    date: m.created_at
+  }));
+
+  const postItems = (window.allEventPosts || [])
+    .filter(p => p.media_urls && p.media_urls.length)
+    .map(p => ({
+      urls: p.media_urls,
+      content: p.content || '',
+      date: p.created_at
+    }));
+
+  const allItems = [...mediaItems, ...postItems]
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  if (!allItems.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+
+  // 대표 사진 (첫 번째)
+  const heroPhoto = allItems[0].urls[0];
+  const rest = allItems;
+
+  // 날짜별 그룹핑
+  const groups = {};
+  rest.forEach(item => {
+    const d = new Date(item.date);
+    const key = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+  });
+
+  const storyHtml = Object.entries(groups).map(([dateLabel, items]) => `
+    <div>
+      <div class="story-date-label">${dateLabel}</div>
+      ${items.map(item => {
+        const gc = item.urls.length === 1 ? 'one'
+                 : item.urls.length === 2 ? 'two' : 'multi';
+        const allUrls = items.flatMap(i => i.urls);
+        const imgs = item.urls.map((url, i) =>
+          `<img src="${url}" loading="lazy"
+            onclick='openLightbox(${JSON.stringify(allUrls)},${i})'>`
+        ).join('');
+        return `
+          <div class="story-card">
+            <div class="story-imgs ${gc}">${imgs}</div>
+            ${item.content ? `
+              <div class="story-body">
+                <div class="story-content">${item.content}</div>
+                <div class="story-meta">${new Date(item.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+              </div>` : ''}
+          </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+
+  document.getElementById('galleryGrid').outerHTML = `
+    <img class="hero-photo-full" src="${heroPhoto}" loading="lazy"
+      onclick='openLightbox(${JSON.stringify([heroPhoto])},0)'>
+    <div class="story-list" id="storyList">${storyHtml}</div>
+  `;
+}
+// CHANGE END
 // ── 마일스톤 ──
 function renderMilestones(milestones) {
   const sec  = document.getElementById('msSection');
@@ -478,6 +563,9 @@ async function uploadOwnerPhotos(input) {
   // 갤러리 새로고침
   setTimeout(async () => {
     await loadData();
+    // CHANGE START
+window.allPosts = data.posts || [];
+// CHANGE END
     progWrap.style.display = 'none';
   }, 800);
 
