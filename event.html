@@ -330,9 +330,9 @@ async function loadData() {
     EVENT_DATE = room.event_date || '';
     allMedia   = (data.media || []).filter(m => m.room_id === ROOM_ID && m.media_type === 'photo');
     // CHANGE START: loadData() 안 allMedia 저장 아래에 추가
-const eventCatId = (data.categories || []).find(c => c.name === '이벤트')?.id;
-window.allEventPosts = eventCatId
-  ? (data.posts || []).filter(p =>
+    const eventCatId = (data.categories || []).find(c => c.name === '이벤트')?.id;
+    window.allEventPosts = eventCatId
+       ? (data.posts || []).filter(p =>
       p.room_id === ROOM_ID ||
       (p.category_ids && p.category_ids.includes(eventCatId))
     )
