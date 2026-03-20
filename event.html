@@ -418,38 +418,62 @@ function renderGallery() {
   const heroPhoto = allItems[0].urls[0];
   const rest = allItems;
 
-  // 날짜별 그룹핑
-  const groups = {};
-  rest.forEach(item => {
-    const d = new Date(item.date);
-    const key = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(item);
-  });
+// CHANGE START: renderGallery() 날짜 그룹핑 부분 교체
+// 날짜별 그룹핑 (날짜 + 내용이 같으면 같은 카드)
+const groups = {};
+allItems.forEach(item => {
+  const d = new Date(item.date);
+  const dateKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const groupKey = `${dateKey}__${item.content}`; // 같은 날 + 같은 내용 = 한 카드
 
-  const storyHtml = Object.entries(groups).map(([dateLabel, items]) => `
-    <div>
-      <div class="story-date-label">${dateLabel}</div>
-      ${items.map(item => {
-        const gc = item.urls.length === 1 ? 'one'
-                 : item.urls.length === 2 ? 'two' : 'multi';
-        const allUrls = items.flatMap(i => i.urls);
-        const imgs = item.urls.map((url, i) =>
-          `<img src="${url}" loading="lazy"
-            onclick='openLightbox(${JSON.stringify(allUrls)},${i})'>`
-        ).join('');
-        return `
-          <div class="story-card">
-            <div class="story-imgs ${gc}">${imgs}</div>
-            ${item.content ? `
-              <div class="story-body">
-                <div class="story-content">${item.content}</div>
-                <div class="story-meta">${new Date(item.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-              </div>` : ''}
-          </div>`;
-      }).join('')}
-    </div>
-  `).join('');
+  if (!groups[groupKey]) {
+    groups[groupKey] = {
+      dateLabel: `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`,
+      dateKey,
+      urls: [],
+      content: item.content,
+      date: item.date
+    };
+  }
+  groups[groupKey].urls.push(...item.urls);
+});
+
+// dateKey 기준 날짜순 정렬
+const sortedGroups = Object.values(groups)
+  .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+// 날짜별로 다시 묶기
+const dayGroups = {};
+sortedGroups.forEach(g => {
+  if (!dayGroups[g.dateLabel]) dayGroups[g.dateLabel] = [];
+  dayGroups[g.dateLabel].push(g);
+});
+// CHANGE END
+
+// CHANGE START
+const storyHtml = Object.entries(dayGroups).map(([dateLabel, items]) => `
+  <div>
+    <div class="story-date-label">${dateLabel}</div>
+    ${items.map(item => {
+      const gc = item.urls.length === 1 ? 'one'
+               : item.urls.length === 2 ? 'two' : 'multi';
+      const imgs = item.urls.map((url, i) =>
+        `<img src="${url}" loading="lazy"
+          onclick='openLightbox(${JSON.stringify(item.urls)},${i})'>`
+      ).join('');
+      return `
+        <div class="story-card">
+          <div class="story-imgs ${gc}">${imgs}</div>
+          ${item.content ? `
+            <div class="story-body">
+              <div class="story-content">${item.content}</div>
+              <div class="story-meta">${new Date(item.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+            </div>` : ''}
+        </div>`;
+    }).join('')}
+  </div>
+`).join('');
+// CHANGE END
 
   document.getElementById('galleryGrid').outerHTML = `
     <img class="hero-photo-full" src="${heroPhoto}" loading="lazy"
