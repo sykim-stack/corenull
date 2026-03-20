@@ -727,7 +727,6 @@ function switchTab(tabId) {
 function switchToRoomType(type) { const r = ROOMS.find(r => r.room_type === type); if (r) switchTab(`tab-${r.id}`); }
 
 function renderLobby(container, house, milestones, comments, rooms) {
-    alert('renderLobby!'); // 임시
   let bannerHtml = '';
   if (house.hundred_date) {
     const diff = Math.ceil((new Date(house.hundred_date) - new Date()) / 86400000);
