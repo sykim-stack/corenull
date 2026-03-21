@@ -85,31 +85,30 @@
     .story-card{background:white;border:1px solid rgba(139,94,60,.1);border-radius:20px;overflow:hidden;cursor:pointer;transition:box-shadow .2s;}
     .story-card:hover{box-shadow:0 8px 32px rgba(139,94,60,.12);}
 
-    /* 사진 그리드 — 1장 */
+    /* 사진 그리드 — 페이스북 방식 */
+    .story-imgs{overflow:hidden;}
+    /* 1장 */
     .story-imgs.one img{width:100%;max-height:420px;object-fit:cover;display:block;}
-
-    /* 사진 그리드 — 2장 */
+    /* 2장 */
     .story-imgs.two{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
     .story-imgs.two img{width:100%;aspect-ratio:1;object-fit:cover;}
-
-    /* 사진 그리드 — 3장: 위 1장 크게 + 아래 2장 */
+    /* 3장: 위 1 + 아래 2 */
     .story-imgs.three{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
-    .story-imgs.three img:first-child{grid-column:span 2;max-height:300px;object-fit:cover;width:100%;}
+    .story-imgs.three img:first-child{grid-column:span 2;width:100%;max-height:280px;object-fit:cover;}
     .story-imgs.three img:not(:first-child){aspect-ratio:1;object-fit:cover;width:100%;}
-
-    /* 사진 그리드 — 4장: 2x2 */
+    /* 4장: 위 2 + 아래 2 */
     .story-imgs.four{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
     .story-imgs.four img{aspect-ratio:1;object-fit:cover;width:100%;}
-
-    /* 사진 그리드 — 5장: 위 1장 + 아래 4장(2x2) */
-    .story-imgs.five{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
-    .story-imgs.five img:first-child{grid-column:span 2;max-height:300px;object-fit:cover;width:100%;}
-    .story-imgs.five img:not(:first-child){aspect-ratio:1;object-fit:cover;width:100%;}
-
-    /* 사진 그리드 — 6장+: 위 1장 + 아래 3열 */
-    .story-imgs.many{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
-    .story-imgs.many img:first-child{grid-column:span 3;max-height:300px;object-fit:cover;width:100%;}
-    .story-imgs.many img:not(:first-child){aspect-ratio:1;object-fit:cover;width:100%;}
+    /* 5장+: 위 2 + 아래 3, 마지막에 +N 오버레이 */
+    .story-imgs.many{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+    .story-imgs.many .row-top{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+    .story-imgs.many .row-top img{aspect-ratio:1;object-fit:cover;width:100%;}
+    .story-imgs.many .row-bot{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
+    .story-imgs.many .row-bot img{aspect-ratio:1;object-fit:cover;width:100%;}
+    /* +N 오버레이 */
+    .more-cell{position:relative;}
+    .more-cell img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+    .more-badge{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:white;font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;cursor:pointer;}
 
     /* ── 사진 클릭 모달 ── */
     .photo-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:800;align-items:flex-end;justify-content:center;}
@@ -179,25 +178,6 @@
     .lb-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:white;width:38px;height:38px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
     .lb-counter{position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:12px;background:rgba(0,0,0,.4);padding:4px 14px;border-radius:20px;}
     @media(max-width:480px){.lb-btn{display:none;}}
-
-    /* CHANGE START: </style> 앞에 추가 */
-
-/* 6장: 2+2+2 */
-.story-imgs.six{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
-.story-imgs.six img{aspect-ratio:1;object-fit:cover;width:100%;}
-
-/* 7장: 위 1장 + 아래 3열 2줄 */
-.story-imgs.seven{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
-.story-imgs.seven img:first-child{grid-column:span 3;max-height:300px;object-fit:cover;width:100%;}
-.story-imgs.seven img:not(:first-child){aspect-ratio:1;object-fit:cover;width:100%;}
-
-/* 8장: 위 2장 + 아래 3열 2줄 */
-.story-imgs.eight{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
-.story-imgs.eight img:nth-child(1){grid-column:span 2;max-height:260px;object-fit:cover;width:100%;}
-.story-imgs.eight img:nth-child(2){aspect-ratio:1;object-fit:cover;width:100%;}
-.story-imgs.eight img:not(:nth-child(1)):not(:nth-child(2)){aspect-ratio:1;object-fit:cover;width:100%;}
-
-/* CHANGE END */
   </style>
 </head>
 <body>
@@ -422,20 +402,24 @@ function renderDday(house, room) {
   document.getElementById('ddayWrap').innerHTML = boxes.join('');
 }
 
-// ── 사진 배열 클래스 ──
-// CHANGE START: getGridClass() 교체
-function getGridClass(count) {
-  if (count === 1) return 'one';
-  if (count === 2) return 'two';
-  if (count === 3) return 'three';
-  if (count === 4) return 'four';
-  if (count === 5) return 'five';
-  if (count === 6) return 'six';
-  if (count === 7) return 'seven';
-  if (count === 8) return 'eight';
-  return 'many';
+// ── 사진 배열 렌더 (페이스북 방식) ──
+function renderStoryImgs(urls, card) {
+  const count = urls.length;
+  if (count === 1) return '<div class="story-imgs one"><img src="' + urls[0] + '" loading="lazy"></div>';
+  if (count === 2) return '<div class="story-imgs two"><img src="' + urls[0] + '" loading="lazy"><img src="' + urls[1] + '" loading="lazy"></div>';
+  if (count === 3) return '<div class="story-imgs three"><img src="' + urls[0] + '" loading="lazy"><img src="' + urls[1] + '" loading="lazy"><img src="' + urls[2] + '" loading="lazy"></div>';
+  if (count === 4) return '<div class="story-imgs four">' + urls.map(u => '<img src="' + u + '" loading="lazy">').join('') + '</div>';
+  // 5장+
+  const show = urls.slice(0, 5);
+  const rest = count - 5;
+  const topImgs = show.slice(0,2).map(u => '<img src="' + u + '" loading="lazy">').join('');
+  const botMid  = show.slice(2,4).map(u => '<img src="' + u + '" loading="lazy">').join('');
+  const cardStr = JSON.stringify({urls: card.urls, content: card.content, date: card.date}).replace(/"/g, '&quot;');
+  const lastCell = rest > 0
+    ? '<div class="more-cell"><img src="' + show[4] + '" loading="lazy"><div class="more-badge" onclick='event.stopPropagation();openPhotoModal(JSON.parse(this.dataset.c))' data-c="' + cardStr + '">+' + (rest + 1) + '</div></div>'
+    : '<img src="' + show[4] + '" loading="lazy">';
+  return '<div class="story-imgs many"><div class="row-top">' + topImgs + '</div><div class="row-bot">' + botMid + lastCell + '</div></div>';
 }
-// CHANGE END
 
 // ── 갤러리 (날짜 그룹핑 + 스토리 카드) ──
 function renderGallery() {
@@ -494,10 +478,6 @@ function renderGallery() {
     <div class="story-date-group">
       <div class="story-date-label">${dateLabel}</div>
       ${cards.map(card => {
-        const gc = getGridClass(card.urls.length);
-        const imgs = card.urls.map((url,i) =>
-          `<img src="${url}" loading="lazy">`
-        ).join('');
         const cardData = JSON.stringify({
           urls: card.urls,
           content: card.content,
@@ -505,7 +485,7 @@ function renderGallery() {
         }).replace(/'/g, '&#39;');
         return `
           <div class="story-card" onclick='openPhotoModal(${cardData})'>
-            <div class="story-imgs ${gc}">${imgs}</div>
+            ${renderStoryImgs(card.urls, card)}
           </div>`;
       }).join('')}
     </div>
@@ -523,36 +503,33 @@ function renderGallery() {
 }
 
 // ── 사진 클릭 모달 ──
-// CHANGE START: openPhotoModal() 교체
 function openPhotoModal(item) {
   if (typeof item === 'string') item = JSON.parse(item);
-
-  const firstUrl = item.urls[0];
-  const restUrls = item.urls.slice(1);
-
-  // 대표 사진 + 나머지 썸네일
-  const restHtml = restUrls.length ? `
-    <div style="display:grid;grid-template-columns:repeat(${Math.min(restUrls.length,3)},1fr);gap:2px;">
-      ${restUrls.map((url,i) =>
-        `<img src="${url}" loading="lazy"
-          onclick="event.stopPropagation();openLightbox(${JSON.stringify(item.urls)},${i+1})"
-          style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">`
-      ).join('')}
-    </div>` : '';
-
-  document.getElementById('photoModalImgs').innerHTML = `
-    <img src="${firstUrl}" loading="lazy"
-      onclick="event.stopPropagation();openLightbox(${JSON.stringify(item.urls)},0)"
-      style="width:100%;max-height:380px;object-fit:cover;border-radius:24px 24px 0 0;cursor:zoom-in;display:block;">
-    ${restHtml}
-  `;
-
+  const first = item.urls[0];
+  const rest  = item.urls.slice(1);
+  const allUrlsStr = JSON.stringify(item.urls).replace(/"/g,"'");
+  const restHtml = rest.length
+    ? '<div style="display:grid;grid-template-columns:repeat(' + Math.min(rest.length,3) + ',1fr);gap:2px;">'
+      + rest.map((url,i) =>
+          '<img src="' + url + '" loading="lazy" onclick="event.stopPropagation();openLightbox(' + allUrlsStr + ',' + (i+1) + ')" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">'
+        ).join('')
+      + '</div>'
+    : '';
+  document.getElementById('photoModalImgs').innerHTML =
+    '<img src="' + first + '" loading="lazy" onclick="event.stopPropagation();openLightbox(' + allUrlsStr + ',0)" style="width:100%;max-height:380px;object-fit:cover;border-radius:24px 24px 0 0;cursor:zoom-in;display:block;">'
+    + restHtml;
   document.getElementById('photoModalContent').textContent = item.content || '';
   document.getElementById('photoModalDate').textContent = item.date ? fmtDateTime(item.date) : '';
   document.getElementById('photoModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-// CHANGE END
+
+function closePhotoModal(e) {
+  if (e && e.target !== document.getElementById('photoModal') &&
+      !e.target.classList.contains('photo-modal-close')) return;
+  document.getElementById('photoModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 // ── 마일스톤 ──
 function renderMilestones(milestones) {
