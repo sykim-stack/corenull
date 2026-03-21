@@ -210,6 +210,33 @@
     .onboard-skip:hover{color:var(--brown);}
     @media(max-width:480px){.onboard-overlay{align-items:flex-end;padding:0;}.onboard-box{border-radius:28px 28px 0 0;padding:28px 20px 40px;max-width:100%;}}
     @media(min-width:480px){.hero-name{font-size:56px;}.photo-frame{width:140px;height:140px;}}
+    .story-imgs{overflow:hidden;}
+.story-imgs.one img{width:100%;max-height:420px;object-fit:cover;display:block;}
+.story-imgs.two{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.story-imgs.two img{width:100%;aspect-ratio:1;object-fit:cover;}
+.story-imgs.three{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.story-imgs.three img:first-child{grid-column:span 2;width:100%;max-height:280px;object-fit:cover;}
+.story-imgs.three img:not(:first-child){aspect-ratio:1;object-fit:cover;width:100%;}
+.story-imgs.four{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.story-imgs.four img{aspect-ratio:1;object-fit:cover;width:100%;}
+.story-imgs.many{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.story-imgs.many .row-top{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.story-imgs.many .row-top img{aspect-ratio:1;object-fit:cover;width:100%;}
+.story-imgs.many .row-bot{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
+.story-imgs.many .row-bot img{aspect-ratio:1;object-fit:cover;width:100%;}
+.more-cell{position:relative;}
+.more-cell img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.more-badge{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:white;font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;cursor:pointer;}
+.post-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:800;align-items:center;justify-content:center;padding:20px;}
+.post-modal-overlay.open{display:flex;}
+.post-modal-box{background:var(--cream);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;position:relative;}
+.post-modal-close{position:absolute;top:12px;right:12px;background:rgba(44,26,14,.15);border:none;color:var(--dark);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+.post-modal-imgs img{width:100%;max-height:320px;object-fit:cover;display:block;}
+.post-modal-imgs img:first-child{border-radius:20px 20px 0 0;}
+.post-modal-body{padding:16px 18px 24px;}
+.post-modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.post-modal-content{font-size:14px;line-height:1.9;color:var(--text);margin-bottom:8px;white-space:pre-wrap;}
+.post-modal-date{font-size:11px;color:var(--muted);letter-spacing:1px;}
   </style>
 </head>
 <body>
@@ -346,7 +373,17 @@
     </div>
   </div>
 </div>
-
+<div class="post-modal-overlay" id="postModal" onclick="closePostModal(event)">
+  <div class="post-modal-box">
+    <button class="post-modal-close" onclick="closePostModal()">✕</button>
+    <div id="postModalImgs"></div>
+    <div class="post-modal-body">
+      <div class="post-modal-tags" id="postModalTags"></div>
+      <div class="post-modal-content" id="postModalContent"></div>
+      <div class="post-modal-date" id="postModalDate"></div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -859,15 +896,70 @@ function filterCat(catId, el) {
 }
 // CHANGE END
 
+function renderStoryImgs(urls, post) {
+  const count = urls.length;
+  const img = u => `<img src="${u}" loading="lazy">`;
+  if (count === 1) return `<div class="story-imgs one">${img(urls[0])}</div>`;
+  if (count === 2) return `<div class="story-imgs two">${img(urls[0])}${img(urls[1])}</div>`;
+  if (count === 3) return `<div class="story-imgs three">${img(urls[0])}${img(urls[1])}${img(urls[2])}</div>`;
+  if (count === 4) return `<div class="story-imgs four">${urls.map(img).join('')}</div>`;
+  const show = urls.slice(0, 5);
+  const rest = count - 5;
+  const topImgs = show.slice(0,2).map(img).join('');
+  const botMid  = show.slice(2,4).map(img).join('');
+  let lastCell;
+  if (rest > 0) {
+    const cardStr = encodeURIComponent(JSON.stringify({urls, content: post.content, date: post.created_at, category_ids: post.category_ids}));
+    lastCell = `<div class="more-cell">${img(show[4])}<div class="more-badge" onclick="event.stopPropagation();openPostModal(JSON.parse(decodeURIComponent('${cardStr}')))">+${rest + 1}</div></div>`;
+  } else {
+    lastCell = img(show[4]);
+  }
+  return `<div class="story-imgs many"><div class="row-top">${topImgs}</div><div class="row-bot">${botMid}${lastCell}</div></div>`;
+}
+
+function openPostModal(item) {
+  if (typeof item === 'string') item = JSON.parse(item);
+  const urls = item.urls || [];
+  const first = urls[0];
+  const rest  = urls.slice(1);
+  const allUrlsStr = JSON.stringify(urls).replace(/"/g, "'");
+  const restHtml = rest.length
+    ? `<div style="display:grid;grid-template-columns:repeat(${Math.min(rest.length,3)},1fr);gap:2px;">
+        ${rest.map((url,i) => `<img src="${url}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},${i+1})" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">`).join('')}
+       </div>` : '';
+  document.getElementById('postModalImgs').innerHTML = first
+    ? `<img src="${first}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},0)" style="width:100%;max-height:380px;object-fit:cover;border-radius:20px 20px 0 0;cursor:zoom-in;display:block;">${restHtml}` : '';
+  const tags = (item.category_ids || []).map(cid => { const c = CATEGORIES.find(x => x.id === cid); return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : ''; }).join('');
+  document.getElementById('postModalTags').innerHTML = tags;
+  document.getElementById('postModalContent').textContent = item.content || '';
+  document.getElementById('postModalDate').textContent = item.date ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
+  document.getElementById('postModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePostModal(e) {
+  if (e && e.target !== document.getElementById('postModal') && !e.target.classList.contains('post-modal-close')) return;
+  document.getElementById('postModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 function renderPostList(posts) {
   const el = document.getElementById('postList'); if (!el) return;
   if (!posts.length) { el.innerHTML = `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${IS_OWNER ? '<br>첫 번째 글을 써보세요!' : ''}</p></div>`; return; }
   el.innerHTML = posts.map((p, i) => {
     const tags = (p.category_ids || []).map(cid => { const c = CATEGORIES.find(x => x.id === cid); return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : ''; }).join('');
     const imgs = p.media_urls || [];
-    const gc = imgs.length === 1 ? 'one' : imgs.length === 2 ? 'two' : 'multi';
-    const media = imgs.length ? `<div class="post-imgs ${gc}">${imgs.slice(0, 3).map((url, idx) => `<img src="${url}" loading="lazy" onclick='openLightbox(${JSON.stringify(imgs)},${idx})'>`).join('')}</div>` : '';
-    return `<div class="post-item" style="animation-delay:${i * .05}s">${tags ? `<div class="post-tags">${tags}</div>` : ''}${p.content ? `<div class="post-body">${p.content.replace(/\n/g, '<br>')}</div>` : ''}${media}<div class="post-foot"><span class="post-time">${timeAgo(p.created_at)}</span>${IS_OWNER ? `<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>` : ''}</div></div>`;
+    const postData = encodeURIComponent(JSON.stringify({urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids}));
+    const media = imgs.length ? renderStoryImgs(imgs, p) : '';
+    return `<div class="post-item" style="animation-delay:${i*.05}s;border-radius:18px;overflow:hidden;cursor:pointer;" onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
+      ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
+      ${p.content ? `<div class="post-body" style="padding:${tags?'8px':'14px'} 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
+      ${media}
+      <div class="post-foot" style="padding:10px 16px 14px;">
+        <span class="post-time">${timeAgo(p.created_at)}</span>
+        ${IS_OWNER ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
+      </div>
+    </div>`;
   }).join('');
 }
 
