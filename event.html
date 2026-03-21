@@ -111,16 +111,16 @@
     .more-badge{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:white;font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;cursor:pointer;}
 
     /* ── 사진 클릭 모달 ── */
-    .photo-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:800;align-items:flex-end;justify-content:center;}
+    .photo-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:800;align-items:center;justify-content:center;padding:20px;}
     .photo-modal-overlay.open{display:flex;}
-    .photo-modal-box{background:var(--cream);border-radius:24px 24px 0 0;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease;position:relative;}
-    @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-    .photo-modal-close{position:absolute;top:14px;right:14px;background:rgba(44,26,14,.15);border:none;color:var(--dark);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+    .photo-modal-box{background:var(--cream);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;animation:fadeScaleUp .25s ease;position:relative;}
+    @keyframes fadeScaleUp{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+    .photo-modal-close{position:absolute;top:12px;right:12px;background:rgba(44,26,14,.15);border:none;color:var(--dark);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
     .photo-modal-imgs{display:flex;flex-direction:column;gap:2px;}
-    .photo-modal-imgs img{width:100%;max-height:400px;object-fit:cover;}
-    .photo-modal-imgs img:first-child{border-radius:24px 24px 0 0;}
-    .photo-modal-body{padding:20px 20px 40px;}
-    .photo-modal-content{font-size:14px;line-height:1.9;color:var(--text);margin-bottom:10px;white-space:pre-wrap;}
+    .photo-modal-imgs img{width:100%;max-height:320px;object-fit:cover;}
+    .photo-modal-imgs img:first-child{border-radius:20px 20px 0 0;}
+    .photo-modal-body{padding:16px 18px 24px;}
+    .photo-modal-content{font-size:14px;line-height:1.9;color:var(--text);margin-bottom:8px;white-space:pre-wrap;}
     .photo-modal-date{font-size:11px;color:var(--muted);letter-spacing:1px;}
 
     /* ── 마일스톤 ── */
