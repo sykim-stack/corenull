@@ -903,38 +903,39 @@ function renderEventRoomList() {
   if (!el) return;
   const eventRooms = ROOMS.filter(r => r.room_type === 'event');
   if (!eventRooms.length) {
-    el.innerHTML = `<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px;">아직 이벤트가 없어요</div>`;
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px;">아직 이벤트가 없어요</div>';
     return;
   }
   el.innerHTML = eventRooms.map(r => {
     const diff = r.event_date ? Math.ceil((new Date(r.event_date) - new Date()) / 86400000) : null;
-    const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
-    return `
-      <div style="background:white;border:1px solid rgba(139,94,60,.12);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;color:var(--dark);">${r.room_name}</div>
-            <div style="font-size:11px;color:var(--muted);">${r.event_date ? fmtDate(r.event_date) : '날짜 미설정'} ${badge ? '· ' + badge : ''}</div>
-          </div>
-          <a href="/event?slug=${SLUG}&room=${r.id}" target="_blank"
-            style="background:var(--gold);color:white;border-radius:16px;padding:5px 12px;font-size:11px;text-decoration:none;">페이지</a>
-          <button onclick="openEditEventRoom('${r.id}','${r.room_name}','${r.event_date||''}')"
-            style="background:var(--warm);border:1px solid rgba(139,94,60,.2);border-radius:16px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'Gowun Dodum',serif;">수정</button>
-          <button onclick="deleteEventRoom('${r.id}')"
-            style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);">🗑️</button>
-        </div>
-        <!-- 수정 폼 (숨김) -->
-        <div id="editForm-${r.id}" style="display:none;border-top:1px solid rgba(139,94,60,.1);padding-top:10px;margin-top:4px;">
-          <input class="modal-input" id="editName-${r.id}" value="${r.room_name}" style="margin-bottom:8px;">
-          <input class="modal-input" id="editDate-${r.id}" type="date" value="${r.event_date||''}" style="margin-bottom:8px;">
-          <div style="display:flex;gap:8px;">
-            <button onclick="saveEditEventRoom('${r.id}')"
-              style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">저장</button>
-            <button onclick="document.getElementById('editForm-${r.id}').style.display='none'"
-              style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
-          </div>
-        </div>
-      </div>`;
+    const badge = diff === null ? '' : diff > 0 ? 'D-' + diff : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
+    const dateStr = r.event_date ? fmtDate(r.event_date) : '날짜 미설정';
+    const badgeStr = badge ? ' · ' + badge : '';
+    const eventUrl = '/event?slug=' + SLUG + '&room=' + r.id;
+    const editId = 'editForm-' + r.id;
+    const editNameId = 'editName-' + r.id;
+    const editDateId = 'editDate-' + r.id;
+    const eventDate = r.event_date || '';
+
+    return '<div style="background:white;border:1px solid rgba(139,94,60,.12);border-radius:12px;padding:12px 14px;margin-bottom:8px;">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+      + '<div style="flex:1;">'
+      + '<div style="font-size:13px;font-weight:600;color:var(--dark);">' + r.room_name + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);">' + dateStr + badgeStr + '</div>'
+      + '</div>'
+      + '<a href="' + eventUrl + '" target="_blank" style="background:var(--gold);color:white;border-radius:16px;padding:5px 12px;font-size:11px;text-decoration:none;">페이지</a>'
+      + '<button onclick="openEditEventRoom(\'' + r.id + '\',\'' + r.room_name + '\',\'' + eventDate + '\')" style="background:var(--warm);border:1px solid rgba(139,94,60,.2);border-radius:16px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:\'Gowun Dodum\',serif;">수정</button>'
+      + '<button onclick="deleteEventRoom(\'' + r.id + '\')" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);">🗑️</button>'
+      + '</div>'
+      + '<div id="' + editId + '" style="display:none;border-top:1px solid rgba(139,94,60,.1);padding-top:10px;margin-top:4px;">'
+      + '<input class="modal-input" id="' + editNameId + '" value="' + r.room_name + '" style="margin-bottom:8px;">'
+      + '<input class="modal-input" id="' + editDateId + '" type="date" value="' + eventDate + '" style="margin-bottom:8px;">'
+      + '<div style="display:flex;gap:8px;">'
+      + '<button onclick="saveEditEventRoom(\'' + r.id + '\')" style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:\'Gowun Dodum\',serif;font-size:13px;cursor:pointer;">저장</button>'
+      + '<button onclick="document.getElementById(\'' + editId + '\').style.display=\'none\'" style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:\'Gowun Dodum\',serif;font-size:13px;cursor:pointer;">취소</button>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
   }).join('');
 }
 
