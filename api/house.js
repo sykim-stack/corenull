@@ -47,12 +47,13 @@ export default async function handler(req, res) {
     commentsRes.json(),
   ]);
 
-// CHANGE START: posts에 category_ids 연결 부분만 교체
+// CHANGE START
 let postsWithCategories = Array.isArray(posts) ? posts : [];
 if (postsWithCategories.length > 0) {
+  const postIds = postsWithCategories.map(p => p.id).join(',');
   const pcRes = await fetch(
-    `${baseUrl}/rest/v1/post_categories?house_id=eq.${house.id}&select=post_id,category_id`,
-    { headers: { ...headers, 'Accept-Profile': 'corenull' } }
+    `${baseUrl}/rest/v1/post_categories?post_id=in.(${postIds})&select=post_id,category_id`,
+    { headers }
   );
   const pcData = await pcRes.json();
   const pc = Array.isArray(pcData) ? pcData : [];
