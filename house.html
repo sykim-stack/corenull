@@ -980,7 +980,13 @@ async function createEventRoom() {
     if (data.success) {
       showToast(`${name} 이벤트가 생성됐어요 🎂`);
       document.getElementById('newEventName').value = '';
-      document.getElementByI
+      document.getElementById('newEventName').value = '';
+    document.getElementById('newEventDate').value = '';
+    document.getElementById('eventMgrModal').classList.remove('open');
+    await loadData();
+    } else showToast(data.error || '생성 실패');
+  } catch(e) { showToast('오류가 발생했어요'); }
+}
 
 // CHANGE START
 function filterCat(catId, el) {
