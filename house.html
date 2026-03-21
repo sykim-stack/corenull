@@ -940,8 +940,9 @@ function renderEventRoomList() {
 }
 
 function openEventMgr() {
-  renderEventRoomList();
   document.getElementById('eventMgrModal').classList.add('open');
+  // open 후에 렌더 (DOM 확실히 있을 때)
+  setTimeout(() => renderEventRoomList(), 50);
 }
 
 function openEditEventRoom(roomId, name, date) {
