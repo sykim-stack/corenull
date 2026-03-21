@@ -405,20 +405,28 @@ function renderDday(house, room) {
 // ── 사진 배열 렌더 (페이스북 방식) ──
 function renderStoryImgs(urls, card) {
   const count = urls.length;
-  if (count === 1) return '<div class="story-imgs one"><img src="' + urls[0] + '" loading="lazy"></div>';
-  if (count === 2) return '<div class="story-imgs two"><img src="' + urls[0] + '" loading="lazy"><img src="' + urls[1] + '" loading="lazy"></div>';
-  if (count === 3) return '<div class="story-imgs three"><img src="' + urls[0] + '" loading="lazy"><img src="' + urls[1] + '" loading="lazy"><img src="' + urls[2] + '" loading="lazy"></div>';
-  if (count === 4) return '<div class="story-imgs four">' + urls.map(u => '<img src="' + u + '" loading="lazy">').join('') + '</div>';
-  // 5장+
+  const img = u => `<img src="${u}" loading="lazy">`;
+
+  if (count === 1) return `<div class="story-imgs one">${img(urls[0])}</div>`;
+  if (count === 2) return `<div class="story-imgs two">${img(urls[0])}${img(urls[1])}</div>`;
+  if (count === 3) return `<div class="story-imgs three">${img(urls[0])}${img(urls[1])}${img(urls[2])}</div>`;
+  if (count === 4) return `<div class="story-imgs four">${urls.map(img).join('')}</div>`;
+
+  // 5장+: 위 2장 + 아래 3장, 나머지 +N
   const show = urls.slice(0, 5);
   const rest = count - 5;
-  const topImgs = show.slice(0,2).map(u => '<img src="' + u + '" loading="lazy">').join('');
-  const botMid  = show.slice(2,4).map(u => '<img src="' + u + '" loading="lazy">').join('');
-  const cardStr = JSON.stringify({urls: card.urls, content: card.content, date: card.date}).replace(/"/g, '&quot;');
-  const lastCell = rest > 0
-    ? '<div class="more-cell"><img src="' + show[4] + '" loading="lazy"><div class="more-badge" onclick='event.stopPropagation();openPhotoModal(JSON.parse(this.dataset.c))' data-c="' + cardStr + '">+' + (rest + 1) + '</div></div>'
-    : '<img src="' + show[4] + '" loading="lazy">';
-  return '<div class="story-imgs many"><div class="row-top">' + topImgs + '</div><div class="row-bot">' + botMid + lastCell + '</div></div>';
+  const topImgs = show.slice(0,2).map(img).join('');
+  const botMid  = show.slice(2,4).map(img).join('');
+
+  let lastCell;
+  if (rest > 0) {
+    const cardStr = encodeURIComponent(JSON.stringify({urls: card.urls, content: card.content, date: card.date}));
+    lastCell = `<div class="more-cell">${img(show[4])}<div class="more-badge" onclick="event.stopPropagation();openPhotoModal(JSON.parse(decodeURIComponent('${cardStr}')))">+${rest + 1}</div></div>`;
+  } else {
+    lastCell = img(show[4]);
+  }
+
+  return `<div class="story-imgs many"><div class="row-top">${topImgs}</div><div class="row-bot">${botMid}${lastCell}</div></div>`;
 }
 
 // ── 갤러리 (날짜 그룹핑 + 스토리 카드) ──
