@@ -266,9 +266,9 @@
 
 <button class="fab" id="fab" onclick="openWriteModal()">✏️</button>
 
-<div class="modal-overlay" id="writeModal" onclick="closeModal('writeModal',event)">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
+<div class="modal-overlay" id="writeModal" onclick="closeModal('writeModal',event)" style="align-items:center;padding:24px;">
+  <div class="modal-box" style="border-radius:20px;">
+    <div class="modal-handle" style="display:none;"></div>
     <div class="modal-title">글쓰기 ✏️</div>
     <textarea class="modal-input" id="writeContent" placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
     <div id="writePrevWrap" style="display:none;margin-bottom:10px;"><div class="prev-grid" id="writePrevCells"></div></div>
@@ -876,7 +876,7 @@ function renderRoom(container, room) {
   </div>
 
   <!-- 이벤트 관리 모달 -->
-  <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)">
+  <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)" style="align-items:center;padding:24px;">
     <div class="modal-box">
       <div class="modal-handle"></div>
       <div class="modal-title">🎂 이벤트 관리</div>
