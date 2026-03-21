@@ -179,6 +179,25 @@
     .lb-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:white;width:38px;height:38px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
     .lb-counter{position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:12px;background:rgba(0,0,0,.4);padding:4px 14px;border-radius:20px;}
     @media(max-width:480px){.lb-btn{display:none;}}
+
+    /* CHANGE START: </style> 앞에 추가 */
+
+/* 6장: 2+2+2 */
+.story-imgs.six{display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.story-imgs.six img{aspect-ratio:1;object-fit:cover;width:100%;}
+
+/* 7장: 위 1장 + 아래 3열 2줄 */
+.story-imgs.seven{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
+.story-imgs.seven img:first-child{grid-column:span 3;max-height:300px;object-fit:cover;width:100%;}
+.story-imgs.seven img:not(:first-child){aspect-ratio:1;object-fit:cover;width:100%;}
+
+/* 8장: 위 2장 + 아래 3열 2줄 */
+.story-imgs.eight{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
+.story-imgs.eight img:nth-child(1){grid-column:span 2;max-height:260px;object-fit:cover;width:100%;}
+.story-imgs.eight img:nth-child(2){aspect-ratio:1;object-fit:cover;width:100%;}
+.story-imgs.eight img:not(:nth-child(1)):not(:nth-child(2)){aspect-ratio:1;object-fit:cover;width:100%;}
+
+/* CHANGE END */
   </style>
 </head>
 <body>
@@ -404,14 +423,19 @@ function renderDday(house, room) {
 }
 
 // ── 사진 배열 클래스 ──
+// CHANGE START: getGridClass() 교체
 function getGridClass(count) {
   if (count === 1) return 'one';
   if (count === 2) return 'two';
   if (count === 3) return 'three';
   if (count === 4) return 'four';
   if (count === 5) return 'five';
+  if (count === 6) return 'six';
+  if (count === 7) return 'seven';
+  if (count === 8) return 'eight';
   return 'many';
 }
+// CHANGE END
 
 // ── 갤러리 (날짜 그룹핑 + 스토리 카드) ──
 function renderGallery() {
@@ -499,26 +523,36 @@ function renderGallery() {
 }
 
 // ── 사진 클릭 모달 ──
+// CHANGE START: openPhotoModal() 교체
 function openPhotoModal(item) {
   if (typeof item === 'string') item = JSON.parse(item);
-  const imgsHtml = item.urls.map((url,i) =>
-    `<img src="${url}" loading="lazy"
-      onclick="event.stopPropagation();openLightbox(${JSON.stringify(item.urls)},${i})"
-      style="cursor:zoom-in;">`
-  ).join('');
-  document.getElementById('photoModalImgs').innerHTML = imgsHtml;
+
+  const firstUrl = item.urls[0];
+  const restUrls = item.urls.slice(1);
+
+  // 대표 사진 + 나머지 썸네일
+  const restHtml = restUrls.length ? `
+    <div style="display:grid;grid-template-columns:repeat(${Math.min(restUrls.length,3)},1fr);gap:2px;">
+      ${restUrls.map((url,i) =>
+        `<img src="${url}" loading="lazy"
+          onclick="event.stopPropagation();openLightbox(${JSON.stringify(item.urls)},${i+1})"
+          style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">`
+      ).join('')}
+    </div>` : '';
+
+  document.getElementById('photoModalImgs').innerHTML = `
+    <img src="${firstUrl}" loading="lazy"
+      onclick="event.stopPropagation();openLightbox(${JSON.stringify(item.urls)},0)"
+      style="width:100%;max-height:380px;object-fit:cover;border-radius:24px 24px 0 0;cursor:zoom-in;display:block;">
+    ${restHtml}
+  `;
+
   document.getElementById('photoModalContent').textContent = item.content || '';
   document.getElementById('photoModalDate').textContent = item.date ? fmtDateTime(item.date) : '';
   document.getElementById('photoModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-
-function closePhotoModal(e) {
-  if (e && e.target !== document.getElementById('photoModal') &&
-      !e.target.classList.contains('photo-modal-close')) return;
-  document.getElementById('photoModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
+// CHANGE END
 
 // ── 마일스톤 ──
 function renderMilestones(milestones) {
