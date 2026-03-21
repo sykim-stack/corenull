@@ -1252,6 +1252,7 @@ lbEl.addEventListener('touchend', () => { if (lbDX < -50) lbNext(); else if (lbD
 lbEl.addEventListener('click', e => { if (e.target === lbEl) closeLightbox(); });
 document.addEventListener('keydown', e => { if (!document.getElementById('lightbox').classList.contains('open')) return; if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); if (e.key === 'Escape') closeLightbox(); });
 
+// 파일 끝 부분이 이렇게 끝나야 해요
 checkOnboarding();
 loadData();
 </script>
