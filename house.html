@@ -685,8 +685,10 @@ async function loadData() {
     applyHero(data.house);
     initDday(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
-    if (IS_OWNER) { document.getElementById('fab').style.display = 'flex'; const f = document.getElementById('heroFrame'); f.classList.add('is-owner'); f.onclick = () => document.getElementById('coverInput').click(); }
-  } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
+    trackVisit(data.house.id);
+    if (IS_OWNER) { document.getElementById('fab').style.display = 'flex';
+      
+      } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
 }
 
 const CAT_META = { baby: { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' }, pet: { badge: '🐾 PET HOUSE', emoji: '🐾', ph: '🐾' }, travel: { badge: '✈️ TRAVEL', emoji: '✈️', ph: '✈️' }, fitness: { badge: '💪 FITNESS', emoji: '💪', ph: '💪' }, daily: { badge: '🏠 DAILY', emoji: '🏠', ph: '🏠' } };
@@ -695,7 +697,6 @@ const CAT_META = { baby: { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' }
 function trackVisit(houseId) {
   const params = new URLSearchParams(location.search);
   const ref = params.get('ref') || 'direct';
-  trackVisit(data.house.id); 
   // ref가 device_id 형식이면 → 초대받은 것
   const invited_by = ref.startsWith('dev_') ? ref : null;
 
