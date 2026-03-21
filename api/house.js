@@ -47,22 +47,22 @@ export default async function handler(req, res) {
     commentsRes.json(),
   ]);
 
-  // posts에 category_ids 연결
-  let postsWithCategories = Array.isArray(posts) ? posts : [];
-  if (postsWithCategories.length > 0) {
-    const postIds = postsWithCategories.map(p => `post_id=eq.${p.id}`).join(',');
-    const pcRes  = await fetch(
-      `${baseUrl}/rest/v1/post_categories?or=(${postIds})&select=post_id,category_id`,
-      { headers }
-    );
-    const pcData = await pcRes.json();
-    const pc     = Array.isArray(pcData) ? pcData : [];
+// CHANGE START: posts에 category_ids 연결 부분만 교체
+let postsWithCategories = Array.isArray(posts) ? posts : [];
+if (postsWithCategories.length > 0) {
+  const pcRes = await fetch(
+    `${baseUrl}/rest/v1/post_categories?house_id=eq.${house.id}&select=post_id,category_id`,
+    { headers: { ...headers, 'Accept-Profile': 'corenull' } }
+  );
+  const pcData = await pcRes.json();
+  const pc = Array.isArray(pcData) ? pcData : [];
 
-    postsWithCategories = postsWithCategories.map(p => ({
-      ...p,
-      category_ids: pc.filter(x => x.post_id === p.id).map(x => x.category_id)
-    }));
-  }
+  postsWithCategories = postsWithCategories.map(p => ({
+    ...p,
+    category_ids: pc.filter(x => x.post_id === p.id).map(x => x.category_id)
+  }));
+}
+// CHANGE END
 
   return res.status(200).json({
     house,
