@@ -691,6 +691,29 @@ async function loadData() {
 
 const CAT_META = { baby: { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' }, pet: { badge: '🐾 PET HOUSE', emoji: '🐾', ph: '🐾' }, travel: { badge: '✈️ TRAVEL', emoji: '✈️', ph: '✈️' }, fitness: { badge: '💪 FITNESS', emoji: '💪', ph: '💪' }, daily: { badge: '🏠 DAILY', emoji: '🏠', ph: '🏠' } };
 
+// loadData() 호출 직후 또는 applyHero() 다음에 추가
+function trackVisit(houseId) {
+  const params = new URLSearchParams(location.search);
+  const ref = params.get('ref') || 'direct';
+  trackVisit(data.house.id); 
+  // ref가 device_id 형식이면 → 초대받은 것
+  const invited_by = ref.startsWith('dev_') ? ref : null;
+
+  fetch('/api/visit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-device-id': DEVICE_ID
+    },
+    body: JSON.stringify({
+      house_id: houseId,
+      room_id: null,
+      ref,
+      invited_by
+    })
+  }).catch(() => {});  // 실패해도 무시
+}
+
 function applyHero(house) {
   const cat = CAT_META[house.category] || CAT_META['daily'];
   const name = house.name || SLUG;
