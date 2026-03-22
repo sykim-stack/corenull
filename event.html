@@ -836,9 +836,10 @@ async function loadGallery() {
     let photos = [];
     if (data.media && Array.isArray(data.media)) {
       photos = data.media.filter(m =>
-  (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url))
-  && (!ROOM_ID || m.room_id === ROOM_ID)
-);
+        (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url))
+        && (!ROOM_ID || m.room_id === ROOM_ID)
+      );
+    }
 
     if (photos.length === 0) {
       grid.innerHTML = `
