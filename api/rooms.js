@@ -35,7 +35,10 @@ export default async function handler(req, res) {
         `corenull.houses?id=eq.${house_id}&select=owner_key`,
         'GET'
       );
-      if (!hRes.ok) return res.status(500).json({ error: 'house 조회 실패' });
+      if (!hRes.ok) {
+  const errText = await hRes.text();
+  return res.status(500).json({ error: 'house 조회 실패', status: hRes.status, detail: errText });
+}
   
       const houses = await hRes.json();
       const house = houses?.[0];
