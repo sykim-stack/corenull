@@ -703,9 +703,8 @@ async function loadData() {
     initDday(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
     trackVisit(data.house.id);
-    if (IS_OWNER) { document.getElementById('fab').style.display = 'flex';
-
-      } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
+    if (IS_OWNER) { document.getElementById('fab').style.display = 'flex'; }
+  } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
 }
 
 const CAT_META = { baby: { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' }, pet: { badge: '🐾 PET HOUSE', emoji: '🐾', ph: '🐾' }, travel: { badge: '✈️ TRAVEL', emoji: '✈️', ph: '✈️' }, fitness: { badge: '💪 FITNESS', emoji: '💪', ph: '💪' }, daily: { badge: '🏠 DAILY', emoji: '🏠', ph: '🏠' } };
