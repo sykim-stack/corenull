@@ -849,7 +849,7 @@ async function loadGallery() {
       return;
     }
 
-    grid.innerHTML = photos.slice(0, 5).map((p, i) => `
+    grid.innerHTML = photos.slice(0, 35).map((p, i) => `
       <div class="photo-item" onclick="openLightbox('${p.file_url}')">
         <img src="${p.file_url}" alt="하준이 사진 ${i+1}" loading="lazy" />
       </div>`).join('');
