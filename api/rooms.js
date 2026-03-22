@@ -58,7 +58,8 @@ export default async function handler(req, res) {
   
       if (!rRes.ok) {
         const err = await rRes.json();
-        return res.status(500).json({ error: err.message || '생성 실패' });
+        console.error('[rooms POST error]', JSON.stringify(err));
+        return res.status(500).json({ error: err.message || '생성 실패', detail: err });
       }
   
       const [room] = await rRes.json();
