@@ -5,10 +5,12 @@ export default async function handler(req, res) {
     const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
     const headers = {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-    };
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept-Profile': 'corenull',
+        'Content-Profile': 'corenull',
+      };
   
     const db = (path, method, body) =>
       fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
