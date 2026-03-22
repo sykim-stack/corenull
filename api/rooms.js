@@ -12,12 +12,17 @@ export default async function handler(req, res) {
         'Content-Profile': 'corenull',
       };
   
-    const db = (path, method, body) =>
-      fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-        method,
-        headers: { ...headers, Prefer: 'return=representation' },
-        body: body ? JSON.stringify(body) : undefined,
-      });
+      const db = (path, method, body) =>
+        fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+          method,
+          headers: {
+            ...headers,
+            Prefer: 'return=representation',
+            'Accept-Profile': 'corenull',
+            'Content-Profile': 'corenull',
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        });
   
     // ── POST: 이벤트 방 생성 ──────────────────────────
     if (req.method === 'POST') {
