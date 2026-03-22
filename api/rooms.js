@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       if (!house_id || !owner_key || !room_name)
         return res.status(400).json({ error: '필수값 누락' });
   
-      // CHANGE START - owner_key 검증 + 에러 체크
+      // owner_key 검증
       const hRes = await db(
         `corenull.houses?id=eq.${house_id}&select=owner_key`,
         'GET'
@@ -34,9 +34,8 @@ export default async function handler(req, res) {
       const house = houses?.[0];
       if (!house || house.owner_key !== owner_key)
         return res.status(403).json({ error: '권한 없음' });
-      // CHANGE END
   
-      // CHANGE START - order_num race condition 방지용 fallback
+      // order_num 계산
       const oRes = await db(
         `corenull.rooms?house_id=eq.${house_id}&select=order_num&order=order_num.desc&limit=1`,
         'GET'
@@ -44,8 +43,8 @@ export default async function handler(req, res) {
       const lastArr = await oRes.json();
       const last = lastArr?.[0];
       const order_num = (last?.order_num || 0) + 1;
-      // CHANGE END
   
+      // 방 생성
       const rRes = await db('corenull.rooms', 'POST', {
         house_id,
         room_name,
@@ -61,6 +60,27 @@ export default async function handler(req, res) {
       }
   
       const [room] = await rRes.json();
+
+      // CHANGE START - 분류 자동 생성 (이벤트 방 이름과 동일)
+      // 같은 이름 분류 중복 체크
+      const cCheck = await db(
+        `corenull.categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(room_name)}&select=id`,
+        'GET'
+      );
+      const cCheckArr = await cCheck.json();
+
+      if (!cCheckArr?.length) {
+        // 없으면 생성
+        const catRes = await db('corenull.categories', 'POST', {
+          house_id,
+          name: room_name,
+          color: '#C9A84C', // 기본 골드 컬러
+          order_num: 1,
+        });
+        // 실패해도 방 생성은 성공으로 처리
+      }
+      // CHANGE END
+
       return res.status(200).json({ success: true, room });
     }
   
@@ -70,7 +90,6 @@ export default async function handler(req, res) {
       if (!room_id || !house_id || !owner_key)
         return res.status(400).json({ error: '필수값 누락' });
   
-      // CHANGE START - owner 검증 안정화
       const hRes = await db(
         `corenull.houses?id=eq.${house_id}&select=owner_key`,
         'GET'
@@ -81,13 +100,11 @@ export default async function handler(req, res) {
       const house = houses?.[0];
       if (!house || house.owner_key !== owner_key)
         return res.status(403).json({ error: '권한 없음' });
-      // CHANGE END
   
       const update = {};
       if (room_name) update.room_name = room_name;
       if (event_date !== undefined) update.event_date = event_date || null;
   
-      // CHANGE START - room 존재 확인
       const rCheck = await db(
         `corenull.rooms?id=eq.${room_id}&house_id=eq.${house_id}&select=id`,
         'GET'
@@ -95,7 +112,6 @@ export default async function handler(req, res) {
       const rCheckArr = await rCheck.json();
       if (!rCheckArr?.length)
         return res.status(404).json({ error: 'room 없음' });
-      // CHANGE END
   
       const rRes = await db(
         `corenull.rooms?id=eq.${room_id}&house_id=eq.${house_id}`,
@@ -117,7 +133,6 @@ export default async function handler(req, res) {
       if (!room_id || !house_id || !owner_key)
         return res.status(400).json({ error: '필수값 누락' });
   
-      // CHANGE START - owner 검증 안정화
       const hRes = await db(
         `corenull.houses?id=eq.${house_id}&select=owner_key`,
         'GET'
@@ -128,15 +143,26 @@ export default async function handler(req, res) {
       const house = houses?.[0];
       if (!house || house.owner_key !== owner_key)
         return res.status(403).json({ error: '권한 없음' });
-      // CHANGE END
   
-      // CHANGE START - media null 처리 실패 방지
-      const mRes = await db(
+      // media room_id null 처리
+      await db(
         `corenull.media?room_id=eq.${room_id}`,
         'PATCH',
         { room_id: null }
       );
-      // 실패해도 진행 (로그만)
+
+      // CHANGE START - 방 삭제 시 같은 이름 분류도 삭제
+      const rInfo = await db(
+        `corenull.rooms?id=eq.${room_id}&select=room_name`,
+        'GET'
+      );
+      const rInfoArr = await rInfo.json();
+      if (rInfoArr?.[0]?.room_name) {
+        await db(
+          `corenull.categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(rInfoArr[0].room_name)}`,
+          'DELETE'
+        );
+      }
       // CHANGE END
   
       const rRes = await db(
