@@ -6,6 +6,8 @@
   <title>집 · CoreNull</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
+<script>Kakao.init('7dc617c2e0468c4f094e9fad63d2430a');</script>
   <style>
     :root {
       --cream:#FDF8F3; --warm:#F7EEE3; --peach:#F2C4A0;
@@ -252,6 +254,21 @@
   <div class="hero-name" id="heroName">---</div>
   <div class="hero-sub" id="heroSub">불러오는 중...</div>
   <div class="dday-wrap" id="ddayWrap"></div>
+  <!-- 공유 버튼 -->
+<div id="shareWrap" style="display:flex;gap:10px;margin-top:24px;animation:fadeUp .8s .6s ease both;flex-wrap:wrap;justify-content:center;">
+  <button onclick="shareKakao()" style="display:flex;align-items:center;gap:8px;background:#FEE500;border:none;border-radius:24px;padding:12px 20px;font-family:'Gowun Dodum',serif;font-size:13px;color:#3C1E1E;cursor:pointer;font-weight:600;box-shadow:0 4px 16px rgba(254,229,0,.4);">
+    <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" style="width:20px;height:20px;border-radius:50%;">
+    카카오톡
+  </button>
+  <button onclick="shareZalo()" style="display:flex;align-items:center;gap:8px;background:#0068FF;border:none;border-radius:24px;padding:12px 20px;font-family:'Gowun Dodum',serif;font-size:13px;color:white;cursor:pointer;font-weight:600;box-shadow:0 4px 16px rgba(0,104,255,.3);">
+    <span style="font-size:16px;">💬</span>
+    Zalo
+  </button>
+  <button onclick="copyLink()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.7);border-radius:24px;padding:12px 20px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--brown);cursor:pointer;font-weight:600;">
+    <span style="font-size:16px;">🔗</span>
+    링크 복사
+  </button>
+</div>
   <div class="scroll-hint"><span>↓</span><span>SCROLL</span></div>
 </div>
 
@@ -687,7 +704,7 @@ async function loadData() {
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
     trackVisit(data.house.id);
     if (IS_OWNER) { document.getElementById('fab').style.display = 'flex';
-      
+
       } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
 }
 
@@ -1303,6 +1320,57 @@ document.addEventListener('keydown', e => { if (!document.getElementById('lightb
 
 // 파일 끝 부분이 이렇게 끝나야 해요
 checkOnboarding();
+function getShareUrl(refParam) {
+  const base = `${location.origin}/${SLUG}`;
+  return `${base}?ref=${refParam || DEVICE_ID}`;
+}
+
+function shareKakao() {
+  const url = getShareUrl('kakao');
+  // 카카오 SDK 없으면 링크 복사로 fallback
+  if (window.Kakao?.isInitialized?.()) {
+    Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: document.getElementById('heroName').textContent,
+        description: document.getElementById('heroSub').textContent || '방문해주세요 🏠',
+        imageUrl: HOUSE_DATA?.cover_url || '',
+        link: { mobileWebUrl: url, webUrl: url }
+      },
+      buttons: [{ title: '집 방문하기', link: { mobileWebUrl: url, webUrl: url } }]
+    });
+  } else {
+    // SDK 없으면 카카오 공유 웹 URL로 fallback
+    window.open(`https://sharer.kakao.com/talk/friends/picker/link?app_key=&url=${encodeURIComponent(url)}`, '_blank');
+    copyLink('kakao');
+  }
+}
+
+function shareZalo() {
+  const url = getShareUrl('zalo');
+  // Zalo는 앱 딥링크 또는 링크 복사
+  if (/Android|iPhone/i.test(navigator.userAgent)) {
+    window.location.href = `zalo://share?url=${encodeURIComponent(url)}`;
+    setTimeout(() => copyLink('zalo'), 1000);
+  } else {
+    copyLink('zalo');
+  }
+}
+
+function copyLink(ref) {
+  const url = getShareUrl(ref || DEVICE_ID);
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(url).then(() => showToast('링크가 복사됐어요 🔗'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('링크가 복사됐어요 🔗');
+  }
+}
 loadData();
 </script>
 </body>
