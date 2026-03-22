@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   
       // owner_key 검증
       const hRes = await db(
-        `corenull.houses?id=eq.${house_id}&select=owner_key`,
+        ` houses?id=eq.${house_id}&select=owner_key`,
         'GET'
       );
       if (!hRes.ok) {
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   
       // order_num 계산
       const oRes = await db(
-        `corenull.rooms?house_id=eq.${house_id}&select=order_num&order=order_num.desc&limit=1`,
+        ` rooms?house_id=eq.${house_id}&select=order_num&order=order_num.desc&limit=1`,
         'GET'
       );
       const lastArr = await oRes.json();
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       const order_num = (last?.order_num || 0) + 1;
   
       // 방 생성
-      const rRes = await db('corenull.rooms', 'POST', {
+      const rRes = await db(' rooms', 'POST', {
         house_id,
         room_name,
         room_type: 'event',
@@ -75,14 +75,14 @@ export default async function handler(req, res) {
       // CHANGE START - 분류 자동 생성 (이벤트 방 이름과 동일)
       // 같은 이름 분류 중복 체크
       const cCheck = await db(
-        `corenull.categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(room_name)}&select=id`,
+        ` categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(room_name)}&select=id`,
         'GET'
       );
       const cCheckArr = await cCheck.json();
 
       if (!cCheckArr?.length) {
         // 없으면 생성
-        const catRes = await db('corenull.categories', 'POST', {
+        const catRes = await db(' categories', 'POST', {
           house_id,
           name: room_name,
           color: '#C9A84C', // 기본 골드 컬러
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: '필수값 누락' });
   
       const hRes = await db(
-        `corenull.houses?id=eq.${house_id}&select=owner_key`,
+        ` houses?id=eq.${house_id}&select=owner_key`,
         'GET'
       );
       if (!hRes.ok) {
@@ -121,7 +121,7 @@ export default async function handler(req, res) {
       if (event_date !== undefined) update.event_date = event_date || null;
   
       const rCheck = await db(
-        `corenull.rooms?id=eq.${room_id}&house_id=eq.${house_id}&select=id`,
+        ` rooms?id=eq.${room_id}&house_id=eq.${house_id}&select=id`,
         'GET'
       );
       const rCheckArr = await rCheck.json();
@@ -129,7 +129,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'room 없음' });
   
       const rRes = await db(
-        `corenull.rooms?id=eq.${room_id}&house_id=eq.${house_id}`,
+        ` rooms?id=eq.${room_id}&house_id=eq.${house_id}`,
         'PATCH',
         update
       );
@@ -149,7 +149,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: '필수값 누락' });
   
       const hRes = await db(
-        `corenull.houses?id=eq.${house_id}&select=owner_key`,
+        ` houses?id=eq.${house_id}&select=owner_key`,
         'GET'
       );
       if (!hRes.ok) return res.status(500).json({ error: 'house 조회 실패' });
@@ -161,27 +161,27 @@ export default async function handler(req, res) {
   
       // media room_id null 처리
       await db(
-        `corenull.media?room_id=eq.${room_id}`,
+        ` media?room_id=eq.${room_id}`,
         'PATCH',
         { room_id: null }
       );
 
       // CHANGE START - 방 삭제 시 같은 이름 분류도 삭제
       const rInfo = await db(
-        `corenull.rooms?id=eq.${room_id}&select=room_name`,
+        ` rooms?id=eq.${room_id}&select=room_name`,
         'GET'
       );
       const rInfoArr = await rInfo.json();
       if (rInfoArr?.[0]?.room_name) {
         await db(
-          `corenull.categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(rInfoArr[0].room_name)}`,
+          ` categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(rInfoArr[0].room_name)}`,
           'DELETE'
         );
       }
       // CHANGE END
   
       const rRes = await db(
-        `corenull.rooms?id=eq.${room_id}&house_id=eq.${house_id}`,
+        ` rooms?id=eq.${room_id}&house_id=eq.${house_id}`,
         'DELETE'
       );
   
