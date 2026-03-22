@@ -835,9 +835,10 @@ async function loadGallery() {
     // media 배열에서 이미지만 필터
     let photos = [];
     if (data.media && Array.isArray(data.media)) {
-      photos = data.media.filter(m => m.media_type === 'image' || (!m.media_type && m.file_url));
-      && (!ROOM_ID || m.room_id === ROOM_ID)  
-    }
+      photos = data.media.filter(m =>
+  (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url))
+  && (!ROOM_ID || m.room_id === ROOM_ID)
+);
 
     if (photos.length === 0) {
       grid.innerHTML = `
