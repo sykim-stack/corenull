@@ -1299,7 +1299,8 @@ async function submitEdit() { const id = document.getElementById('editMediaId').
 function confirmDelMedia(id) { openConfirm('사진을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => { await fetch('/api/media', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: id, house_id: HOUSE_ID }) }); showToast('삭제됐어요'); await loadData(); }); }
 
 async function uploadCover(input) { const file = input.files[0]; if (!file) return; input.value = ''; showToast('업로드 중... ⏳'); const b64 = await resizeImg(file); const blob = await b64Blob(b64); document.getElementById('heroFrame').innerHTML = `<img src="${b64}" alt="커버"><div class="photo-upload-hint">사진 변경</div>`; try { const fd = new FormData(); fd.append('file', blob, 'cover.jpg'); fd.append('upload_preset', 'corenull'); const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd }); const cl = await cr.json(); if (!cl.secure_url) throw new Error('Cloudinary 실패'); 
-const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cover', file_url: cl.secure_url, house_id: HOUSE_ID }) });
+const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+body: JSON.stringify({ action: 'cover', file_url: cl.secure_url, house_id: HOUSE_ID }) });
     const data = await res.json();
     if (data.success) showToast('커버 사진이 저장됐어요 📷');
     else showToast('저장 실패');
