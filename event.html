@@ -3,1034 +3,360 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>하준이 백일 🎂</title>
-
-  <!-- OG / 카카오 미리보기 -->
+  <title>이벤트 · CoreNull</title>
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="하준이 백일 🎂" />
-  <meta property="og:description" content="2026년 3월 31일 · 소중한 순간을 함께해요 💛" />
-  <meta property="og:image" content="https://res.cloudinary.com/dqzazs9hb/image/upload/v1773104497/muucrplkkn8tklztmqoz.jpg" />
-  <meta property="og:url" content="https://corenull.vercel.app/event?slug=hajun" />
+  <meta property="og:title" content="이벤트 · CoreNull" />
+  <meta property="og:description" content="소중한 순간을 함께해요 💛" />
   <meta property="og:site_name" content="CoreNull" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="하준이 백일 🎂" />
-  <meta name="twitter:description" content="2026년 3월 31일 · 소중한 순간을 함께해요 💛" />
-  <meta name="twitter:image" content="https://res.cloudinary.com/dqzazs9hb/image/upload/v1773104497/muucrplkkn8tklztmqoz.jpg" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Dodum&display=swap" rel="stylesheet" />
-
   <style>
-    /* ───────────────────────────────── TOKENS */
-    :root {
-      --cream:   #fdf8f2;
-      --warm:    #f5ede0;
-      --gold:    #c8975a;
-      --gold-lt: #e8c99a;
-      --brown:   #7a5230;
-      --text:    #3d2b1a;
-      --muted:   #9c7f65;
-      --border:  rgba(200,151,90,0.18);
-      --shadow:  rgba(122,82,48,0.10);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--cream);
-      color: var(--text);
-      font-family: 'Gowun Dodum', serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ───────────────────────────────── HERO */
-    .hero {
-      position: relative;
-      min-height: 100svh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px 24px 80px;
-      overflow: hidden;
-    }
-
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,201,154,0.35) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(200,151,90,0.12) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    /* subtle linen texture */
-    .hero-bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='rgba(122,82,48,0.04)'/%3E%3C/svg%3E");
-      background-size: 4px 4px;
-    }
-
-    .hero-badge {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: 11px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 28px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.2s forwards;
-    }
-
-    .hero-photo-wrap {
-      position: relative;
-      width: 200px;
-      height: 200px;
-      margin-bottom: 36px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.4s forwards;
-    }
-
-    .hero-photo-ring {
-      position: absolute;
-      inset: -8px;
-      border-radius: 50%;
-      border: 1px solid var(--gold-lt);
-      animation: spin 20s linear infinite;
-    }
-
-    .hero-photo-ring::before {
-      content: '';
-      position: absolute;
-      top: -3px; left: 50%;
-      transform: translateX(-50%);
-      width: 6px; height: 6px;
-      background: var(--gold);
-      border-radius: 50%;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .hero-photo {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--cream);
-      box-shadow: 0 8px 32px var(--shadow);
-      display: block;
-    }
-
-    .hero-photo-placeholder {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: var(--warm);
-      border: 3px solid var(--cream);
-      box-shadow: 0 8px 32px var(--shadow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-    }
-
-    .hero-name {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: clamp(36px, 8vw, 56px);
-      font-weight: 800;
-      color: var(--brown);
-      line-height: 1.1;
-      letter-spacing: -1px;
-      margin-bottom: 8px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.6s forwards;
-    }
-
-    .hero-subtitle {
-      font-size: 15px;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-bottom: 40px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.7s forwards;
-    }
-
-    /* ───────────────────────────────── COUNTDOWN */
-    .countdown-wrap {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-bottom: 40px;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.9s forwards;
-    }
-
-    .countdown-unit {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .countdown-num {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: clamp(32px, 7vw, 48px);
-      font-weight: 800;
-      color: var(--gold);
-      line-height: 1;
-      min-width: 2ch;
-      text-align: center;
-    }
-
-    .countdown-label {
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    .countdown-sep {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: 36px;
-      color: var(--gold-lt);
-      align-self: flex-start;
-      padding-top: 4px;
-      line-height: 1.2;
-    }
-
-    .dday-label {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: clamp(18px, 4vw, 24px);
-      font-weight: 700;
-      color: var(--brown);
-      background: linear-gradient(135deg, var(--warm), rgba(232,201,154,0.4));
-      padding: 14px 32px;
-      border-radius: 50px;
-      border: 1px solid var(--gold-lt);
-      margin-bottom: 8px;
-    }
-
-    .scroll-hint {
-      position: absolute;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 2px;
-      animation: bounce 2s ease-in-out infinite;
-      opacity: 0;
-      animation: fadeIn 1s ease 2s forwards, bounce 2s ease-in-out 3s infinite;
-    }
-
-    .scroll-hint::before {
-      content: '';
-      display: block;
-      width: 1px;
-      height: 32px;
-      background: linear-gradient(to bottom, transparent, var(--gold));
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(6px); }
-    }
-
-    /* ───────────────────────────────── DIVIDER */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 0 24px;
-      max-width: 480px;
-      margin: 0 auto 48px;
-    }
-
-    .divider-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .divider-icon {
-      font-size: 16px;
-      color: var(--gold);
-    }
-
-    /* ───────────────────────────────── SECTION */
-    .section {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 0 24px 64px;
-    }
-
-    .section-title {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: 11px;
-      letter-spacing: 4px;
-      color: var(--gold);
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    /* ───────────────────────────────── GALLERY */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .gallery-grid .photo-item:first-child {
-      grid-column: 1 / -1;
-    }
-
-    .photo-item {
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--warm);
-      aspect-ratio: 4/3;
-      position: relative;
-      cursor: zoom-in;
-    }
-
-    .photo-item:first-child { aspect-ratio: 16/9; }
-
-    .photo-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-      display: block;
-    }
-
-    .photo-item:hover img { transform: scale(1.04); }
-
-    .photo-empty {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      font-size: 13px;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .photo-empty span { font-size: 28px; }
-
-    .gallery-loading {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      padding: 40px 0;
-    }
-
-    /* ───────────────────────────────── INTEREST */
-    .interest-wrap {
-      text-align: center;
-      padding: 48px 0;
-    }
-
-    .interest-btn {
-      background: none;
-      border: 1.5px solid var(--gold-lt);
-      color: var(--brown);
-      font-family: 'Gowun Dodum', serif;
-      font-size: 15px;
-      padding: 16px 40px;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .interest-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, var(--warm), rgba(232,201,154,0.3));
-      opacity: 0;
-      transition: opacity 0.25s;
-    }
-
-    .interest-btn:hover::before { opacity: 1; }
-
-    .interest-btn:hover {
-      border-color: var(--gold);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px var(--shadow);
-    }
-
-    .interest-btn.active {
-      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
-      border-color: transparent;
-      color: white;
-    }
-
-    .interest-btn.active::before { opacity: 0; }
-
-    .interest-icon { font-size: 18px; position: relative; z-index: 1; }
-    .interest-text { position: relative; z-index: 1; }
-
-    .interest-count {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 12px;
-    }
-
-    /* ───────────────────────────────── GUESTBOOK */
-    .guestbook-list {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .comment-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 2px 12px var(--shadow);
-    }
-
-    .comment-meta {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .comment-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--warm), var(--gold-lt));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      flex-shrink: 0;
-    }
-
-    .comment-name {
-      font-family: 'Nanum Myeongjo', serif;
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--brown);
-    }
-
-    .comment-date {
-      font-size: 11px;
-      color: var(--muted);
-      margin-left: auto;
-    }
-
-    .comment-text {
-      font-size: 14px;
-      line-height: 1.7;
-      color: var(--text);
-      white-space: pre-wrap;
-    }
-
-    .comment-photo {
-      margin-top: 12px;
-      border-radius: 10px;
-      overflow: hidden;
-      max-height: 200px;
-    }
-
-    .comment-photo img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* Write form */
-    .write-form {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 4px 20px var(--shadow);
-    }
-
-    .write-form h3 {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--brown);
-      margin-bottom: 16px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .form-input, .form-textarea {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-family: 'Gowun Dodum', serif;
-      font-size: 14px;
-      color: var(--text);
-      background: var(--cream);
-      transition: border-color 0.2s;
-      outline: none;
-      resize: none;
-    }
-
-    .form-input:focus, .form-textarea:focus {
-      border-color: var(--gold);
-    }
-
-    .form-textarea { height: 80px; display: block; }
-
-    .form-photo-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 8px 0;
-    }
-
-    .form-photo-label input { display: none; }
-
-    .form-submit {
-      width: 100%;
-      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
-      border: none;
-      color: white;
-      font-family: 'Gowun Dodum', serif;
-      font-size: 15px;
-      padding: 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-top: 12px;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-
-    .form-submit:hover { opacity: 0.9; transform: translateY(-1px); }
-    .form-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    /* ───────────────────────────────── FOOTER */
-    .footer {
-      text-align: center;
-      padding: 40px 24px 60px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.8;
-    }
-
-    .footer-logo {
-      font-family: 'Nanum Myeongjo', serif;
-      font-size: 13px;
-      color: var(--gold);
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-
-    /* ───────────────────────────────── PHOTO LIGHTBOX */
-    .lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(30,15,5,0.92);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .lightbox.open { display: flex; }
-
-    .lightbox img {
-      max-width: 100%;
-      max-height: 90svh;
-      border-radius: 12px;
-      object-fit: contain;
-    }
-
-    .lightbox-close {
-      position: absolute;
-      top: 20px; right: 20px;
-      width: 40px; height: 40px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 50%;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* ───────────────────────────────── TOAST */
-    .toast {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--brown);
-      color: white;
-      font-size: 13px;
-      padding: 12px 24px;
-      border-radius: 50px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s ease;
-      z-index: 200;
-      white-space: nowrap;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* ───────────────────────────────── ANIMS */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-    /* ───────────────────────────────── RESPONSIVE */
-    @media (max-width: 400px) {
-      .form-row { grid-template-columns: 1fr; }
-      .countdown-num { font-size: 28px; }
-    }
+    :root{--cream:#fdf8f2;--warm:#f5ede0;--gold:#c8975a;--gold-lt:#e8c99a;--brown:#7a5230;--text:#3d2b1a;--muted:#9c7f65;--border:rgba(200,151,90,0.18);--shadow:rgba(122,82,48,0.10);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--cream);color:var(--text);font-family:'Gowun Dodum',serif;min-height:100vh;overflow-x:hidden;}
+    .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px 80px;overflow:hidden;}
+    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,201,154,0.35) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(200,151,90,0.12) 0%,transparent 60%);pointer-events:none;}
+    .hero-bg::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='rgba(122,82,48,0.04)'/%3E%3C/svg%3E");background-size:4px 4px;}
+    .hero-badge{font-family:'Nanum Myeongjo',serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:28px;opacity:0;animation:fadeUp 0.8s ease 0.2s forwards;}
+    .hero-photo-wrap{position:relative;width:200px;height:200px;margin-bottom:36px;opacity:0;animation:fadeUp 0.8s ease 0.4s forwards;}
+    .hero-photo-ring{position:absolute;inset:-8px;border-radius:50%;border:1px solid var(--gold-lt);animation:spin 20s linear infinite;}
+    .hero-photo-ring::before{content:'';position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:var(--gold);border-radius:50%;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .hero-photo{width:200px;height:200px;border-radius:50%;object-fit:cover;border:3px solid var(--cream);box-shadow:0 8px 32px var(--shadow);display:block;}
+    .hero-photo-placeholder{width:200px;height:200px;border-radius:50%;background:var(--warm);border:3px solid var(--cream);box-shadow:0 8px 32px var(--shadow);display:flex;align-items:center;justify-content:center;font-size:48px;}
+    .hero-name{font-family:'Nanum Myeongjo',serif;font-size:clamp(32px,8vw,52px);font-weight:800;color:var(--brown);line-height:1.1;letter-spacing:-1px;margin-bottom:8px;opacity:0;animation:fadeUp 0.8s ease 0.6s forwards;}
+    .hero-subtitle{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:40px;opacity:0;animation:fadeUp 0.8s ease 0.7s forwards;}
+    .countdown-wrap{display:flex;gap:16px;justify-content:center;margin-bottom:40px;opacity:0;animation:fadeUp 0.8s ease 0.9s forwards;}
+    .countdown-unit{display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .countdown-num{font-family:'Nanum Myeongjo',serif;font-size:clamp(28px,7vw,48px);font-weight:800;color:var(--gold);line-height:1;min-width:2ch;text-align:center;}
+    .countdown-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+    .countdown-sep{font-family:'Nanum Myeongjo',serif;font-size:32px;color:var(--gold-lt);align-self:flex-start;padding-top:4px;line-height:1.2;}
+    .dday-label{font-family:'Nanum Myeongjo',serif;font-size:clamp(16px,4vw,22px);font-weight:700;color:var(--brown);background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.4));padding:14px 32px;border-radius:50px;border:1px solid var(--gold-lt);}
+    .scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:11px;letter-spacing:2px;opacity:0;animation:fadeIn 1s ease 2s forwards;}
+    .scroll-hint::before{content:'';display:block;width:1px;height:32px;background:linear-gradient(to bottom,transparent,var(--gold));}
+    .divider{display:flex;align-items:center;gap:16px;padding:0 24px;max-width:480px;margin:0 auto 48px;}
+    .divider-line{flex:1;height:1px;background:var(--border);}
+    .divider-icon{font-size:16px;color:var(--gold);}
+    .section{max-width:640px;margin:0 auto;padding:0 24px 64px;}
+    .section-title{font-family:'Nanum Myeongjo',serif;font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:32px;}
+    .info-list{display:flex;flex-direction:column;gap:0;margin-bottom:32px;background:white;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);}
+    .info-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);}
+    .info-row:last-child{border-bottom:none;}
+    .info-label{font-size:12px;color:var(--muted);letter-spacing:1px;min-width:80px;flex-shrink:0;}
+    .info-value{font-size:14px;color:var(--text);flex:1;line-height:1.5;}
+    .info-action{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;white-space:nowrap;text-decoration:none;display:inline-block;}
+    .info-action:hover{background:var(--warm);color:var(--brown);}
+    .info-edit-wrap{background:white;border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 4px 20px var(--shadow);margin-bottom:16px;}
+    .info-edit-wrap h3{font-family:'Nanum Myeongjo',serif;font-size:14px;font-weight:700;color:var(--brown);margin-bottom:16px;}
+    .info-item-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;background:var(--warm);border-radius:12px;padding:10px 14px;}
+    .info-item-label{font-size:12px;color:var(--muted);min-width:70px;}
+    .info-item-value{font-size:13px;color:var(--text);flex:1;}
+    .info-item-del{background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);padding:0 4px;}
+    .info-item-del:hover{color:#e55;}
+    .add-info-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+    .add-info-form input,.add-info-form select{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--text);outline:none;}
+    .add-info-form input:focus,.add-info-form select:focus{border-color:var(--gold);}
+    .add-info-btn{grid-column:1/-1;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:white;font-family:'Gowun Dodum',serif;font-size:13px;padding:12px;border-radius:10px;cursor:pointer;}
+    .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+    .gallery-grid .photo-item:first-child{grid-column:1/-1;}
+    .photo-item{border-radius:12px;overflow:hidden;background:var(--warm);aspect-ratio:4/3;position:relative;cursor:zoom-in;}
+    .photo-item:first-child{aspect-ratio:16/9;}
+    .photo-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;display:block;}
+    .photo-item:hover img{transform:scale(1.04);}
+    .photo-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;flex-direction:column;gap:8px;}
+    .photo-empty span{font-size:28px;}
+    .gallery-loading{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;}
+    .interest-wrap{text-align:center;padding:48px 0;}
+    .interest-btn{background:none;border:1.5px solid var(--gold-lt);color:var(--brown);font-family:'Gowun Dodum',serif;font-size:15px;padding:16px 40px;border-radius:50px;cursor:pointer;transition:all 0.25s ease;display:inline-flex;align-items:center;gap:10px;position:relative;overflow:hidden;}
+    .interest-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.3));opacity:0;transition:opacity 0.25s;}
+    .interest-btn:hover::before{opacity:1;}
+    .interest-btn:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:0 6px 20px var(--shadow);}
+    .interest-btn.active{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border-color:transparent;color:white;}
+    .interest-btn.active::before{opacity:0;}
+    .interest-icon{font-size:18px;position:relative;z-index:1;}
+    .interest-text{position:relative;z-index:1;}
+    .guestbook-list{display:flex;flex-direction:column;gap:16px;margin-bottom:32px;}
+    .comment-card{background:white;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 2px 12px var(--shadow);}
+    .comment-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .comment-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--warm),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+    .comment-name{font-family:'Nanum Myeongjo',serif;font-weight:700;font-size:14px;color:var(--brown);}
+    .comment-date{font-size:11px;color:var(--muted);margin-left:auto;}
+    .comment-text{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
+    .comment-photo{margin-top:12px;border-radius:10px;overflow:hidden;}
+    .comment-photo img{width:100%;max-height:200px;object-fit:cover;display:block;}
+    .write-form{background:white;border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 4px 20px var(--shadow);}
+    .write-form h3{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;color:var(--brown);margin-bottom:16px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+    .form-input,.form-textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Gowun Dodum',serif;font-size:14px;color:var(--text);background:var(--cream);transition:border-color 0.2s;outline:none;resize:none;}
+    .form-input:focus,.form-textarea:focus{border-color:var(--gold);}
+    .form-textarea{height:80px;display:block;}
+    .form-photo-label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;padding:8px 0;}
+    .form-photo-label input{display:none;}
+    .form-submit{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:white;font-family:'Gowun Dodum',serif;font-size:15px;padding:14px;border-radius:12px;cursor:pointer;margin-top:12px;transition:opacity 0.2s,transform 0.2s;}
+    .form-submit:hover{opacity:0.9;transform:translateY(-1px);}
+    .form-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+    .footer{text-align:center;padding:40px 24px 60px;color:var(--muted);font-size:12px;line-height:1.8;}
+    .footer-logo{font-family:'Nanum Myeongjo',serif;font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;}
+    .lightbox{display:none;position:fixed;inset:0;background:rgba(30,15,5,0.92);z-index:100;align-items:center;justify-content:center;padding:24px;}
+    .lightbox.open{display:flex;}
+    .lightbox img{max-width:100%;max-height:90svh;border-radius:12px;object-fit:contain;}
+    .lightbox-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:white;font-size:13px;padding:12px 24px;border-radius:50px;opacity:0;pointer-events:none;transition:all 0.3s ease;z-index:200;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes fadeIn{to{opacity:1;}}
+    @media(max-width:400px){.form-row{grid-template-columns:1fr;}.add-info-form{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
-
-<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightbox-img" src="" alt="" />
 </div>
-
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
-  <div class="hero-badge">Kim Ha Jun · 100 Days</div>
-
+  <div class="hero-badge" id="hero-badge">CoreNull · Event</div>
   <div class="hero-photo-wrap">
     <div class="hero-photo-ring"></div>
-    <img class="hero-photo" id="hero-photo"
-         src="https://res.cloudinary.com/dqzazs9hb/image/upload/v1773104497/muucrplkkn8tklztmqoz.jpg"
-         alt="하준이"
-         onerror="this.style.display='none'; document.getElementById('hero-placeholder').style.display='flex';" />
-    <div class="hero-photo-placeholder" id="hero-placeholder" style="display:none; position:absolute; inset:0;">🍀</div>
+    <img class="hero-photo" id="hero-photo" src="" alt="" onerror="this.style.display='none';document.getElementById('hero-placeholder').style.display='flex';" />
+    <div class="hero-photo-placeholder" id="hero-placeholder" style="display:none;position:absolute;inset:0;">🎉</div>
   </div>
-
-  <div class="hero-name">하준이 백일</div>
-  <div class="hero-subtitle">
-    2025년 12월 22일 태어나<br />
-    2026년 3월 31일, 백일을 맞이해요
-  </div>
-
+  <div class="hero-name" id="hero-name">불러오는 중…</div>
+  <div class="hero-subtitle" id="hero-subtitle"></div>
   <div id="countdown-container"></div>
-
   <div class="scroll-hint">SCROLL</div>
 </section>
 
-<!-- GALLERY -->
-<div class="divider">
-  <div class="divider-line"></div>
-  <div class="divider-icon">✿</div>
-  <div class="divider-line"></div>
-</div>
-
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">✦</div><div class="divider-line"></div></div>
 <section class="section">
-  <div class="section-title">Photo Gallery</div>
-  <div class="gallery-grid" id="gallery-grid">
-    <div class="gallery-loading">사진을 불러오는 중…</div>
-  </div>
+  <div class="section-title">Info</div>
+  <div id="info-section"></div>
 </section>
 
-<!-- INTEREST -->
-<div class="divider">
-  <div class="divider-line"></div>
-  <div class="divider-icon">♡</div>
-  <div class="divider-line"></div>
-</div>
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">✿</div><div class="divider-line"></div></div>
+<section class="section">
+  <div class="section-title">Photo Gallery</div>
+  <div class="gallery-grid" id="gallery-grid"><div class="gallery-loading">사진을 불러오는 중…</div></div>
+</section>
 
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">♡</div><div class="divider-line"></div></div>
 <section class="section">
   <div class="section-title">관심 남기기</div>
   <div class="interest-wrap">
     <button class="interest-btn" id="interest-btn" onclick="toggleInterest()">
       <span class="interest-icon">🌸</span>
-      <span class="interest-text">하준이 응원해요</span>
+      <span class="interest-text">응원해요</span>
     </button>
-    <div class="interest-count" id="interest-count"></div>
   </div>
 </section>
 
-<!-- GUESTBOOK -->
-<div class="divider">
-  <div class="divider-line"></div>
-  <div class="divider-icon">✉</div>
-  <div class="divider-line"></div>
-</div>
-
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">✉</div><div class="divider-line"></div></div>
 <section class="section">
   <div class="section-title">방명록</div>
-
-  <div class="guestbook-list" id="guestbook-list">
-    <div class="gallery-loading">방명록을 불러오는 중…</div>
-  </div>
-
+  <div class="guestbook-list" id="guestbook-list"><div class="gallery-loading">방명록을 불러오는 중…</div></div>
   <div class="write-form">
-    <h3>✍️ 축하 메시지 남기기</h3>
+    <h3>✍️ 메시지 남기기</h3>
     <div class="form-row">
       <input class="form-input" id="input-name" placeholder="이름" maxlength="20" />
       <input class="form-input" id="input-lang" placeholder="한국어 / 베트남어" maxlength="10" />
     </div>
-    <textarea class="form-textarea" id="input-msg" placeholder="하준이에게 한 마디 남겨주세요 💛" maxlength="300"></textarea>
-    <label class="form-photo-label">
-      📷 사진 첨부 (선택)
-      <input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(this)" />
-    </label>
+    <textarea class="form-textarea" id="input-msg" placeholder="메시지를 남겨주세요 💛" maxlength="300"></textarea>
+    <label class="form-photo-label">📷 사진 첨부 (선택)<input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(this)" /></label>
     <div id="photo-preview" style="margin-top:8px;"></div>
     <button class="form-submit" id="submit-btn" onclick="submitComment()">메시지 남기기</button>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="footer">
   <div class="footer-logo">CORE NULL</div>
-  <div>하준이의 소중한 기억을 함께 기록해요</div>
-  <div style="margin-top:4px; font-size:11px;">BRAINPOOL · 2026</div>
+  <div id="footer-name">소중한 순간을 함께 기록해요</div>
+  <div style="margin-top:4px;font-size:11px;">BRAINPOOL · 2026</div>
 </footer>
 
 <script>
-// ───────────────────────────── CONFIG
 const SLUG = new URLSearchParams(location.search).get('slug') || 'hajun';
 const ROOM_ID = new URLSearchParams(location.search).get('room') || null;
-const HUNDRED_DATE = new Date('2026-03-31T00:00:00');
+const OWNER_KEY = new URLSearchParams(location.search).get('owner') || null;
 const CLOUDINARY_CLOUD = 'dqzazs9hb';
 const CLOUDINARY_PRESET = 'corenull';
+let HOUSE_ID = null, EVENT_DATE = null, IS_OWNER = false, infoItems = [];
 
-// ───────────────────────────── COUNTDOWN
-function renderCountdown() {
-  const container = document.getElementById('countdown-container');
-  const now = new Date();
-  const diff = HUNDRED_DATE - now;
-
-  if (diff <= 0) {
-    container.innerHTML = `<div class="dday-label">🎂 오늘이 백일이에요!</div>`;
-    return;
-  }
-
-  const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const mins  = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const secs  = Math.floor((diff % (1000 * 60)) / 1000);
-
-  if (days > 0) {
-    container.innerHTML = `
-      <div class="countdown-wrap">
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-days">${String(days).padStart(2,'0')}</div>
-          <div class="countdown-label">Days</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-hours">${String(hours).padStart(2,'0')}</div>
-          <div class="countdown-label">Hours</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-mins">${String(mins).padStart(2,'0')}</div>
-          <div class="countdown-label">Mins</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-secs">${String(secs).padStart(2,'0')}</div>
-          <div class="countdown-label">Secs</div>
-        </div>
-      </div>`;
-  } else {
-    container.innerHTML = `
-      <div class="countdown-wrap">
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-hours">${String(hours).padStart(2,'0')}</div>
-          <div class="countdown-label">Hours</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-mins">${String(mins).padStart(2,'0')}</div>
-          <div class="countdown-label">Mins</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-num" id="cd-secs">${String(secs).padStart(2,'0')}</div>
-          <div class="countdown-label">Secs</div>
-        </div>
-      </div>`;
-  }
-}
-
-function tickCountdown() {
-  const now = new Date();
-  const diff = HUNDRED_DATE - now;
-  if (diff <= 0) return;
-
-  const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const mins  = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const secs  = Math.floor((diff % (1000 * 60)) / 1000);
-
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val).padStart(2,'0'); };
-  set('cd-days',  days);
-  set('cd-hours', hours);
-  set('cd-mins',  mins);
-  set('cd-secs',  secs);
-}
-
-renderCountdown();
-setInterval(tickCountdown, 1000);
-
-// ───────────────────────────── GALLERY
-async function loadGallery() {
-  const grid = document.getElementById('gallery-grid');
+async function init() {
   try {
     const params = new URLSearchParams({ slug: SLUG });
     if (ROOM_ID) params.set('room_id', ROOM_ID);
-    const res = await fetch(`/api/house?${params}`);
+    const res = await fetch('/api/house?' + params);
     const data = await res.json();
-
-    // media 배열에서 이미지만 필터
-    let photos = [];
-    if (data.media && Array.isArray(data.media)) {
-      photos = data.media.filter(m =>
-        (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url))
-        && (!ROOM_ID || m.room_id === ROOM_ID)
-      );
-    }
-
-    if (photos.length === 0) {
-      grid.innerHTML = `
-        <div class="photo-item" style="grid-column:1/-1; aspect-ratio:16/9;">
-          <div class="photo-empty"><span>📷</span>곧 사진이 올라올 예정이에요</div>
-        </div>`;
-      return;
-    }
-
-    grid.innerHTML = photos.slice(0, 35).map((p, i) => `
-      <div class="photo-item" onclick="openLightbox('${p.file_url}')">
-        <img src="${p.file_url}" alt="하준이 사진 ${i+1}" loading="lazy" />
-      </div>`).join('');
-
-  } catch (e) {
-    grid.innerHTML = `
-      <div class="photo-item" style="grid-column:1/-1; aspect-ratio:16/9;">
-        <div class="photo-empty"><span>📷</span>사진을 불러올 수 없어요</div>
-      </div>`;
-  }
+    if (!data.house) { document.getElementById('hero-name').textContent = '페이지를 찾을 수 없어요'; return; }
+    HOUSE_ID = data.house.id;
+    IS_OWNER = !!(OWNER_KEY && data.house.owner_key && OWNER_KEY === data.house.owner_key);
+    const room = ROOM_ID ? (data.rooms || []).find(r => r.id === ROOM_ID) : null;
+    const roomName = room?.room_name || data.house.name || 'Event';
+    const eventDate = room?.event_date || null;
+    EVENT_DATE = eventDate ? new Date(eventDate) : null;
+    document.title = roomName + ' · CoreNull';
+    document.getElementById('hero-badge').textContent = (data.house.name || SLUG) + ' · Event';
+    document.getElementById('hero-name').textContent = roomName;
+    document.getElementById('footer-name').textContent = roomName + ' · 소중한 순간을 함께 기록해요';
+    if (eventDate) document.getElementById('hero-subtitle').textContent = '📅 ' + fmtDate(eventDate);
+    const coverUrl = data.house.cover_url || '';
+    const heroPhoto = document.getElementById('hero-photo');
+    if (coverUrl) { heroPhoto.src = coverUrl; }
+    else { heroPhoto.style.display = 'none'; document.getElementById('hero-placeholder').style.display = 'flex'; }
+    renderCountdown();
+    setInterval(tickCountdown, 1000);
+    updateInterestUI(localStorage.getItem('event_interest_' + SLUG + '_' + ROOM_ID) === '1');
+    await Promise.all([loadInfo(), loadGallery(data), loadComments()]);
+  } catch(e) { console.error(e); }
 }
 
-// ───────────────────────────── INTEREST
-const INTEREST_KEY = `hajun_interest_${SLUG}`;
-let interestActive = localStorage.getItem(INTEREST_KEY) === '1';
+function renderCountdown() {
+  const container = document.getElementById('countdown-container');
+  if (!EVENT_DATE) return;
+  const diff = EVENT_DATE - new Date();
+  if (diff <= 0) { container.innerHTML = '<div class="dday-label">🎉 오늘이에요!</div>'; return; }
+  const days = Math.floor(diff/86400000), hours = Math.floor((diff%86400000)/3600000), mins = Math.floor((diff%3600000)/60000), secs = Math.floor((diff%60000)/1000);
+  container.innerHTML = '<div class="countdown-wrap"><div class="countdown-unit"><div class="countdown-num" id="cd-days">'+pad(days)+'</div><div class="countdown-label">Days</div></div><div class="countdown-sep">:</div><div class="countdown-unit"><div class="countdown-num" id="cd-hours">'+pad(hours)+'</div><div class="countdown-label">Hours</div></div><div class="countdown-sep">:</div><div class="countdown-unit"><div class="countdown-num" id="cd-mins">'+pad(mins)+'</div><div class="countdown-label">Mins</div></div><div class="countdown-sep">:</div><div class="countdown-unit"><div class="countdown-num" id="cd-secs">'+pad(secs)+'</div><div class="countdown-label">Secs</div></div></div>';
+}
 
-function updateInterestUI() {
+function tickCountdown() {
+  if (!EVENT_DATE) return;
+  const diff = EVENT_DATE - new Date();
+  if (diff <= 0) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = pad(v); };
+  set('cd-days', Math.floor(diff/86400000)); set('cd-hours', Math.floor((diff%86400000)/3600000));
+  set('cd-mins', Math.floor((diff%3600000)/60000)); set('cd-secs', Math.floor((diff%60000)/1000));
+}
+
+async function loadInfo() {
+  const wrap = document.getElementById('info-section');
+  if (!ROOM_ID) { wrap.innerHTML = ''; return; }
+  try {
+    const res = await fetch('/api/event-info?room_id=' + ROOM_ID);
+    infoItems = await res.json();
+    renderInfo();
+  } catch(e) { wrap.innerHTML = ''; }
+}
+
+function renderInfo() {
+  const wrap = document.getElementById('info-section');
+  const publicRows = infoItems.map(item => {
+    let action = '';
+    if (item.type === 'phone') action = '<a href="tel:' + item.value + '" class="info-action">📞 전화</a>';
+    else if (item.type === 'account') action = '<button class="info-action" onclick="copyText(\'' + escHtml(item.value) + '\')">📋 복사</button>';
+    return '<div class="info-row"><div class="info-label">' + escHtml(item.label) + '</div><div class="info-value">' + escHtml(item.value) + '</div>' + action + '</div>';
+  }).join('');
+  const listHtml = infoItems.length ? '<div class="info-list">' + publicRows + '</div>' : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">등록된 정보가 없어요</div>';
+  const editHtml = IS_OWNER ? '<div class="info-edit-wrap"><h3>✦ 정보 관리</h3><div id="info-item-list">' + infoItems.map(item => '<div class="info-item-row" id="irow-' + item.id + '"><span class="info-item-label">' + escHtml(item.label) + '</span><span class="info-item-value">' + escHtml(item.value) + '</span><button class="info-item-del" onclick="deleteInfo(\'' + item.id + '\')">🗑️</button></div>').join('') + '</div><div class="add-info-form"><input id="new-info-label" placeholder="라벨 (예: 신랑, 계좌번호)" /><select id="new-info-type"><option value="text">텍스트</option><option value="phone">전화번호</option><option value="account">계좌번호</option></select><input id="new-info-value" placeholder="내용" style="grid-column:1/-1;" /><button class="add-info-btn" onclick="addInfo()">+ 항목 추가</button></div></div>' : '';
+  wrap.innerHTML = listHtml + editHtml;
+}
+
+async function addInfo() {
+  const label = document.getElementById('new-info-label').value.trim();
+  const value = document.getElementById('new-info-value').value.trim();
+  const type = document.getElementById('new-info-type').value;
+  if (!label || !value) { showToast('라벨과 내용을 입력해주세요'); return; }
+  try {
+    const res = await fetch('/api/event-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, room_id: ROOM_ID, owner_key: OWNER_KEY, label, value, type, order_num: infoItems.length }) });
+    const data = await res.json();
+    if (data.success) { document.getElementById('new-info-label').value = ''; document.getElementById('new-info-value').value = ''; showToast('추가됐어요 ✅'); await loadInfo(); }
+    else showToast(data.error || '추가 실패');
+  } catch(e) { showToast('오류가 발생했어요'); }
+}
+
+async function deleteInfo(id) {
+  try {
+    const res = await fetch('/api/event-info', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, house_id: HOUSE_ID, owner_key: OWNER_KEY }) });
+    const data = await res.json();
+    if (data.success) { showToast('삭제됐어요'); await loadInfo(); }
+    else showToast(data.error || '삭제 실패');
+  } catch(e) { showToast('오류가 발생했어요'); }
+}
+
+async function loadGallery(data) {
+  const grid = document.getElementById('gallery-grid');
+  try {
+    const photos = (data.media || []).filter(m => (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url)) && (!ROOM_ID || m.room_id === ROOM_ID));
+    if (!photos.length) { grid.innerHTML = '<div class="photo-item" style="grid-column:1/-1;aspect-ratio:16/9;"><div class="photo-empty"><span>📷</span>곧 사진이 올라올 예정이에요</div></div>'; return; }
+    grid.innerHTML = photos.slice(0, 35).map((p, i) => '<div class="photo-item" onclick="openLightbox(\'' + p.file_url + '\')"><img src="' + p.file_url + '" alt="사진 ' + (i+1) + '" loading="lazy" /></div>').join('');
+  } catch(e) { grid.innerHTML = '<div class="photo-item" style="grid-column:1/-1;aspect-ratio:16/9;"><div class="photo-empty"><span>📷</span>사진을 불러올 수 없어요</div></div>'; }
+}
+
+function updateInterestUI(active) {
   const btn = document.getElementById('interest-btn');
-  btn.classList.toggle('active', interestActive);
-  btn.querySelector('.interest-icon').textContent = interestActive ? '🌸' : '🌸';
-  btn.querySelector('.interest-text').textContent = interestActive ? '응원 중이에요 ✓' : '하준이 응원해요';
+  btn.classList.toggle('active', active);
+  btn.querySelector('.interest-text').textContent = active ? '응원 중이에요 ✓' : '응원해요';
 }
 
-async function toggleInterest() {
-  interestActive = !interestActive;
-  localStorage.setItem(INTEREST_KEY, interestActive ? '1' : '0');
-  updateInterestUI();
-  showToast(interestActive ? '💛 관심을 남겼어요!' : '관심을 취소했어요');
-
-  // [LATER] DB에 관심 수 저장 - event_likes 테이블 연동
+function toggleInterest() {
+  const key = 'event_interest_' + SLUG + '_' + ROOM_ID;
+  const active = localStorage.getItem(key) !== '1';
+  localStorage.setItem(key, active ? '1' : '0');
+  updateInterestUI(active);
+  showToast(active ? '💛 관심을 남겼어요!' : '관심을 취소했어요');
 }
 
-updateInterestUI();
-
-// ───────────────────────────── GUESTBOOK LOAD
 async function loadComments() {
   const list = document.getElementById('guestbook-list');
   try {
-    const res = await fetch(`/api/house?slug=${SLUG}`);
+    const res = await fetch('/api/house?slug=' + SLUG);
     const data = await res.json();
-    const comments = data.comments || [];
-
-    if (comments.length === 0) {
-      list.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:13px; padding:24px 0;">아직 방명록이 없어요. 첫 번째 메시지를 남겨주세요 💛</div>`;
-      return;
-    }
-
+    const comments = (data.comments || []).filter(c => !ROOM_ID || !c.room_id || c.room_id === ROOM_ID);
+    if (!comments.length) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">아직 방명록이 없어요. 첫 번째 메시지를 남겨주세요 💛</div>'; return; }
     list.innerHTML = comments.map(c => {
       const emoji = getEmojiAvatar(c.author_name || '?');
       const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : '';
-      const photoHtml = c.media_url
-        ? `<div class="comment-photo"><img src="${c.media_url}" alt="사진" loading="lazy" onclick="openLightbox('${c.media_url}')" /></div>`
-        : '';
-      return `
-        <div class="comment-card">
-          <div class="comment-meta">
-            <div class="comment-avatar">${emoji}</div>
-            <div class="comment-name">${escHtml(c.author_name || '익명')}</div>
-            <div class="comment-date">${date}</div>
-          </div>
-          <div class="comment-text">${escHtml(c.content_original || c.content || '')}</div>
-          ${photoHtml}
-        </div>`;
+      const photo = c.media_url ? '<div class="comment-photo"><img src="' + c.media_url + '" loading="lazy" onclick="openLightbox(\'' + c.media_url + '\')" /></div>' : '';
+      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div></div><div class="comment-text">' + escHtml(c.content_original || c.content || '') + '</div>' + photo + '</div>';
     }).join('');
-
-  } catch (e) {
-    list.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:13px; padding:24px 0;">방명록을 불러올 수 없어요</div>`;
-  }
-}
-
-// ───────────────────────────── SUBMIT COMMENT
-let uploadedPhotoUrl = null;
-
-function previewPhoto(input) {
-  const preview = document.getElementById('photo-preview');
-  const file = input.files[0];
-  if (!file) { uploadedPhotoUrl = null; preview.innerHTML = ''; return; }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    preview.innerHTML = `<img src="${e.target.result}" style="max-height:120px; border-radius:8px; margin-bottom:8px;" />`;
-  };
-  reader.readAsDataURL(file);
-}
-
-async function uploadToCloudinary(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CLOUDINARY_PRESET);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd });
-  const data = await res.json();
-  return data.secure_url;
+  } catch(e) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;">방명록을 불러올 수 없어요</div>'; }
 }
 
 async function submitComment() {
   const name = document.getElementById('input-name').value.trim();
-  const msg  = document.getElementById('input-msg').value.trim();
+  const msg = document.getElementById('input-msg').value.trim();
   const photoFile = document.getElementById('input-photo').files[0];
-  const btn  = document.getElementById('submit-btn');
-
+  const btn = document.getElementById('submit-btn');
   if (!name) { showToast('이름을 입력해주세요'); return; }
-  if (!msg)  { showToast('메시지를 입력해주세요'); return; }
-
-  btn.disabled = true;
-  btn.textContent = '저장 중…';
-
+  if (!msg) { showToast('메시지를 입력해주세요'); return; }
+  btn.disabled = true; btn.textContent = '저장 중…';
   try {
     let mediaUrl = null;
     if (photoFile) {
-      mediaUrl = await uploadToCloudinary(photoFile);
+      const fd = new FormData(); fd.append('file', photoFile); fd.append('upload_preset', CLOUDINARY_PRESET);
+      const cr = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: fd });
+      mediaUrl = (await cr.json()).secure_url;
     }
-
-    const body = {
-      slug: SLUG,
-      author_name: name,
-      content: msg,
-      lang: detectLang(msg),
-      media_url: mediaUrl,
-    };
-
-    const res = await fetch('/api/comment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) throw new Error('저장 실패');
-
-    document.getElementById('input-name').value = '';
-    document.getElementById('input-msg').value = '';
-    document.getElementById('input-photo').value = '';
-    document.getElementById('photo-preview').innerHTML = '';
-    showToast('💛 방명록에 남겼어요!');
-    await loadComments();
-
-  } catch (e) {
-    showToast('저장에 실패했어요. 다시 시도해주세요');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '메시지 남기기';
-  }
+    const res = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: SLUG, author_name: name, content: msg, lang: detectLang(msg), media_url: mediaUrl }) });
+    if (!res.ok) throw new Error();
+    document.getElementById('input-name').value = ''; document.getElementById('input-msg').value = '';
+    document.getElementById('input-photo').value = ''; document.getElementById('photo-preview').innerHTML = '';
+    showToast('💛 방명록에 남겼어요!'); await loadComments();
+  } catch(e) { showToast('저장에 실패했어요'); }
+  finally { btn.disabled = false; btn.textContent = '메시지 남기기'; }
 }
 
-// ───────────────────────────── LIGHTBOX
-function openLightbox(url) {
-  document.getElementById('lightbox-img').src = url;
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
+function previewPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader(); r.onload = e => { document.getElementById('photo-preview').innerHTML = '<img src="' + e.target.result + '" style="max-height:120px;border-radius:8px;margin-bottom:8px;" />'; }; r.readAsDataURL(file);
 }
 
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
+function openLightbox(url) { document.getElementById('lightbox-img').src = url; document.getElementById('lightbox').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow = ''; }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function detectLang(text) { return /[ㄱ-ㅎ가-힣]/.test(text) ? 'ko' : 'vi'; }
+function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(str) { if (!str) return ''; const d = new Date(str); return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일'; }
+function pad(n) { return String(Math.max(0,n)).padStart(2,'0'); }
+function copyText(text) { navigator.clipboard?.writeText(text).then(() => showToast('복사됐어요 📋')).catch(() => showToast('복사 실패')); }
+function getEmojiAvatar(name) { const e = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋']; let c = 0; for (let i = 0; i < name.length; i++) c += name.charCodeAt(i); return e[c % e.length]; }
 
-// ───────────────────────────── UTILS
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function detectLang(text) {
-  return /[ㄱ-ㅎ가-힣]/.test(text) ? 'ko' : 'vi';
-}
-
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function getEmojiAvatar(name) {
-  const emojis = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋'];
-  let code = 0;
-  for (let i = 0; i < name.length; i++) code += name.charCodeAt(i);
-  return emojis[code % emojis.length];
-}
-
-// ───────────────────────────── INIT
-loadGallery();
-loadComments();
+init();
 </script>
 </body>
 </html>
