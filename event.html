@@ -83,10 +83,13 @@
     .comment-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
     .comment-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--warm),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
     .comment-name{font-family:'Nanum Myeongjo',serif;font-weight:700;font-size:14px;color:var(--brown);}
-    .comment-date{font-size:11px;color:var(--muted);margin-left:auto;}
+    .comment-date{font-size:11px;color:var(--muted);}
     .comment-text{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
     .comment-photo{margin-top:12px;border-radius:10px;overflow:hidden;}
     .comment-photo img{width:100%;max-height:200px;object-fit:cover;display:block;}
+    .tr-result{margin-top:10px;padding:10px 12px;background:var(--warm);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--gold);}
+    .tr-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:auto;flex-shrink:0;}
+    .tr-btn:hover{background:var(--warm);color:var(--brown);}
     .write-form{background:white;border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 4px 20px var(--shadow);}
     .write-form h3{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;color:var(--brown);margin-bottom:16px;}
     .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
@@ -233,6 +236,7 @@ function tickCountdown() {
   set('cd-mins', Math.floor((diff%3600000)/60000)); set('cd-secs', Math.floor((diff%60000)/1000));
 }
 
+// ── INFO ─────────────────────────────────────────
 async function loadInfo() {
   const wrap = document.getElementById('info-section');
   if (!ROOM_ID) { wrap.innerHTML = ''; return; }
@@ -252,18 +256,20 @@ function renderInfo() {
     return '<div class="info-row"><div class="info-label">' + escHtml(item.label) + '</div><div class="info-value">' + escHtml(item.value) + '</div>' + action + '</div>';
   }).join('');
   const listHtml = infoItems.length ? '<div class="info-list">' + publicRows + '</div>' : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">등록된 정보가 없어요</div>';
-  const editHtml = IS_OWNER ? '<div class="info-edit-wrap"><h3>✦ 정보 관리</h3><div id="info-item-list">' + infoItems.map(item => '<div class="info-item-row" id="irow-' + item.id + '"><span class="info-item-label">' + escHtml(item.label) + '</span><span class="info-item-value">' + escHtml(item.value) + '</span><button class="info-item-del" onclick="deleteInfo(\'' + item.id + '\')">🗑️</button></div>').join('') + '</div><div class="add-info-form"><input id="new-info-label" placeholder="라벨 (예: 신랑, 계좌번호)" /><select id="new-info-type"><option value="text">텍스트</option><option value="phone">전화번호</option><option value="account">계좌번호</option></select><input id="new-info-value" placeholder="내용" style="grid-column:1/-1;" /><button class="add-info-btn" onclick="addInfo()">+ 항목 추가</button></div></div>' : '';
+  const editHtml = IS_OWNER ? '<div class="info-edit-wrap"><h3>✦ 정보 관리</h3><div id="info-item-list">' + infoItems.map(item => '<div class="info-item-row"><span class="info-item-label">' + escHtml(item.label) + '</span><span class="info-item-value">' + escHtml(item.value) + '</span><button class="info-item-del" onclick="deleteInfo(\'' + item.id + '\')">🗑️</button></div>').join('') + '</div><div class="add-info-form"><input id="new-info-label" placeholder="라벨 (예: 신랑, 계좌번호)" /><select id="new-info-type"><option value="text">텍스트</option><option value="phone">전화번호</option><option value="account">계좌번호</option></select><input id="new-info-value" placeholder="내용" style="grid-column:1/-1;" /><button class="add-info-btn" onclick="addInfo()">+ 항목 추가</button></div></div>' : '';
   wrap.innerHTML = listHtml + editHtml;
 }
 
 async function addInfo() {
   const label = document.getElementById('new-info-label').value.trim();
   const value = document.getElementById('new-info-value').value.trim();
-  const type = document.getElementById('new-info-type').value;
+  const type  = document.getElementById('new-info-type').value;
   if (!label || !value) { showToast('라벨과 내용을 입력해주세요'); return; }
   try {
-    const res = await fetch('/api/event-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-    body: JSON.stringify({ slug: SLUG, author_name: name, content: msg, lang: detectLang(msg), media_url: mediaUrl, room_id: ROOM_ID }) });
+    const res = await fetch('/api/event-info', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: HOUSE_ID, room_id: ROOM_ID, owner_key: OWNER_KEY, label, value, type, order_num: infoItems.length })
+    });
     const data = await res.json();
     if (data.success) { document.getElementById('new-info-label').value = ''; document.getElementById('new-info-value').value = ''; showToast('추가됐어요 ✅'); await loadInfo(); }
     else showToast(data.error || '추가 실패');
@@ -272,29 +278,35 @@ async function addInfo() {
 
 async function deleteInfo(id) {
   try {
-    const res = await fetch('/api/event-info', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, 
-    body: JSON.stringify({ id, house_id: HOUSE_ID, owner_key: OWNER_KEY }) });
+    const res = await fetch('/api/event-info', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, house_id: HOUSE_ID, owner_key: OWNER_KEY })
+    });
     const data = await res.json();
     if (data.success) { showToast('삭제됐어요'); await loadInfo(); }
     else showToast(data.error || '삭제 실패');
   } catch(e) { showToast('오류가 발생했어요'); }
 }
 
+// ── GALLERY ──────────────────────────────────────
 async function loadGallery(data) {
   const grid = document.getElementById('gallery-grid');
   try {
-    const photos = (data.media || []).filter(m => (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url)) && (!ROOM_ID || m.room_id === ROOM_ID));
+    const photos = (data.media || []).filter(m =>
+      (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url))
+      && (!ROOM_ID || m.room_id === ROOM_ID)
+    );
     if (!photos.length) { grid.innerHTML = '<div class="photo-item" style="grid-column:1/-1;aspect-ratio:16/9;"><div class="photo-empty"><span>📷</span>곧 사진이 올라올 예정이에요</div></div>'; return; }
     grid.innerHTML = photos.slice(0, 35).map((p, i) => '<div class="photo-item" onclick="openLightbox(\'' + p.file_url + '\')"><img src="' + p.file_url + '" alt="사진 ' + (i+1) + '" loading="lazy" /></div>').join('');
   } catch(e) { grid.innerHTML = '<div class="photo-item" style="grid-column:1/-1;aspect-ratio:16/9;"><div class="photo-empty"><span>📷</span>사진을 불러올 수 없어요</div></div>'; }
 }
 
+// ── INTEREST ─────────────────────────────────────
 function updateInterestUI(active) {
   const btn = document.getElementById('interest-btn');
   btn.classList.toggle('active', active);
   btn.querySelector('.interest-text').textContent = active ? '응원 중이에요 ✓' : '응원해요';
 }
-
 function toggleInterest() {
   const key = 'event_interest_' + SLUG + '_' + ROOM_ID;
   const active = localStorage.getItem(key) !== '1';
@@ -303,6 +315,7 @@ function toggleInterest() {
   showToast(active ? '💛 관심을 남겼어요!' : '관심을 취소했어요');
 }
 
+// ── GUESTBOOK ────────────────────────────────────
 async function loadComments() {
   const list = document.getElementById('guestbook-list');
   try {
@@ -314,18 +327,19 @@ async function loadComments() {
       const emoji = getEmojiAvatar(c.author_name || '?');
       const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : '';
       const photo = c.media_url ? '<div class="comment-photo"><img src="' + c.media_url + '" loading="lazy" onclick="openLightbox(\'' + c.media_url + '\')" /></div>' : '';
-      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div> + </div><div class="comment-text">' + escHtml(c.content_original || c.content || '') + '</div>' + photo + '</div>';
+      const text = escHtml(c.content_original || c.content || '');
+      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div><button class="tr-btn" onclick="translateComment(\'' + c.id + '\',\'' + text.replace(/'/g,"\\'") + '\',this)">🌐 번역</button></div><div class="comment-text">' + text + '</div>' + photo + '</div>';
     }).join('');
   } catch(e) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;">방명록을 불러올 수 없어요</div>'; }
 }
 
 async function submitComment() {
   const name = document.getElementById('input-name').value.trim();
-  const msg = document.getElementById('input-msg').value.trim();
+  const msg  = document.getElementById('input-msg').value.trim();
   const photoFile = document.getElementById('input-photo').files[0];
   const btn = document.getElementById('submit-btn');
   if (!name) { showToast('이름을 입력해주세요'); return; }
-  if (!msg) { showToast('메시지를 입력해주세요'); return; }
+  if (!msg)  { showToast('메시지를 입력해주세요'); return; }
   btn.disabled = true; btn.textContent = '저장 중…';
   try {
     let mediaUrl = null;
@@ -334,7 +348,10 @@ async function submitComment() {
       const cr = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: fd });
       mediaUrl = (await cr.json()).secure_url;
     }
-    const res = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: SLUG, author_name: name, content: msg, lang: detectLang(msg), media_url: mediaUrl }) });
+    const res = await fetch('/api/comment', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: SLUG, author_name: name, content: msg, lang: detectLang(msg), media_url: mediaUrl, room_id: ROOM_ID })
+    });
     if (!res.ok) throw new Error();
     document.getElementById('input-name').value = ''; document.getElementById('input-msg').value = '';
     document.getElementById('input-photo').value = ''; document.getElementById('photo-preview').innerHTML = '';
@@ -348,6 +365,38 @@ function previewPhoto(input) {
   const r = new FileReader(); r.onload = e => { document.getElementById('photo-preview').innerHTML = '<img src="' + e.target.result + '" style="max-height:120px;border-radius:8px;margin-bottom:8px;" />'; }; r.readAsDataURL(file);
 }
 
+// ── TRANSLATE ─────────────────────────────────────
+const translateCache = {};
+async function translateComment(id, text, btn) {
+  const existing = document.getElementById('tr-' + id);
+  if (existing) {
+    existing.style.display = existing.style.display === 'none' ? 'block' : 'none';
+    btn.textContent = existing.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
+    return;
+  }
+  if (translateCache[id]) { showTR(id, translateCache[id], btn); return; }
+  btn.textContent = '번역 중…'; btn.disabled = true;
+  try {
+    const isKo = /[ㄱ-ㅎ가-힣]/.test(text);
+    const r = await fetch('/api/corering?action=translate&text=' + encodeURIComponent(text) + '&target=' + (isKo ? 'VI' : 'KO'));
+    const d = await r.json();
+    const t = d.translations?.[0]?.text;
+    if (!t) throw new Error();
+    translateCache[id] = t;
+    showTR(id, t, btn);
+  } catch { btn.textContent = '🌐 번역'; btn.disabled = false; showToast('번역 실패'); }
+}
+function showTR(id, text, btn) {
+  const card = btn.closest('.comment-card');
+  const el = document.createElement('div');
+  el.id = 'tr-' + id;
+  el.className = 'tr-result';
+  el.textContent = text;
+  card.appendChild(el);
+  btn.textContent = '🌐 숨기기'; btn.disabled = false;
+}
+
+// ── LIGHTBOX / UTILS ──────────────────────────────
 function openLightbox(url) { document.getElementById('lightbox-img').src = url; document.getElementById('lightbox').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow = ''; }
 function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
@@ -359,54 +408,6 @@ function copyText(text) { navigator.clipboard?.writeText(text).then(() => showTo
 function getEmojiAvatar(name) { const e = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋']; let c = 0; for (let i = 0; i < name.length; i++) c += name.charCodeAt(i); return e[c % e.length]; }
 
 init();
-
-// 번역 캐시
-const translateCache = {};
-
-async function translateComment(commentId, text, btnEl) {
-  // 이미 번역됐으면 토글
-  const resultEl = document.getElementById('tr-' + commentId);
-  if (resultEl) {
-    resultEl.style.display = resultEl.style.display === 'none' ? 'block' : 'none';
-    btnEl.textContent = resultEl.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
-    return;
-  }
-
-  // 캐시 확인
-  if (translateCache[commentId]) {
-    showTranslateResult(commentId, translateCache[commentId], btnEl);
-    return;
-  }
-
-  btnEl.textContent = '번역 중…';
-  btnEl.disabled = true;
-
-  try {
-    const isKorean = /[ㄱ-ㅎ가-힣]/.test(text);
-    const target = isKorean ? 'VI' : 'KO';
-    const res = await fetch(`/api/corering?action=translate&text=${encodeURIComponent(text)}&target=${target}`);
-    const data = await res.json();
-    const translated = data.translations?.[0]?.text;
-    if (!translated) throw new Error();
-    translateCache[commentId] = translated;
-    showTranslateResult(commentId, translated, btnEl);
-  } catch(e) {
-    btnEl.textContent = '🌐 번역';
-    btnEl.disabled = false;
-    showToast('번역 실패');
-  }
-}
-
-function showTranslateResult(commentId, text, btnEl) {
-  const card = btnEl.closest('.comment-card');
-  const el = document.createElement('div');
-  el.id = 'tr-' + commentId;
-  el.style.cssText = 'margin-top:10px;padding:10px 12px;background:var(--warm);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--gold);';
-  el.textContent = text;
-  card.appendChild(el);
-  btnEl.textContent = '🌐 숨기기';
-  btnEl.disabled = false;
-}
 </script>
 </body>
 </html>
