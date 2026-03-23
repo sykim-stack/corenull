@@ -262,7 +262,8 @@ async function addInfo() {
   const type = document.getElementById('new-info-type').value;
   if (!label || !value) { showToast('라벨과 내용을 입력해주세요'); return; }
   try {
-    const res = await fetch('/api/event-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, room_id: ROOM_ID, owner_key: OWNER_KEY, label, value, type, order_num: infoItems.length }) });
+    const res = await fetch('/api/event-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify({ slug: SLUG, author_name: name, content: msg, lang: detectLang(msg), media_url: mediaUrl, room_id: ROOM_ID }) });
     const data = await res.json();
     if (data.success) { document.getElementById('new-info-label').value = ''; document.getElementById('new-info-value').value = ''; showToast('추가됐어요 ✅'); await loadInfo(); }
     else showToast(data.error || '추가 실패');
@@ -271,7 +272,8 @@ async function addInfo() {
 
 async function deleteInfo(id) {
   try {
-    const res = await fetch('/api/event-info', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, house_id: HOUSE_ID, owner_key: OWNER_KEY }) });
+    const res = await fetch('/api/event-info', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify({ id, house_id: HOUSE_ID, owner_key: OWNER_KEY }) });
     const data = await res.json();
     if (data.success) { showToast('삭제됐어요'); await loadInfo(); }
     else showToast(data.error || '삭제 실패');
@@ -312,7 +314,8 @@ async function loadComments() {
       const emoji = getEmojiAvatar(c.author_name || '?');
       const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : '';
       const photo = c.media_url ? '<div class="comment-photo"><img src="' + c.media_url + '" loading="lazy" onclick="openLightbox(\'' + c.media_url + '\')" /></div>' : '';
-      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div></div><div class="comment-text">' + escHtml(c.content_original || c.content || '') + '</div>' + photo + '</div>';
+      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div> + '<button onclick="translateComment(\'' + c.id + '\',\'' + escHtml(c.content_original || c.content || '') + '\',this)" style="background:none;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:\'Gowun Dodum\',serif;margin-left:auto;">🌐 번역</button>' +
+'</div>'</div><div class="comment-text">' + escHtml(c.content_original || c.content || '') + '</div>' + photo + '</div>';
     }).join('');
   } catch(e) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;">방명록을 불러올 수 없어요</div>'; }
 }
@@ -357,6 +360,54 @@ function copyText(text) { navigator.clipboard?.writeText(text).then(() => showTo
 function getEmojiAvatar(name) { const e = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋']; let c = 0; for (let i = 0; i < name.length; i++) c += name.charCodeAt(i); return e[c % e.length]; }
 
 init();
+
+// 번역 캐시
+const translateCache = {};
+
+async function translateComment(commentId, text, btnEl) {
+  // 이미 번역됐으면 토글
+  const resultEl = document.getElementById('tr-' + commentId);
+  if (resultEl) {
+    resultEl.style.display = resultEl.style.display === 'none' ? 'block' : 'none';
+    btnEl.textContent = resultEl.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
+    return;
+  }
+
+  // 캐시 확인
+  if (translateCache[commentId]) {
+    showTranslateResult(commentId, translateCache[commentId], btnEl);
+    return;
+  }
+
+  btnEl.textContent = '번역 중…';
+  btnEl.disabled = true;
+
+  try {
+    const isKorean = /[ㄱ-ㅎ가-힣]/.test(text);
+    const target = isKorean ? 'VI' : 'KO';
+    const res = await fetch(`/api/corering?action=translate&text=${encodeURIComponent(text)}&target=${target}`);
+    const data = await res.json();
+    const translated = data.translations?.[0]?.text;
+    if (!translated) throw new Error();
+    translateCache[commentId] = translated;
+    showTranslateResult(commentId, translated, btnEl);
+  } catch(e) {
+    btnEl.textContent = '🌐 번역';
+    btnEl.disabled = false;
+    showToast('번역 실패');
+  }
+}
+
+function showTranslateResult(commentId, text, btnEl) {
+  const card = btnEl.closest('.comment-card');
+  const el = document.createElement('div');
+  el.id = 'tr-' + commentId;
+  el.style.cssText = 'margin-top:10px;padding:10px 12px;background:var(--warm);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--gold);';
+  el.textContent = text;
+  card.appendChild(el);
+  btnEl.textContent = '🌐 숨기기';
+  btnEl.disabled = false;
+}
 </script>
 </body>
 </html>

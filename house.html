@@ -881,7 +881,9 @@ function renderLobby(container, house, milestones, comments, rooms) {
       }).join('')}
     </div>` : '';
 
-  const feedHtml = comments.length ? comments.map((c, i) => `<div class="feed-item" style="animation-delay:${i * .06}s"><div class="feed-head"><div class="feed-av">${(c.author_name || '?')[0]}</div><div class="feed-name">${c.author_name || '익명'}</div><div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>${IS_OWNER ? `<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>` : ''}</div>${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}<div class="feed-body">${(c.content_original || '').replace(/\n/g, '<br>')}</div><div class="feed-time">${timeAgo(c.created_at)}</div></div>`).join('') : `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
+  const feedHtml = comments.length ? comments.map((c, i) => `<div class="feed-item" style="animation-delay:${i * .06}s"><div class="feed-head"><div class="feed-av">${(c.author_name || '?')[0]}</div><div class="feed-name">${c.author_name || '익명'}</div><div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>${IS_OWNER ? `<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>` : ''}
+<button onclick="translateComment('${c.id}','${(c.content_original||'').replace(/'/g,"\\'")}',this)" style="background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:auto;">🌐 번역</button>
+</div>{c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}<div class="feed-body">${(c.content_original || '').replace(/\n/g, '<br>')}</div><div class="feed-time">${timeAgo(c.created_at)}</div></div>`).join('') : `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
 
   container.innerHTML = `${bannerHtml}<div class="section">
     ${roomCardsHtml}
@@ -1378,6 +1380,72 @@ function copyLink(ref) {
   }
 }
 loadData();
+// 번역 캐시
+const translateCache = {};
+
+async function translateComment(commentId, text, btnEl) {
+  // 이미 번역됐으면 토글
+  const resultEl = document.getElementById('tr-' + commentId);
+  if (resultEl) {
+    resultEl.style.display = resultEl.style.display === 'none' ? 'block' : 'none';
+    btnEl.textContent = resultEl.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
+    return;
+  }
+
+  // 캐시 확인
+  if (translateCache[commentId]) {
+    showTranslateResult(commentId, translateCache[commentId], btnEl);
+    return;
+  }
+
+  btnEl.textContent = '번역 중…';
+  btnEl.disabled = true;
+
+  try {
+    const isKorean = /[ㄱ-ㅎ가-힣]/.test(text);
+    const target = isKorean ? 'VI' : 'KO';
+    const res = await fetch(`/api/corering?action=translate&text=${encodeURIComponent(text)}&target=${target}`);
+    const data = await res.json();
+    const translated = data.translations?.[0]?.text;
+    if (!translated) throw new Error();
+    translateCache[commentId] = translated;
+    showTranslateResult(commentId, translated, btnEl);
+  } catch(e) {
+    btnEl.textContent = '🌐 번역';
+    btnEl.disabled = false;
+    showToast('번역 실패');
+  }
+}
+
+const translateCache = {};
+async function translateComment(id, text, btn) {
+  const existing = document.getElementById('tr-' + id);
+  if (existing) {
+    existing.style.display = existing.style.display === 'none' ? 'block' : 'none';
+    btn.textContent = existing.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
+    return;
+  }
+  if (translateCache[id]) { showTR(id, translateCache[id], btn); return; }
+  btn.textContent = '번역 중…'; btn.disabled = true;
+  try {
+    const isKo = /[ㄱ-ㅎ가-힣]/.test(text);
+    const r = await fetch(`/api/corering?action=translate&text=${encodeURIComponent(text)}&target=${isKo?'VI':'KO'}`);
+    const d = await r.json();
+    const t = d.translations?.[0]?.text;
+    if (!t) throw new Error();
+    translateCache[id] = t;
+    showTR(id, t, btn);
+  } catch { btn.textContent = '🌐 번역'; btn.disabled = false; showToast('번역 실패'); }
+}
+function showTR(id, text, btn) {
+  const card = btn.closest('.feed-item') || btn.closest('.comment-card');
+  const el = document.createElement('div');
+  el.id = 'tr-' + id;
+  el.style.cssText = 'margin-top:10px;padding:10px 12px;background:var(--warm);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--gold);';
+  el.textContent = text;
+  card.appendChild(el);
+  btn.textContent = '🌐 숨기기'; btn.disabled = false;
+}
 </script>
 </body>
 </html>
