@@ -1417,34 +1417,15 @@ async function translateComment(commentId, text, btnEl) {
   }
 }
 
-const translateCache = {};
-async function translateComment(id, text, btn) {
-  const existing = document.getElementById('tr-' + id);
-  if (existing) {
-    existing.style.display = existing.style.display === 'none' ? 'block' : 'none';
-    btn.textContent = existing.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
-    return;
-  }
-  if (translateCache[id]) { showTR(id, translateCache[id], btn); return; }
-  btn.textContent = '번역 중…'; btn.disabled = true;
-  try {
-    const isKo = /[ㄱ-ㅎ가-힣]/.test(text);
-    const r = await fetch(`/api/corering?action=translate&text=${encodeURIComponent(text)}&target=${isKo?'VI':'KO'}`);
-    const d = await r.json();
-    const t = d.translations?.[0]?.text;
-    if (!t) throw new Error();
-    translateCache[id] = t;
-    showTR(id, t, btn);
-  } catch { btn.textContent = '🌐 번역'; btn.disabled = false; showToast('번역 실패'); }
-}
-function showTR(id, text, btn) {
-  const card = btn.closest('.feed-item') || btn.closest('.comment-card');
+function showTranslateResult(commentId, text, btnEl) {
+  const card = btnEl.closest('.comment-card');
   const el = document.createElement('div');
-  el.id = 'tr-' + id;
+  el.id = 'tr-' + commentId;
   el.style.cssText = 'margin-top:10px;padding:10px 12px;background:var(--warm);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--gold);';
   el.textContent = text;
   card.appendChild(el);
-  btn.textContent = '🌐 숨기기'; btn.disabled = false;
+  btnEl.textContent = '🌐 숨기기';
+  btnEl.disabled = false;
 }
 </script>
 </body>
