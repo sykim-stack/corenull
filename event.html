@@ -221,10 +221,19 @@ async function init() {
     document.getElementById('hero-name').textContent = roomName;
     document.getElementById('footer-name').textContent = roomName + ' · 소중한 순간을 함께 기록해요';
     if (eventDate) document.getElementById('hero-subtitle').textContent = '📅 ' + fmtDate(eventDate);
-    const coverUrl = data.house.cover_url || '';
-    const heroPhoto = document.getElementById('hero-photo');
-    if (coverUrl) { heroPhoto.src = coverUrl; }
-    else { heroPhoto.style.display = 'none'; document.getElementById('hero-placeholder').style.display = 'flex'; }
+// CHANGE START
+const coverUrl = data.house.cover_url || '';
+const heroPhoto = document.getElementById('hero-photo');
+const heroPlaceholder = document.getElementById('hero-placeholder');
+if (coverUrl) {
+  heroPhoto.src = coverUrl;
+  heroPhoto.style.display = 'block';
+  heroPlaceholder.style.display = 'none';
+} else {
+  heroPhoto.style.display = 'none';
+  heroPlaceholder.style.display = 'flex';
+}
+// CHANGE END
     renderCountdown();
     setInterval(tickCountdown, 1000);
     updateInterestUI(localStorage.getItem('event_interest_' + SLUG + '_' + ROOM_ID) === '1');
