@@ -260,15 +260,37 @@ function tickCountdown() {
 }
 
 // ── INFO ─────────────────────────────────────────
+// CHANGE START: loadInfo
 async function loadInfo() {
   const wrap = document.getElementById('info-section');
   if (!ROOM_ID) { wrap.innerHTML = ''; return; }
   try {
-    const res = await fetch('/api/event-info?room_id=' + ROOM_ID);
-    infoItems = await res.json();
-    renderInfo();
-  } catch(e) { wrap.innerHTML = ''; }
+    const res = await fetch('/api/rooms?room_id=' + ROOM_ID);
+    const data = await res.json();
+    const { info_title, info_body, info_account } = data;
+
+    const hasInfo = info_title || info_body || info_account;
+    if (!hasInfo) {
+      wrap.innerHTML = IS_OWNER
+        ? '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">house.html 이벤트 관리에서 공지를 등록하세요</div>'
+        : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">등록된 정보가 없어요</div>';
+      return;
+    }
+
+    let html = '<div class="info-list">';
+    if (info_title) html += `<div class="info-row"><div class="info-label">이벤트</div><div class="info-value" style="font-weight:600;">${escHtml(info_title)}</div></div>`;
+    if (info_body) {
+      const lines = info_body.split('\n').map(l => escHtml(l)).join('<br>');
+      html += `<div class="info-row" style="align-items:flex-start;"><div class="info-label">안내</div><div class="info-value" style="line-height:1.8;">${lines}</div></div>`;
+    }
+    if (info_account) html += `<div class="info-row"><div class="info-label">계좌</div><div class="info-value">${escHtml(info_account)}</div><button class="info-action" onclick="copyText('${escHtml(info_account)}')">📋 복사</button></div>`;
+    html += '</div>';
+    wrap.innerHTML = html;
+  } catch(e) {
+    wrap.innerHTML = '';
+  }
 }
+// CHANGE END
 
 function renderInfo() {
   const wrap = document.getElementById('info-section');

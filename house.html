@@ -993,15 +993,21 @@ function renderEventRoomList() {
     const editForm = document.createElement('div');
     editForm.id = `editForm-${r.id}`;
     editForm.style.cssText = 'display:none;border-top:1px solid rgba(139,94,60,.1);padding-top:10px;margin-top:4px;';
-    editForm.innerHTML = `
-      <input class="modal-input" id="editName-${r.id}" value="${r.room_name}" style="margin-bottom:8px;">
-      <input class="modal-input" id="editDate-${r.id}" type="date" value="${r.event_date || ''}" style="margin-bottom:8px;">
-      <div style="display:flex;gap:8px;">
-        <button onclick="saveEditEventRoom('${r.id}')"
-          style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">저장</button>
-        <button onclick="document.getElementById('editForm-${r.id}').style.display='none'"
-          style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
-      </div>`;
+    // CHANGE START: editForm innerHTML
+editForm.innerHTML = `
+  <input class="modal-input" id="editName-${r.id}" value="${r.room_name}" style="margin-bottom:8px;" placeholder="이벤트 이름">
+  <input class="modal-input" id="editDate-${r.id}" type="date" value="${r.event_date || ''}" style="margin-bottom:8px;">
+  <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;">📋 이벤트 공지 (선택)</div>
+  <input class="modal-input" id="editInfoTitle-${r.id}" value="${r.info_title || ''}" placeholder="제목 (예: 김하준 백일잔치)" style="margin-bottom:8px;">
+  <textarea class="modal-input" id="editInfoBody-${r.id}" placeholder="안내 문구&#10;📅 날짜/시간&#10;📍 장소" style="height:80px;margin-bottom:8px;">${r.info_body || ''}</textarea>
+  <input class="modal-input" id="editInfoAccount-${r.id}" value="${r.info_account || ''}" placeholder="계좌번호 (예: 신한 110-123-456789 김상열)" style="margin-bottom:8px;">
+  <div style="display:flex;gap:8px;">
+    <button onclick="saveEditEventRoom('${r.id}')"
+      style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">저장</button>
+    <button onclick="document.getElementById('editForm-${r.id}').style.display='none'"
+      style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
+  </div>`;
+// CHANGE END
 
     wrap.appendChild(row);
     wrap.appendChild(editForm);
@@ -1021,21 +1027,30 @@ function openEditEventRoom(roomId, name, date) {
   document.getElementById(`editForm-${roomId}`).style.display = 'block';
 }
 
+// CHANGE START: saveEditEventRoom
 async function saveEditEventRoom(roomId) {
   const name = document.getElementById(`editName-${roomId}`).value.trim();
   const date = document.getElementById(`editDate-${roomId}`).value;
+  const infoTitle = document.getElementById(`editInfoTitle-${roomId}`).value.trim();
+  const infoBody = document.getElementById(`editInfoBody-${roomId}`).value.trim();
+  const infoAccount = document.getElementById(`editInfoAccount-${roomId}`).value.trim();
   if (!name) { showToast('이름을 입력해주세요'); return; }
   try {
     const res = await fetch('/api/rooms', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ room_id: roomId, house_id: HOUSE_ID, owner_key: OWNER_KEY, room_name: name, event_date: date || null })
+      body: JSON.stringify({
+        room_id: roomId, house_id: HOUSE_ID, owner_key: OWNER_KEY,
+        room_name: name, event_date: date || null,
+        info_title: infoTitle, info_body: infoBody, info_account: infoAccount
+      })
     });
     const data = await res.json();
     if (data.success) { showToast('수정됐어요 ✅'); await loadData(); }
     else showToast(data.error || '수정 실패');
   } catch(e) { showToast('오류가 발생했어요'); }
 }
+// CHANGE END
 
 async function createEventRoom() {
   const name = document.getElementById('newEventName').value.trim();
