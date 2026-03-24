@@ -909,48 +909,6 @@ const feedHtml = comments.length ? comments.map((c, i) => {
 }
 
 // CHANGE START: renderRoom() 전체 교체
-function renderRoom(container, room) {
-  currentRoomId = room.id;
-  const chips = CATEGORIES.map(c => `<span class="cat-chip" data-id="${c.id}" onclick="filterCat('${c.id}',this)">${c.name}</span>`).join('');
-  const eventRooms = ROOMS.filter(r => r.room_type === 'event');
-
-  container.innerHTML = `<div class="section">
-    <div class="sec-head">
-      <div><div class="sec-label">ROOM</div><div class="sec-title">방 📝</div></div>
-      <div style="display:flex;gap:8px;">
-        ${IS_OWNER ? `<button class="more-btn" onclick="openEventMgr()">🎂 이벤트</button>` : ''}
-        ${IS_OWNER ? `<button class="more-btn" onclick="openWriteModal()">+ 글쓰기</button>` : ''}
-      </div>
-    </div>
-    <div class="cat-bar">
-      <span class="cat-chip active" data-id="all" onclick="filterCat('all',this)">전체</span>${chips}
-    </div>
-    <div class="post-list" id="postList"></div>
-  </div>
-
-  <!-- 이벤트 관리 모달 -->
-  <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)" style="align-items:center;padding:24px;">
-    <div class="modal-box">
-      <div class="modal-handle"></div>
-      <div class="modal-title">🎂 이벤트 관리</div>
-
-      <!-- 현재 이벤트 목록 -->
-      <div id="eventRoomList" style="margin-bottom:16px;"></div>
-
-      <!-- 새 이벤트 추가 폼 -->
-      <div style="background:var(--warm);border-radius:14px;padding:16px;">
-        <div style="font-size:12px;color:var(--brown);font-weight:600;margin-bottom:10px;letter-spacing:1px;">+ 새 이벤트 추가</div>
-        <input class="modal-input" id="newEventName" placeholder="이벤트 이름 (예: 돌잔치, 수능응원)">
-        <input class="modal-input" id="newEventDate" type="date">
-        <button class="modal-submit" style="margin-top:0;" onclick="createEventRoom()">생성</button>
-      </div>
-    </div>
-  </div>`;
-
-  renderPostList(allPosts);
-  if (IS_OWNER) renderEventRoomList();
-}
-
 function renderEvent(container, room) {
   const diff = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
   const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
