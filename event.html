@@ -315,6 +315,8 @@ async function deleteInfo(id) {
 // CHANGE START
 async function loadGallery(data) {
   const grid = document.getElementById('gallery-grid');
+  grid.style.cssText = 'display:block;';
+
   try {
     const photos = (data.media || []).filter(m =>
       (m.media_type === 'photo' || m.media_type === 'image' || (!m.media_type && m.file_url))
@@ -323,59 +325,52 @@ async function loadGallery(data) {
 
     if (!photos.length) {
       grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:13px;"><span style="font-size:28px;display:block;margin-bottom:8px;">📷</span>곧 사진이 올라올 예정이에요</div>';
-      grid.style.cssText = 'display:block;';
       return;
     }
 
-    const lbUrls = photos.map(p => p.file_url);
+    // 날짜별 그룹
+    const groups = {};
+    photos.forEach(p => {
+      const d = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' }) : '날짜 없음';
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(p);
+    });
 
-    // 5장 크게 + 나머지 더보기
-    const show = photos.slice(0, 5);
-    const rest = photos.length - 5;
+    const allUrls = photos.map(p => p.file_url);
+    window._galleryAllUrls = allUrls;
 
-    let cellsHtml = show.map((p, i) => {
-      if (i === 4 && rest > 0) {
-        return `<div class="lib-item more-cell" onclick="openLightbox('${p.file_url}',${i})">
-          <img src="${p.file_url}" loading="lazy" />
-          <div class="more-badge" onclick="event.stopPropagation();openAllPhotos()">+${rest + 1}</div>
+    let globalIdx = 0;
+    let html = '';
+
+    Object.entries(groups).forEach(([date, items]) => {
+      html += `<div style="margin-bottom:32px;">
+        <div style="font-family:'Nanum Myeongjo',serif;font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">${date}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:12px;overflow:hidden;">`;
+
+      items.forEach((p, i) => {
+        const gi = globalIdx++;
+        const isFirst = i === 0;
+        const spanStyle = isFirst && items.length > 1 ? 'grid-column:span 2;grid-row:span 2;' : '';
+        html += `<div style="${spanStyle}aspect-ratio:1;overflow:hidden;cursor:zoom-in;background:var(--warm);" onclick="openGalleryAt(${gi})">
+          <img src="${p.file_url}" loading="lazy" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
         </div>`;
-      }
-      return `<div class="lib-item" onclick="openGalleryLightbox(${i})">
-        <img src="${p.file_url}" loading="lazy" />
-      </div>`;
-    }).join('');
+      });
 
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:3px;';
-    grid.innerHTML = `
-      <style>
-        .lib-item{aspect-ratio:1;overflow:hidden;cursor:pointer;background:#EDE3D5;position:relative;}
-        .lib-item:first-child{grid-column:span 2;grid-row:span 2;}
-        .lib-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
-        .lib-item:hover img{transform:scale(1.05);}
-        .more-cell .more-badge{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-weight:700;cursor:pointer;}
-      </style>
-      ${cellsHtml}`;
+      html += `</div></div>`;
+    });
 
-    window._galleryPhotos = photos;
-    window._galleryUrls = lbUrls;
+    grid.innerHTML = html;
 
   } catch(e) {
     grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;">사진을 불러올 수 없어요</div>';
   }
 }
 
-function openGalleryLightbox(idx) {
-  const urls = window._galleryUrls || [];
-  const lb = document.getElementById('lightbox');
+function openGalleryAt(idx) {
+  const urls = window._galleryAllUrls || [];
   document.getElementById('lightbox-img').src = urls[idx] || '';
-  lb.classList.add('open');
+  document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
-  lb._urls = urls;
-  lb._idx = idx;
-}
-
-function openAllPhotos() {
-  openGalleryLightbox(0);
 }
 // CHANGE END
 
