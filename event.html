@@ -401,7 +401,9 @@ async function translateComment(id, text, btn) {
   btn.textContent = '번역 중…'; btn.disabled = true;
   try {
     const isKo = /[ㄱ-ㅎ가-힣]/.test(text);
-    const r = await fetch('/api/corering?action=translate&text=' + encodeURIComponent(text) + '&target=' + (isKo ? 'VI' : 'KO'));
+    // CHANGE START
+    const r = await fetch('https://corering.vercel.app/api/corering?action=translate&text=' + encodeURIComponent(text) + '&target=' + (isKo ? 'VI' : 'KO'));
+// CHANGE END
     const d = await r.json();
     const t = d.translations?.[0]?.text;
     if (!t) throw new Error();
