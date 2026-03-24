@@ -881,8 +881,9 @@ function renderLobby(container, house, milestones, comments, rooms) {
       }).join('')}
     </div>` : '';
 
-    const feedHtml = comments.length ? comments.map((c, i) => `<div class="feed-item" style="animation-delay:${i * .06}s"><div class="feed-head"><div class="feed-av">${(c.author_name || '?')[0]}</div><div class="feed-name">${c.author_name || '익명'}</div><div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>${IS_OWNER ? `<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>` : ''}<button onclick="translateComment('${c.id}','${(c.content_original||'').replace(/'/g,"\\'")}',this)" style="background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:auto;">🌐 번역</button></div>${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}<div class="feed-body">${(c.content_original || '').replace(/\n/g, '<br>')}</div><div class="feed-time">${timeAgo(c.created_at)}</div></div>`).join('')
-  container.innerHTML = `${bannerHtml}<div class="section">
+  const feedHtml = comments.length ? comments.map((c, i) => `<div class="feed-item" style="animation-delay:${i * .06}s"><div class="feed-head"><div class="feed-av">${(c.author_name || '?')[0]}</div><div class="feed-name">${c.author_name || '익명'}</div><div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>${IS_OWNER ? `<button class="feed-del"`;
+
+    container.innerHTML = `${bannerHtml}<div class="section">
     ${roomCardsHtml}
     <div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div>
     <div class="photo-strip">${photoHtml}</div>
