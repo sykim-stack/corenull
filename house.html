@@ -239,42 +239,6 @@
 .post-modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .post-modal-content{font-size:14px;line-height:1.9;color:var(--text);margin-bottom:8px;white-space:pre-wrap;}
 .post-modal-date{font-size:11px;color:var(--muted);letter-spacing:1px;}
-
-/* CHANGE START: 페이스북 스타일 이미지 그리드 CSS */
-.fb-grid { display: grid; gap: 4px; margin-top: 10px; }
-.fb-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.fb-grid .img-wrap { width: 100%; height: 100%; position: relative; overflow: hidden; cursor: pointer; }
-
-/* 1장 */
-.fb-grid-1 { grid-template-columns: 1fr; }
-.fb-grid-1 .img-wrap { max-height: 400px; border-radius: 12px; }
-
-/* 2장 */
-.fb-grid-2 { grid-template-columns: 1fr 1fr; height: 300px; }
-.fb-grid-2 .img-wrap:first-child { border-radius: 12px 0 0 12px; }
-.fb-grid-2 .img-wrap:last-child { border-radius: 0 12px 12px 0; }
-
-/* 3장 (1 밑에 2) */
-.fb-grid-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 2fr 1fr; height: 350px; }
-.fb-grid-3 .item-0 { grid-column: span 2; border-radius: 12px 12px 0 0; }
-.fb-grid-3 .item-1 { border-radius: 0 0 0 12px; }
-.fb-grid-3 .item-2 { border-radius: 0 0 12px 0; }
-
-/* 4장 (1 밑에 3) */
-.fb-grid-4 { grid-template-columns: repeat(3, 1fr); grid-template-rows: 2fr 1fr; height: 350px; }
-.fb-grid-4 .item-0 { grid-column: span 3; border-radius: 12px 12px 0 0; }
-.fb-grid-4 .item-1 { border-radius: 0 0 0 12px; }
-.fb-grid-4 .item-3 { border-radius: 0 0 12px 0; }
-
-/* 5장 이상 (1 밑에 4) */
-.fb-grid-5 { grid-template-columns: repeat(4, 1fr); grid-template-rows: 2fr 1fr; height: 350px; }
-.fb-grid-5 .item-0 { grid-column: span 4; border-radius: 12px 12px 0 0; }
-.fb-grid-5 .item-1 { border-radius: 0 0 0 12px; }
-.fb-grid-5 .item-4 { border-radius: 0 0 12px 0; }
-
-/* 더보기 버튼 (오버레이) */
-.fb-more-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border-radius: 0 0 12px 0; }
-/* CHANGE END */
   </style>
 </head>
 <body>
@@ -1160,35 +1124,10 @@ function renderStoryImgs(urls, post) {
     const cardStr = encodeURIComponent(JSON.stringify({urls, content: post.content, date: post.created_at, category_ids: post.category_ids}));
     lastCell = `<div class="more-cell">${img(show[4])}<div class="more-badge" onclick="event.stopPropagation();openPostModal(JSON.parse(decodeURIComponent('${cardStr}')))">+${rest + 1}</div></div>`;
   } else {
-    lastCell = img(show[4]);// CHANGE START: 다중 이미지 그리드 렌더링 함수 추가
-function renderStoryImgs(imgs, p) {
-  if (!imgs || !imgs.length) return '';
-  
-  const count = imgs.length;
-  const layoutClass = count >= 5 ? 'fb-grid-5' : `fb-grid-${count}`;
-  let html = `<div class="fb-grid ${layoutClass}">`;
-
-  // 최대 5장만 화면에 렌더링
-  const displayImgs = imgs.slice(0, 5);
-  // 라이트박스로 원본 배열 전체를 넘기기 위한 데이터
-  const lbUrls = encodeURIComponent(JSON.stringify(imgs));
-
-  displayImgs.forEach((url, i) => {
-    const isLast = i === 4;
-    const hasMore = count > 5;
-    const overlay = (isLast && hasMore) ? `<div class="fb-more-overlay">+${count - 5}</div>` : '';
-
-    // event.stopPropagation()을 통해 게시물 모달(openPostModal)이 열리는 것을 방지하고 사진 라이트박스만 띄움
-    html += `<div class="img-wrap item-${i}" onclick="event.stopPropagation(); openLightbox(JSON.parse(decodeURIComponent('${lbUrls}')), ${i})">
-      <img src="${url}" loading="lazy">
-      ${overlay}
-    </div>`;
-  });
-
-  html += `</div>`;
-  return html;
+    lastCell = img(show[4]);
+  }
+  return `<div class="story-imgs many"><div class="row-top">${topImgs}</div><div class="row-bot">${botMid}${lastCell}</div></div>`;
 }
-// CHANGE END
 
 function openPostModal(item) {
   if (typeof item === 'string') item = JSON.parse(item);
@@ -1330,147 +1269,8 @@ function openWriteModal() {
   document.getElementById('writePrevWrap').style.display = 'none';
   document.getElementById('writeProgWrap').style.display = 'none';
   const wrap = document.getElementById('writeCatWrap');
-  
-  // 일반 카테고리 + 이벤트 room을 분류로 합쳐서 표시
-  const catChips = CATEGORIES.map(c => 
-    `<span class="cat-sel" data-id="${c.id}" data-type="category" onclick="this.classList.toggle('on')">${c.name}</span>`
-  ).join('');
-  
-  wrap.innerHTML = catChips + `<button class="cat-new" onclick="addNewCat()">+ 새 분류</button>`;
+  wrap.innerHTML = CATEGORIES.map(c => `<span class="cat-sel" data-id="${c.id}" onclick="this.classList.toggle('on')">${c.name}</span>`).join('') + `<button class="cat-new" onclick="addNewCat()">+ 새 분류</button>`;
   document.getElementById('writeModal').classList.add('open');
-}
-
-async function submitWrite() {
-  const content = document.getElementById('writeContent').value.trim();
-  const catIds = Array.from(document.querySelectorAll('.cat-sel.on')).map(el => el.dataset.id);
-  if (!content && !writeFiles.length) { showToast('내용을 입력하거나 사진을 선택하세요'); return; }
-  if (!IS_OWNER) { showToast('집 주인만 글을 쓸 수 있어요'); return; }
-  
-  // 항상 하준이 방(room_type==='room')에 저장
-  const roomObj = ROOMS.find(r => r.room_type === 'room');
-  if (!roomObj) { showToast('방을 찾을 수 없어요'); return; }
-  const targetRoomId = roomObj.id;
-
-  const pw = document.getElementById('writeProgWrap'), pf = document.getElementById('writeProgFill'), pt = document.getElementById('writeProgText');
-  pw.style.display = 'block';
-  try {
-    const mediaUrls = [];
-    for (let i = 0; i < writeFiles.length; i++) {
-      pt.textContent = `사진 ${i + 1}/${writeFiles.length} 업로드 중...`; pf.style.width = `${(i / writeFiles.length) * 80}%`;
-      const b64 = await resizeImg(writeFiles[i]); const blob = await b64Blob(b64);
-      const fd = new FormData(); fd.append('file', blob, `w_${i}.jpg`); fd.append('upload_preset', 'corenull');
-      const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
-      const cl = await cr.json(); if (cl.secure_url) mediaUrls.push(cl.secure_url);
-    }
-    pt.textContent = '저장 중...'; pf.style.width = '90%';
-    const res = await fetch('/api/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, room_id: targetRoomId, content: content || null, media_urls: mediaUrls, category_ids: catIds, owner_key: OWNER_KEY }) });
-    if (res.ok) { pf.style.width = '100%'; pt.textContent = '완료! ✅'; showToast('글이 등록됐어요 ✏️'); setTimeout(() => { document.getElementById('writeModal').classList.remove('open'); writeFiles = []; loadData(); }, 600); }
-    else { const err = await res.json(); showToast(err.error || '등록 실패'); }
-  } catch (e) { showToast('오류: ' + e.message); }
-  finally { pw.style.display = 'none'; }
-}
-
-function renderRoom(container, room) {
-  currentRoomId = room.id;
-  const chips = CATEGORIES.map(c => 
-    `<span class="cat-chip" data-id="${c.id}" onclick="filterCat('${c.id}',this)">${c.name}</span>`
-  ).join('');
-
-  container.innerHTML = `<div class="section">
-    <div class="sec-head">
-      <div><div class="sec-label">ROOM</div><div class="sec-title">방 📝</div></div>
-      <div style="display:flex;gap:8px;">
-        ${IS_OWNER ? `<button class="more-btn" onclick="openEventMgr()">🎂 이벤트</button>` : ''}
-        ${IS_OWNER ? `<button class="more-btn" onclick="openWriteModal()">+ 글쓰기</button>` : ''}
-      </div>
-    </div>
-    <div class="cat-bar">
-      <span class="cat-chip active" data-id="all" onclick="filterCat('all',this)">전체</span>${chips}
-    </div>
-    <div class="post-list" id="postList"></div>
-  </div>
-
-  <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)" style="align-items:center;padding:24px;">
-    <div class="modal-box">
-      <div class="modal-handle"></div>
-      <div class="modal-title">🎂 이벤트 관리</div>
-      <div id="eventRoomList" style="margin-bottom:16px;"></div>
-      <div style="background:var(--warm);border-radius:14px;padding:16px;">
-        <div style="font-size:12px;color:var(--brown);font-weight:600;margin-bottom:10px;letter-spacing:1px;">+ 새 이벤트 추가</div>
-        <input class="modal-input" id="newEventName" placeholder="이벤트 이름 (예: 돌잔치, 수능응원)">
-        <input class="modal-input" id="newEventDate" type="date">
-        <button class="modal-submit" style="margin-top:0;" onclick="createEventRoom()">생성</button>
-      </div>
-    </div>
-  </div>`;
-
-  // 방 포스팅만 (room_type==='room' 인 방)
-  const roomPosts = allPosts.filter(p => p.room_id === room.id);
-  renderPostList(roomPosts);
-  if (IS_OWNER) renderEventRoomList();
-}
-
-function filterCat(catId, el) {
-  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  activeCat = catId === 'all' ? null : catId;
-
-  const roomObj = ROOMS.find(r => r.room_type === 'room');
-  const roomPosts = roomObj ? allPosts.filter(p => p.room_id === roomObj.id) : allPosts;
-
-  const filtered = activeCat
-    ? roomPosts.filter(p => p.category_ids && p.category_ids.includes(activeCat))
-    : roomPosts;
-
-  renderPostList(filtered);
-}
-
-function renderEvent(container, room) {
-  const diff = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
-  const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
-  const eventUrl = `/event?slug=${SLUG}&room=${room.id}`;
-
-  // 이벤트 room에 연결된 카테고리 찾기
-  const matchCat = CATEGORIES.find(c => c.name === room.room_name);
-  const eventPosts = matchCat
-    ? allPosts.filter(p => p.category_ids && p.category_ids.includes(matchCat.id))
-    : [];
-
-  const postsHtml = eventPosts.length ? eventPosts.map((p, i) => {
-    const imgs = p.media_urls || [];
-    const media = imgs.length ? renderStoryImgs(imgs, p) : '';
-    const postData = encodeURIComponent(JSON.stringify({urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids}));
-    return `<div class="post-item" style="animation-delay:${i*.05}s;border-radius:18px;overflow:hidden;cursor:pointer;" onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
-      ${p.content ? `<div class="post-body" style="padding:14px 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
-      ${media}
-      <div class="post-foot" style="padding:10px 16px 14px;">
-        <span class="post-time">${timeAgo(p.created_at)}</span>
-        ${IS_OWNER ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
-      </div>
-    </div>`;
-  }).join('') : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
-
-  const eventPhotos = allMedia.filter(m => m.media_type === 'photo' && m.room_id === room.id);
-  const lbUrls = eventPhotos.map(m => m.file_url);
-  const photoHtml = eventPhotos.length ? `<div class="lib-grid">${eventPhotos.map((m, i) => `<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy">${IS_OWNER ? `<button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>` : ''}</div>`).join('')}</div>` : `<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
-
-  container.innerHTML = `<div class="section">
-    <div class="ev-header">
-      <div class="ev-title">${room.room_name}</div>
-      ${room.event_date ? `<div class="ev-date">${fmtDate(room.event_date)}</div>` : ''}
-      ${ddayText ? `<div class="ev-dday">${ddayText}</div>` : ''}
-      <a href="${eventUrl}" target="_blank" style="display:inline-block;margin-top:14px;background:var(--gold);color:white;border-radius:20px;padding:8px 20px;font-size:12px;text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
-    </div>
-    <div class="sec-head" style="margin-bottom:16px;">
-      <div><div class="sec-label">POSTS</div><div class="sec-title">글</div></div>
-    </div>
-    <div class="post-list">${postsHtml}</div>
-    <div class="sec-head" style="margin-top:36px;margin-bottom:16px;">
-      <div><div class="sec-label">PHOTOS</div><div class="sec-title">사진</div></div>
-      ${IS_OWNER ? `<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>` : ''}
-    </div>
-    ${photoHtml}
-  </div>`;
 }
 
 async function addNewCat() {
