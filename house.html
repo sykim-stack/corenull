@@ -951,62 +951,49 @@ function renderRoom(container, room) {
   if (IS_OWNER) renderEventRoomList();
 }
 
-function renderEventRoomList() {
-  const el = document.getElementById('eventRoomList');
-  if (!el) return;
-  const eventRooms = ROOMS.filter(r => r.room_type === 'event');
-  if (!eventRooms.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px;">아직 이벤트가 없어요</div>';
-    return;
-  }
+function renderEvent(container, room) {
+  const diff = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
+  const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
+  const eventPhotos = allMedia.filter(m => m.media_type === 'photo' && m.room_id === room.id);
+  const lbUrls = eventPhotos.map(m => m.file_url);
+  const photoHtml = eventPhotos.length ? `<div class="lib-grid">${eventPhotos.map((m, i) => `<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy">${IS_OWNER ? `<button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>` : ''}</div>`).join('')}</div>` : `<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
+  const eventUrl = `/event?slug=${SLUG}&room=${room.id}`;
 
-  el.innerHTML = '';
-  eventRooms.forEach(r => {
-    const diff = r.event_date ? Math.ceil((new Date(r.event_date) - new Date()) / 86400000) : null;
-    const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
-
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'background:white;border:1px solid rgba(139,94,60,.12);border-radius:12px;padding:12px 14px;margin-bottom:8px;';
-
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
-    row.innerHTML = `
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;color:var(--dark);">${r.room_name}</div>
-        <div style="font-size:11px;color:var(--muted);">${r.event_date ? fmtDate(r.event_date) : '날짜 미설정'}${badge ? ' · ' + badge : ''}</div>
+  // 이벤트 방 포스팅
+  const eventPosts = allPosts.filter(p => p.room_id === room.id);
+  const postsHtml = eventPosts.length ? eventPosts.map((p, i) => {
+    const imgs = p.media_urls || [];
+    const media = imgs.length ? renderStoryImgs(imgs, p) : '';
+    const postData = encodeURIComponent(JSON.stringify({urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids}));
+    return `<div class="post-item" style="animation-delay:${i*.05}s;border-radius:18px;overflow:hidden;cursor:pointer;" onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
+      ${p.content ? `<div class="post-body" style="padding:14px 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
+      ${media}
+      <div class="post-foot" style="padding:10px 16px 14px;">
+        <span class="post-time">${timeAgo(p.created_at)}</span>
+        ${IS_OWNER ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
       </div>
-      <a href="/event?slug=${SLUG}&room=${r.id}" target="_blank"
-        style="background:var(--gold);color:white;border-radius:16px;padding:5px 12px;font-size:11px;text-decoration:none;">페이지</a>`;
+    </div>`;
+  }).join('') : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
 
-    const editBtn = document.createElement('button');
-    editBtn.textContent = '수정';
-    editBtn.style.cssText = 'background:var(--warm);border:1px solid rgba(139,94,60,.2);border-radius:16px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:"Gowun Dodum",serif;';
-    editBtn.onclick = () => openEditEventRoom(r.id, r.room_name, r.event_date || '');
-    row.appendChild(editBtn);
-
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '🗑️';
-    delBtn.style.cssText = 'background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);';
-    delBtn.onclick = () => deleteEventRoom(r.id);
-    row.appendChild(delBtn);
-
-    const editForm = document.createElement('div');
-    editForm.id = `editForm-${r.id}`;
-    editForm.style.cssText = 'display:none;border-top:1px solid rgba(139,94,60,.1);padding-top:10px;margin-top:4px;';
-    // CHANGE START: editForm innerHTML
-editForm.innerHTML = `
-  <input class="modal-input" id="editName-${r.id}" value="${r.room_name}" style="margin-bottom:8px;" placeholder="이벤트 이름">
-  <input class="modal-input" id="editDate-${r.id}" type="date" value="${r.event_date || ''}" style="margin-bottom:8px;">
-  <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;">📋 이벤트 공지 (선택)</div>
-  <input class="modal-input" id="editInfoTitle-${r.id}" value="${r.info_title || ''}" placeholder="제목 (예: 김하준 백일잔치)" style="margin-bottom:8px;">
-  <textarea class="modal-input" id="editInfoBody-${r.id}" placeholder="안내 문구&#10;📅 날짜/시간&#10;📍 장소" style="height:80px;margin-bottom:8px;">${r.info_body || ''}</textarea>
-  <input class="modal-input" id="editInfoAccount-${r.id}" value="${r.info_account || ''}" placeholder="계좌번호 (예: 신한 110-123-456789 김상열)" style="margin-bottom:8px;">
-  <div style="display:flex;gap:8px;">
-    <button onclick="saveEditEventRoom('${r.id}')"
-      style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">저장</button>
-    <button onclick="document.getElementById('editForm-${r.id}').style.display='none'"
-      style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
+  container.innerHTML = `<div class="section">
+    <div class="ev-header">
+      <div class="ev-title">${room.room_name}</div>
+      ${room.event_date ? `<div class="ev-date">${fmtDate(room.event_date)}</div>` : ''}
+      ${ddayText ? `<div class="ev-dday">${ddayText}</div>` : ''}
+      <a href="${eventUrl}" target="_blank" style="display:inline-block;margin-top:14px;background:var(--gold);color:white;border-radius:20px;padding:8px 20px;font-size:12px;text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
+    </div>
+    <div class="sec-head" style="margin-bottom:16px;">
+      <div><div class="sec-label">POSTS</div><div class="sec-title">글</div></div>
+      ${IS_OWNER ? `<button class="more-btn" onclick="currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+    </div>
+    <div class="post-list">${postsHtml}</div>
+    <div class="sec-head" style="margin-top:36px;margin-bottom:16px;">
+      <div><div class="sec-label">PHOTOS</div><div class="sec-title">사진</div></div>
+      ${IS_OWNER ? `<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>` : ''}
+    </div>
+    ${photoHtml}
   </div>`;
+}
 // CHANGE END
 
     wrap.appendChild(row);
