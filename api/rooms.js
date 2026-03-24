@@ -1,4 +1,4 @@
-// /api/rooms.js v2.0
+// /api/rooms.js v3.0
 
 export default async function handler(req, res) {
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -17,6 +17,25 @@ export default async function handler(req, res) {
       },
       body: body ? JSON.stringify(body) : undefined,
     });
+
+  // ── GET: info 조회 ────────────────────────────
+  if (req.method === 'GET') {
+    const { room_id } = req.query;
+    if (!room_id) return res.status(400).json({ error: 'room_id 필요' });
+
+    const rRes = await db(`rooms?id=eq.${room_id}&select=info_title,info_body,info_account`, 'GET');
+    if (!rRes.ok) return res.status(500).json({ error: '조회 실패' });
+
+    const rows = await rRes.json();
+    const room = rows?.[0];
+    if (!room) return res.status(404).json({ error: 'room 없음' });
+
+    return res.status(200).json({
+      info_title: room.info_title || '',
+      info_body: room.info_body || '',
+      info_account: room.info_account || '',
+    });
+  }
 
   // ── POST: 이벤트 방 생성 ──────────────────────────
   if (req.method === 'POST') {
@@ -70,9 +89,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, room });
   }
 
-  // ── PATCH: 이름/날짜 수정 ─────────────────────────
+  // ── PATCH: 이름/날짜/info 수정 ───────────────────
   if (req.method === 'PATCH') {
-    const { room_id, house_id, owner_key, room_name, event_date } = req.body;
+    const { room_id, house_id, owner_key, room_name, event_date, info_title, info_body, info_account } = req.body;
     if (!room_id || !house_id || !owner_key)
       return res.status(400).json({ error: '필수값 누락' });
 
@@ -85,8 +104,14 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: '권한 없음' });
 
     const update = {};
-    if (room_name) update.room_name = room_name;
+    if (room_name !== undefined) update.room_name = room_name;
     if (event_date !== undefined) update.event_date = event_date || null;
+    if (info_title !== undefined) update.info_title = info_title;
+    if (info_body !== undefined) update.info_body = info_body;
+    if (info_account !== undefined) update.info_account = info_account;
+
+    if (!Object.keys(update).length)
+      return res.status(400).json({ error: '수정할 항목 없음' });
 
     const rCheck = await db(`rooms?id=eq.${room_id}&house_id=eq.${house_id}&select=id`, 'GET');
     const rCheckArr = await rCheck.json();
