@@ -18,46 +18,38 @@ export default async function handler(req, res) {
 
   // GET
   if (req.method === 'GET') {
-  const { house_id, room_id, category_id, slug } = req.query;
+    const { house_id, room_id, category_id, slug } = req.query;
 
-  let houseId = house_id;
-  if (!houseId && slug) {
-    const hRes = await fetch(`${baseUrl}/rest/v1/houses?slug=eq.${slug}&select=id&limit=1`, { headers });
-    const h = await hRes.json();
-    houseId = h[0]?.id;
+    let houseId = house_id;
+    if (!houseId && slug) {
+      const hRes = await fetch(`${baseUrl}/rest/v1/houses?slug=eq.${slug}&select=id&limit=1`, { headers });
+      const h = await hRes.json();
+      houseId = h[0]?.id;
+    }
+    if (!houseId && !room_id) return res.status(400).json({ error: 'house_id or room_id required' });
+
+    const qFilter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
+    const r = await fetch(`${baseUrl}/rest/v1/posts?${qFilter}&order=created_at.desc&limit=100`, { headers });
+    const posts = await r.json();
+    if (!Array.isArray(posts)) return res.status(500).json({ error: 'fetch failed', raw: posts });
+
+    let result = posts;
+    if (posts.length > 0) {
+      const postIds = posts.map(p => `post_id=eq.${p.id}`).join(',');
+      const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?or=(${postIds})&select=post_id,category_id`, { headers });
+      const pc = await pcRes.json();
+      result = posts.map(p => ({
+        ...p,
+        category_ids: Array.isArray(pc) ? pc.filter(x => x.post_id === p.id).map(x => x.category_id) : []
+      }));
+    }
+
+    if (category_id) {
+      result = result.filter(p => p.category_ids.includes(category_id));
+    }
+
+    return res.status(200).json(result);
   }
-  if (!houseId && !room_id) return res.status(400).json({ error: 'house_id or room_id required' });
-
-  const qFilter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
-  const r = await fetch(`${baseUrl}/rest/v1/posts?${qFilter}&order=created_at.desc&limit=100`, { headers });
-  const posts = await r.json();
-  if (!Array.isArray(posts)) return res.status(500).json({ error: 'fetch failed', raw: posts });
-
-  let result = posts;
-  if (posts.length > 0) {
-    const postIds = posts.map(p => `post_id=eq.${p.id}`).join(',');
-    const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?or=(${postIds})&select=post_id,category_id`, { headers });
-    const pc = await pcRes.json();
-    result = posts.map(p => ({
-      ...p,
-      category_ids: Array.isArray(pc) ? pc.filter(x => x.post_id === p.id).map(x => x.category_id) : []
-    }));
-  }
-
-  if (category_id) {
-    result = result.filter(p => p.category_ids.includes(category_id));
-  }
-
-  return res.status(200).json(result);
-}
-
-  // category_id 필터
-  if (category_id) {
-    result = result.filter(p => p.category_ids.includes(category_id));
-  }
-
-  return res.status(200).json(result);
-}
 
   // POST
   if (req.method === 'POST') {
