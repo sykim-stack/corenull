@@ -28,6 +28,9 @@ export default async function handler(req, res) {
     console.log('[slug debug]', slug, JSON.stringify(h)); // 추가
     houseId = h[0]?.id;
   }
+  console.log('[houseId]', houseId, '[room_id]', room_id); // 추가
+const filter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
+console.log('[filter]', filter); // 추가
   if (!houseId && !room_id) return res.status(400).json({ error: 'house_id or room_id required' });
 
   const filter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
