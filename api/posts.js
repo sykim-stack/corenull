@@ -25,6 +25,7 @@ export default async function handler(req, res) {
   if (!houseId && slug) {
     const hRes = await fetch(`${baseUrl}/rest/v1/houses?slug=eq.${slug}&select=id&limit=1`, { headers });
     const h = await hRes.json();
+    console.log('[slug debug]', slug, JSON.stringify(h)); // 추가
     houseId = h[0]?.id;
   }
   if (!houseId && !room_id) return res.status(400).json({ error: 'house_id or room_id required' });
