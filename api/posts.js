@@ -20,21 +20,16 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
   const { house_id, room_id, category_id, slug } = req.query;
 
-  // slug → house_id 조회
   let houseId = house_id;
   if (!houseId && slug) {
     const hRes = await fetch(`${baseUrl}/rest/v1/houses?slug=eq.${slug}&select=id&limit=1`, { headers });
     const h = await hRes.json();
-    console.log('[slug debug]', slug, JSON.stringify(h)); // 추가
     houseId = h[0]?.id;
   }
- console.log('[houseId]', houseId, '[room_id]', room_id); // 추가
-const filter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
-console.log('[filter]', filter); // 추가 
   if (!houseId && !room_id) return res.status(400).json({ error: 'house_id or room_id required' });
 
-  const filter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
-  const r = await fetch(`${baseUrl}/rest/v1/posts?${filter}&order=created_at.desc&limit=100`, { headers });
+  const qFilter = room_id ? `room_id=eq.${room_id}` : `house_id=eq.${houseId}`;
+  const r = await fetch(`${baseUrl}/rest/v1/posts?${qFilter}&order=created_at.desc&limit=100`, { headers });
   const posts = await r.json();
   if (!Array.isArray(posts)) return res.status(500).json({ error: 'fetch failed', raw: posts });
 
@@ -48,6 +43,13 @@ console.log('[filter]', filter); // 추가
       category_ids: Array.isArray(pc) ? pc.filter(x => x.post_id === p.id).map(x => x.category_id) : []
     }));
   }
+
+  if (category_id) {
+    result = result.filter(p => p.category_ids.includes(category_id));
+  }
+
+  return res.status(200).json(result);
+}
 
   // category_id 필터
   if (category_id) {
