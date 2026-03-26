@@ -35,6 +35,12 @@
     .countdown-label{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
     .countdown-sep{font-family:'Nanum Myeongjo',serif;font-size:32px;color:var(--gold-lt);align-self:flex-start;padding-top:4px;line-height:1.2;}
     .dday-label{font-family:'Nanum Myeongjo',serif;font-size:clamp(16px,4vw,22px);font-weight:700;color:var(--brown);background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.4));padding:14px 32px;border-radius:50px;border:1px solid var(--gold-lt);}
+
+    /* ── 공유 버튼 ── */
+    .share-wrap{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:0;margin-bottom:16px;opacity:0;animation:fadeUp 0.8s ease 1.1s forwards;}
+    .share-btn{display:inline-flex;align-items:center;gap:6px;background:white;border:1px solid var(--border);border-radius:50px;padding:10px 18px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--brown);cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px var(--shadow);}
+    .share-btn:hover{background:var(--warm);border-color:var(--gold);transform:translateY(-1px);}
+
     .scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:11px;letter-spacing:2px;opacity:0;animation:fadeIn 1s ease 2s forwards;}
     .scroll-hint::before{content:'';display:block;width:1px;height:32px;background:linear-gradient(to bottom,transparent,var(--gold));}
     .divider{display:flex;align-items:center;gap:16px;padding:0 24px;max-width:900px;margin:0 auto 48px;}
@@ -94,8 +100,7 @@
     .form-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
     .footer{text-align:center;padding:40px 24px 60px;color:var(--muted);font-size:12px;line-height:1.8;}
     .footer-logo{font-family:'Nanum Myeongjo',serif;font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;}
-.share-btn{display:inline-flex;align-items:center;gap:6px;background:white;border:1px solid var(--border);border-radius:50px;padding:10px 18px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--brown);cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px var(--shadow);}
-.share-btn:hover{background:var(--warm);border-color:var(--gold);transform:translateY(-1px);}
+
     /* ── LIGHTBOX ── */
     .lightbox{display:none;position:fixed;inset:0;background:rgba(30,15,5,0.92);z-index:100;align-items:center;justify-content:center;padding:24px;}
     .lightbox.open{display:flex;}
@@ -140,18 +145,17 @@
   <div class="hero-name" id="hero-name">불러오는 중…</div>
   <div class="hero-subtitle" id="hero-subtitle"></div>
   <div id="countdown-container"></div>
+
   <!-- 공유 버튼 -->
-<div id="share-wrap" style="display:flex;gap:12px;justify-content:center;margin-top:8px;opacity:0;animation:fadeUp 0.8s ease 1.1s forwards;">
-  <button class="share-btn" onclick="shareNative()" id="btn-native" style="display:none;">
-    <span>📤</span><span>공유</span>
-  </button>
-  <button class="share-btn" onclick="shareKakao()">
-    <span>💬</span><span>카카오톡</span>
-  </button>
-  <button class="share-btn" onclick="copyLink()">
-    <span>🔗</span><span>링크 복사</span>
-  </button>
-</div>
+  <div class="share-wrap" id="share-wrap">
+    <button class="share-btn" id="btn-native" style="display:none;" onclick="shareNative()">
+      <span>📤</span><span>공유하기</span>
+    </button>
+    <button class="share-btn" onclick="copyLink()">
+      <span>🔗</span><span>링크 복사</span>
+    </button>
+  </div>
+
   <div class="scroll-hint">SCROLL</div>
 </section>
 
@@ -238,11 +242,65 @@ async function init() {
       heroPhoto.style.display = 'none';
       heroPlaceholder.style.display = 'flex';
     }
+    updateOG(roomName, coverUrl);
     renderCountdown();
     setInterval(tickCountdown, 1000);
+    initShare();
     updateInterestUI(localStorage.getItem('event_interest_' + SLUG + '_' + ROOM_ID) === '1');
     await Promise.all([loadInfo(), loadGallery(data), loadComments()]);
   } catch(e) { console.error(e); }
+}
+
+// ── OG 메타 동적 업데이트 ─────────────────────────
+function updateOG(name, coverUrl) {
+  document.querySelector('meta[property="og:title"]').content = name + ' · CoreNull';
+  document.querySelector('meta[property="og:description"]').content = name + ' 함께해요 💛';
+  const setOrCreate = (prop, val) => {
+    let el = document.querySelector('meta[property="' + prop + '"]');
+    if (!el) { el = document.createElement('meta'); el.setAttribute('property', prop); document.head.appendChild(el); }
+    el.content = val;
+  };
+  setOrCreate('og:url', location.href);
+  if (coverUrl) setOrCreate('og:image', coverUrl);
+}
+
+// ── 공유 ──────────────────────────────────────────
+function initShare() {
+  // 모바일 네이티브 공유 API 지원 시 버튼 표시
+  if (navigator.share) {
+    document.getElementById('btn-native').style.display = 'inline-flex';
+  }
+}
+
+function shareNative() {
+  const name = document.getElementById('hero-name').textContent;
+  navigator.share({
+    title: name,
+    text: name + ' 함께해요 💛',
+    url: location.href
+  }).catch(() => {});
+}
+
+function copyLink() {
+  const url = location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('🔗 링크 복사됐어요!'))
+      .catch(() => fallbackCopy(url));
+  } else {
+    fallbackCopy(url);
+  }
+}
+
+function fallbackCopy(text) {
+  const el = document.createElement('input');
+  el.value = text;
+  el.style.cssText = 'position:fixed;opacity:0;';
+  document.body.appendChild(el);
+  el.focus(); el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  showToast('🔗 링크 복사됐어요!');
 }
 
 function renderCountdown() {
@@ -469,7 +527,6 @@ function _renderLightbox() {
   document.getElementById('lightbox-img').src = urls[i] || '';
   const counter = document.getElementById('lightbox-counter');
   counter.textContent = urls.length > 1 ? (i + 1) + ' / ' + urls.length : '';
-  // 버튼 표시/숨김
   document.querySelector('.lightbox-nav.prev').style.visibility = i > 0 ? 'visible' : 'hidden';
   document.querySelector('.lightbox-nav.next').style.visibility = i < urls.length - 1 ? 'visible' : 'hidden';
 }
@@ -486,12 +543,10 @@ function closeLightbox() {
   document.body.style.overflow = '';
 }
 
-// 배경 클릭 닫기
 document.getElementById('lightbox').addEventListener('click', function(e) {
   if (e.target === this) closeLightbox();
 });
 
-// 키보드 방향키
 document.addEventListener('keydown', e => {
   const lb = document.getElementById('lightbox');
   if (!lb.classList.contains('open')) return;
@@ -508,68 +563,8 @@ function fmtDate(str) { if (!str) return ''; const d = new Date(str); return d.g
 function pad(n) { return String(Math.max(0,n)).padStart(2,'0'); }
 function copyText(text) { navigator.clipboard?.writeText(text).then(() => showToast('복사됐어요 📋')).catch(() => showToast('복사 실패')); }
 function getEmojiAvatar(name) { const e = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋']; let c = 0; for (let i = 0; i < name.length; i++) c += name.charCodeAt(i); return e[c % e.length]; }
-// ── SHARE ─────────────────────────────────────────
-function initShare() {
-  const url = location.href;
-  // 네이티브 공유 API 지원 시 버튼 표시 (모바일)
-  if (navigator.share) {
-    document.getElementById('btn-native').style.display = 'inline-flex';
-  }
-}
 
-function shareNative() {
-  const title = document.getElementById('hero-name').textContent;
-  navigator.share({ title, text: title + ' 함께해요 💛', url: location.href })
-    .catch(() => {});
-}
-
-function shareKakao() {
-  // Kakao SDK 없이 카카오톡 URL scheme으로 링크 공유
-  const url = encodeURIComponent(location.href);
-  const text = encodeURIComponent(document.getElementById('hero-name').textContent + ' 함께해요 💛\n' + location.href);
-  // 모바일: 카카오톡 앱 직접 열기
-  if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
-    window.location.href = 'kakaotalk://msg/send?text=' + text;
-    // 앱 없으면 웹 폴백
-    setTimeout(() => {
-      window.open('https://sharer.kakao.com/talk/friends/picker/link?url=' + url, '_blank');
-    }, 500);
-  } else {
-    // PC: 웹 공유 페이지
-    window.open('https://sharer.kakao.com/talk/friends/picker/link?url=' + url, '_blank', 'width=500,height=600');
-  }
-}
-
-function copyLink() {
-  navigator.clipboard?.writeText(location.href)
-    .then(() => showToast('🔗 링크 복사됐어요!'))
-    .catch(() => {
-      // 폴백
-      const el = document.createElement('input');
-      el.value = location.href;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-      showToast('🔗 링크 복사됐어요!');
-    });
-}
-init(
-// OG 메타 동적 업데이트
-function updateOG(name, coverUrl) {
-  document.title = name + ' · CoreNull';
-  document.querySelector('meta[property="og:title"]').content = name;
-  document.querySelector('meta[property="og:description"]').content = name + ' 함께해요 💛';
-  if (coverUrl) {
-    let ogImg = document.querySelector('meta[property="og:image"]');
-    if (!ogImg) { ogImg = document.createElement('meta'); ogImg.setAttribute('property','og:image'); document.head.appendChild(ogImg); }
-    ogImg.content = coverUrl;
-  }
-  let ogUrl = document.querySelector('meta[property="og:url"]');
-  if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property','og:url'); document.head.appendChild(ogUrl); }
-  ogUrl.content = location.href;
-}
-);
+init();
 </script>
 </body>
 </html>
