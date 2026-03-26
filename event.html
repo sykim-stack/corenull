@@ -26,21 +26,7 @@
     .hero-photo-ring::before{content:'';position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:var(--gold);border-radius:50%;}
     @keyframes spin{to{transform:rotate(360deg);}}
     .hero-photo{width:200px;height:200px;border-radius:50%;object-fit:cover;border:3px solid var(--cream);box-shadow:0 8px 32px var(--shadow);display:block;}
-    /* CHANGE START */
-.hero-photo-placeholder {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: var(--warm);
-  border: 3px solid var(--cream);
-  box-shadow: 0 8px 32px var(--shadow);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  /* position:absolute 제거 → 사진 있을 때 안 덮도록 */
-}
-/* CHANGE END */
+    .hero-photo-placeholder{width:200px;height:200px;border-radius:50%;background:var(--warm);border:3px solid var(--cream);box-shadow:0 8px 32px var(--shadow);display:flex;align-items:center;justify-content:center;font-size:48px;}
     .hero-name{font-family:'Nanum Myeongjo',serif;font-size:clamp(32px,8vw,52px);font-weight:800;color:var(--brown);line-height:1.1;letter-spacing:-1px;margin-bottom:8px;opacity:0;animation:fadeUp 0.8s ease 0.6s forwards;}
     .hero-subtitle{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:40px;opacity:0;animation:fadeUp 0.8s ease 0.7s forwards;}
     .countdown-wrap{display:flex;gap:16px;justify-content:center;margin-bottom:40px;opacity:0;animation:fadeUp 0.8s ease 0.9s forwards;}
@@ -51,10 +37,10 @@
     .dday-label{font-family:'Nanum Myeongjo',serif;font-size:clamp(16px,4vw,22px);font-weight:700;color:var(--brown);background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.4));padding:14px 32px;border-radius:50px;border:1px solid var(--gold-lt);}
     .scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:11px;letter-spacing:2px;opacity:0;animation:fadeIn 1s ease 2s forwards;}
     .scroll-hint::before{content:'';display:block;width:1px;height:32px;background:linear-gradient(to bottom,transparent,var(--gold));}
-    .divider{display:flex;align-items:center;gap:16px;padding:0 24px;max-width:480px;margin:0 auto 48px;}
+    .divider{display:flex;align-items:center;gap:16px;padding:0 24px;max-width:900px;margin:0 auto 48px;}
     .divider-line{flex:1;height:1px;background:var(--border);}
     .divider-icon{font-size:16px;color:var(--gold);}
-    .section{max-width:640px;margin:0 auto;padding:0 24px 64px;}
+    .section{max-width:900px;margin:0 auto;padding:0 24px 64px;}
     .section-title{font-family:'Nanum Myeongjo',serif;font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:32px;}
     .info-list{display:flex;flex-direction:column;gap:0;margin-bottom:32px;background:white;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);}
     .info-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);}
@@ -74,15 +60,6 @@
     .add-info-form input,.add-info-form select{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--text);outline:none;}
     .add-info-form input:focus,.add-info-form select:focus{border-color:var(--gold);}
     .add-info-btn{grid-column:1/-1;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:white;font-family:'Gowun Dodum',serif;font-size:13px;padding:12px;border-radius:10px;cursor:pointer;}
-    .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
-    .gallery-grid .photo-item:first-child{grid-column:1/-1;}
-    .photo-item{border-radius:12px;overflow:hidden;background:var(--warm);aspect-ratio:4/3;position:relative;cursor:zoom-in;}
-    .photo-item:first-child{aspect-ratio:16/9;}
-    .photo-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;display:block;}
-    .photo-item:hover img{transform:scale(1.04);}
-    .photo-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;flex-direction:column;gap:8px;}
-    .photo-empty span{font-size:28px;}
-    .gallery-loading{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;}
     .interest-wrap{text-align:center;padding:48px 0;}
     .interest-btn{background:none;border:1.5px solid var(--gold-lt);color:var(--brown);font-family:'Gowun Dodum',serif;font-size:15px;padding:16px 40px;border-radius:50px;cursor:pointer;transition:all 0.25s ease;display:inline-flex;align-items:center;gap:10px;position:relative;overflow:hidden;}
     .interest-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.3));opacity:0;transition:opacity 0.25s;}
@@ -117,21 +94,37 @@
     .form-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
     .footer{text-align:center;padding:40px 24px 60px;color:var(--muted);font-size:12px;line-height:1.8;}
     .footer-logo{font-family:'Nanum Myeongjo',serif;font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;}
+
+    /* ── LIGHTBOX ── */
     .lightbox{display:none;position:fixed;inset:0;background:rgba(30,15,5,0.92);z-index:100;align-items:center;justify-content:center;padding:24px;}
     .lightbox.open{display:flex;}
-    .lightbox img{max-width:100%;max-height:90svh;border-radius:12px;object-fit:contain;}
-    .lightbox-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .lightbox-img-wrap{position:relative;max-width:100%;max-height:90svh;display:flex;align-items:center;justify-content:center;}
+    .lightbox-img-wrap img{max-width:100%;max-height:90svh;border-radius:12px;object-fit:contain;display:block;}
+    .lightbox-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;}
+    .lightbox-close:hover{background:rgba(255,255,255,0.2);}
+    .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:rgba(255,255,255,0.12);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:1;}
+    .lightbox-nav:hover{background:rgba(255,255,255,0.25);}
+    .lightbox-nav.prev{left:12px;}
+    .lightbox-nav.next{right:12px;}
+    .lightbox-counter{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;}
+
     .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:white;font-size:13px;padding:12px 24px;border-radius:50px;opacity:0;pointer-events:none;transition:all 0.3s ease;z-index:200;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fadeIn{to{opacity:1;}}
-    @media(max-width:400px){.form-row{grid-template-columns:1fr;}.add-info-form{grid-template-columns:1fr;}}
+    @media(max-width:480px){.form-row{grid-template-columns:1fr;}.add-info-form{grid-template-columns:1fr;}.lightbox-nav{display:none;}}
   </style>
 </head>
 <body>
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+
+<div class="lightbox" id="lightbox">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightbox-img" src="" alt="" />
+  <button class="lightbox-nav prev" onclick="navLightbox(-1)">‹</button>
+  <div class="lightbox-img-wrap">
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+  <button class="lightbox-nav next" onclick="navLightbox(1)">›</button>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -158,7 +151,7 @@
 <div class="divider"><div class="divider-line"></div><div class="divider-icon">✿</div><div class="divider-line"></div></div>
 <section class="section">
   <div class="section-title">Photo Gallery</div>
-  <div class="gallery-grid" id="gallery-grid"><div class="gallery-loading">사진을 불러오는 중…</div></div>
+  <div id="gallery-grid"><div class="gallery-loading" style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0;">사진을 불러오는 중…</div></div>
 </section>
 
 <div class="divider"><div class="divider-line"></div><div class="divider-icon">♡</div><div class="divider-line"></div></div>
@@ -175,7 +168,7 @@
 <div class="divider"><div class="divider-line"></div><div class="divider-icon">✉</div><div class="divider-line"></div></div>
 <section class="section">
   <div class="section-title">방명록</div>
-  <div class="guestbook-list" id="guestbook-list"><div class="gallery-loading">방명록을 불러오는 중…</div></div>
+  <div class="guestbook-list" id="guestbook-list"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">불러오는 중…</div></div>
   <div class="write-form">
     <h3>✍️ 메시지 남기기</h3>
     <div class="form-row">
@@ -221,19 +214,17 @@ async function init() {
     document.getElementById('hero-name').textContent = roomName;
     document.getElementById('footer-name').textContent = roomName + ' · 소중한 순간을 함께 기록해요';
     if (eventDate) document.getElementById('hero-subtitle').textContent = '📅 ' + fmtDate(eventDate);
-// CHANGE START
-const coverUrl = data.house.cover_url || '';
-const heroPhoto = document.getElementById('hero-photo');
-const heroPlaceholder = document.getElementById('hero-placeholder');
-if (coverUrl) {
-  heroPhoto.src = coverUrl;
-  heroPhoto.style.display = 'block';
-  heroPlaceholder.style.display = 'none';
-} else {
-  heroPhoto.style.display = 'none';
-  heroPlaceholder.style.display = 'flex';
-}
-// CHANGE END
+    const coverUrl = data.house.cover_url || '';
+    const heroPhoto = document.getElementById('hero-photo');
+    const heroPlaceholder = document.getElementById('hero-placeholder');
+    if (coverUrl) {
+      heroPhoto.src = coverUrl;
+      heroPhoto.style.display = 'block';
+      heroPlaceholder.style.display = 'none';
+    } else {
+      heroPhoto.style.display = 'none';
+      heroPlaceholder.style.display = 'flex';
+    }
     renderCountdown();
     setInterval(tickCountdown, 1000);
     updateInterestUI(localStorage.getItem('event_interest_' + SLUG + '_' + ROOM_ID) === '1');
@@ -260,7 +251,6 @@ function tickCountdown() {
 }
 
 // ── INFO ─────────────────────────────────────────
-// CHANGE START: loadInfo
 async function loadInfo() {
   const wrap = document.getElementById('info-section');
   if (!ROOM_ID) { wrap.innerHTML = ''; return; }
@@ -268,7 +258,6 @@ async function loadInfo() {
     const res = await fetch('/api/rooms?room_id=' + ROOM_ID);
     const data = await res.json();
     const { info_title, info_body, info_account } = data;
-
     const hasInfo = info_title || info_body || info_account;
     if (!hasInfo) {
       wrap.innerHTML = IS_OWNER
@@ -276,7 +265,6 @@ async function loadInfo() {
         : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">등록된 정보가 없어요</div>';
       return;
     }
-
     let html = '<div class="info-list">';
     if (info_title) html += `<div class="info-row"><div class="info-label">이벤트</div><div class="info-value" style="font-weight:600;">${escHtml(info_title)}</div></div>`;
     if (info_body) {
@@ -286,51 +274,7 @@ async function loadInfo() {
     if (info_account) html += `<div class="info-row"><div class="info-label">계좌</div><div class="info-value">${escHtml(info_account)}</div><button class="info-action" onclick="copyText('${escHtml(info_account)}')">📋 복사</button></div>`;
     html += '</div>';
     wrap.innerHTML = html;
-  } catch(e) {
-    wrap.innerHTML = '';
-  }
-}
-// CHANGE END
-
-function renderInfo() {
-  const wrap = document.getElementById('info-section');
-  const publicRows = infoItems.map(item => {
-    let action = '';
-    if (item.type === 'phone') action = '<a href="tel:' + item.value + '" class="info-action">📞 전화</a>';
-    else if (item.type === 'account') action = '<button class="info-action" onclick="copyText(\'' + escHtml(item.value) + '\')">📋 복사</button>';
-    return '<div class="info-row"><div class="info-label">' + escHtml(item.label) + '</div><div class="info-value">' + escHtml(item.value) + '</div>' + action + '</div>';
-  }).join('');
-  const listHtml = infoItems.length ? '<div class="info-list">' + publicRows + '</div>' : '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">등록된 정보가 없어요</div>';
-  const editHtml = IS_OWNER ? '<div class="info-edit-wrap"><h3>✦ 정보 관리</h3><div id="info-item-list">' + infoItems.map(item => '<div class="info-item-row"><span class="info-item-label">' + escHtml(item.label) + '</span><span class="info-item-value">' + escHtml(item.value) + '</span><button class="info-item-del" onclick="deleteInfo(\'' + item.id + '\')">🗑️</button></div>').join('') + '</div><div class="add-info-form"><input id="new-info-label" placeholder="라벨 (예: 신랑, 계좌번호)" /><select id="new-info-type"><option value="text">텍스트</option><option value="phone">전화번호</option><option value="account">계좌번호</option></select><input id="new-info-value" placeholder="내용" style="grid-column:1/-1;" /><button class="add-info-btn" onclick="addInfo()">+ 항목 추가</button></div></div>' : '';
-  wrap.innerHTML = listHtml + editHtml;
-}
-
-async function addInfo() {
-  const label = document.getElementById('new-info-label').value.trim();
-  const value = document.getElementById('new-info-value').value.trim();
-  const type  = document.getElementById('new-info-type').value;
-  if (!label || !value) { showToast('라벨과 내용을 입력해주세요'); return; }
-  try {
-    const res = await fetch('/api/event-info', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: HOUSE_ID, room_id: ROOM_ID, owner_key: OWNER_KEY, label, value, type, order_num: infoItems.length })
-    });
-    const data = await res.json();
-    if (data.success) { document.getElementById('new-info-label').value = ''; document.getElementById('new-info-value').value = ''; showToast('추가됐어요 ✅'); await loadInfo(); }
-    else showToast(data.error || '추가 실패');
-  } catch(e) { showToast('오류가 발생했어요'); }
-}
-
-async function deleteInfo(id) {
-  try {
-    const res = await fetch('/api/event-info', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, house_id: HOUSE_ID, owner_key: OWNER_KEY })
-    });
-    const data = await res.json();
-    if (data.success) { showToast('삭제됐어요'); await loadInfo(); }
-    else showToast(data.error || '삭제 실패');
-  } catch(e) { showToast('오류가 발생했어요'); }
+  } catch(e) { wrap.innerHTML = ''; }
 }
 
 // ── GALLERY ──────────────────────────────────────
@@ -347,7 +291,6 @@ async function loadGallery(data) {
       return;
     }
 
-    // 전체 URL 배열 세팅 (슬라이드용)
     window._galleryUrls = posts.flatMap(p => p.media_urls || []);
     let urlOffset = 0;
 
@@ -371,7 +314,7 @@ async function loadGallery(data) {
         imgHtml = `<div style="overflow:hidden;border-radius:12px 12px 0 0;cursor:zoom-in;" onclick="openLightbox('${show[0]}', ${base})">
           <img src="${show[0]}" style="width:100%;max-height:360px;object-fit:cover;" /></div>`;
       } else if (show.length === 2 || show.length === 4) {
-        const cols = show.length === 2 ? 2 : 2;
+        const cols = show.length === 4 ? 2 : 2;
         imgHtml = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">
           ${show.map((url, i) => cell(url, i, false)).join('')}</div>`;
       } else if (show.length === 5) {
@@ -398,13 +341,6 @@ async function loadGallery(data) {
     grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;">사진을 불러올 수 없어요</div>';
   }
 }
-function openGalleryAt(idx) {
-  const urls = window._galleryAllUrls || [];
-  document.getElementById('lightbox-img').src = urls[idx] || '';
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-// CHANGE END
 
 // ── INTEREST ─────────────────────────────────────
 function updateInterestUI(active) {
@@ -483,9 +419,7 @@ async function translateComment(id, text, btn) {
   btn.textContent = '번역 중…'; btn.disabled = true;
   try {
     const isKo = /[ㄱ-ㅎ가-힣]/.test(text);
-    // CHANGE START
     const r = await fetch('https://corering.vercel.app/api/corering?action=translate&text=' + encodeURIComponent(text) + '&target=' + (isKo ? 'VI' : 'KO'));
-// CHANGE END
     const d = await r.json();
     const t = d.translations?.[0]?.text;
     if (!t) throw new Error();
@@ -503,20 +437,57 @@ function showTR(id, text, btn) {
   btn.textContent = '🌐 숨기기'; btn.disabled = false;
 }
 
-// ── LIGHTBOX / UTILS ──────────────────────────────
-// CHANGE START
+// ── LIGHTBOX ──────────────────────────────────────
 function openLightbox(url, idx) {
   const urls = window._galleryUrls || [url];
-  const i = typeof idx === 'number' ? idx : 0;
-  document.getElementById('lightbox-img').src = urls[i] || url;
+  const i = typeof idx === 'number' ? idx : urls.indexOf(url);
   const lb = document.getElementById('lightbox');
-  lb.classList.add('open');
   lb._urls = urls;
-  lb._idx = i;
+  lb._idx = Math.max(0, i);
+  _renderLightbox();
+  lb.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-// CHANGE END
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow = ''; }
+
+function _renderLightbox() {
+  const lb = document.getElementById('lightbox');
+  const urls = lb._urls || [];
+  const i = lb._idx || 0;
+  document.getElementById('lightbox-img').src = urls[i] || '';
+  const counter = document.getElementById('lightbox-counter');
+  counter.textContent = urls.length > 1 ? (i + 1) + ' / ' + urls.length : '';
+  // 버튼 표시/숨김
+  document.querySelector('.lightbox-nav.prev').style.visibility = i > 0 ? 'visible' : 'hidden';
+  document.querySelector('.lightbox-nav.next').style.visibility = i < urls.length - 1 ? 'visible' : 'hidden';
+}
+
+function navLightbox(dir) {
+  const lb = document.getElementById('lightbox');
+  const urls = lb._urls || [];
+  lb._idx = Math.max(0, Math.min(urls.length - 1, (lb._idx || 0) + dir));
+  _renderLightbox();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// 배경 클릭 닫기
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+
+// 키보드 방향키
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+
+// ── UTILS ─────────────────────────────────────────
 function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 function detectLang(text) { return /[ㄱ-ㅎ가-힣]/.test(text) ? 'ko' : 'vi'; }
 function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
