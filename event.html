@@ -334,13 +334,11 @@ async function deleteInfo(id) {
 }
 
 // ── GALLERY ──────────────────────────────────────
-// CHANGE START
 async function loadGallery(data) {
   const grid = document.getElementById('gallery-grid');
   grid.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
 
   try {
-    // room_id 직접 사용 (category 매칭 불필요)
     const res = await fetch(`/api/posts?room_id=${ROOM_ID}`);
     const posts = await res.json();
 
@@ -349,57 +347,44 @@ async function loadGallery(data) {
       return;
     }
 
+    // 전체 URL 배열 세팅 (슬라이드용)
+    window._galleryUrls = posts.flatMap(p => p.media_urls || []);
+    let urlOffset = 0;
+
     grid.innerHTML = posts.map(p => {
       const imgs = p.media_urls || [];
-      if (!imgs.length && !p.content) return '';
+      if (!imgs.length && !p.content) { urlOffset += imgs.length; return ''; }
       const show = imgs.slice(0, 5);
       const rest = imgs.length - 5;
       const date = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' }) : '';
+      const base = urlOffset;
+      urlOffset += imgs.length;
+
+      const cell = (url, i, showOverlay) => `
+        <div style="position:relative;aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}', ${base + i})">
+          <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+          ${showOverlay ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:white;font-size:22px;font-weight:700;">+${rest + 1}</div>` : ''}
+        </div>`;
 
       let imgHtml = '';
-      // loadGallery 안에서 imgHtml 생성 부분 교체
-if (show.length === 1) {
-  imgHtml = `<img src="${show[0]}" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px 12px 0 0;cursor:zoom-in;" onclick="openLightbox('${show[0]}')" />`;
-} else if (show.length === 2) {
-  const cells = show.map(url => `
-    <div style="aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}')">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-    </div>`).join('');
-  imgHtml = `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">${cells}</div>`;
-} else if (show.length === 4) {
-  const cells = show.map(url => `
-    <div style="aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}')">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-    </div>`).join('');
-  imgHtml = `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">${cells}</div>`;
-} else if (show.length === 5) {
-  // 위 2장 + 아래 3장
-  const top = show.slice(0, 2).map(url => `
-    <div style="aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}')">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-    </div>`).join('');
-  const bot = show.slice(2).map((url, i) => {
-    const isLast = i === 2 && rest > 0;
-    return `<div style="position:relative;aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}')">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-      ${isLast ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:white;font-size:22px;font-weight:700;">+${rest + 1}</div>` : ''}
-    </div>`;
-  }).join('');
-  imgHtml = `<div style="border-radius:12px 12px 0 0;overflow:hidden;">
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${top}</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:2px;">${bot}</div>
-  </div>`;
-} else {
-  // 3장, 6장+ → 3열
-  const cells = show.map((url, i) => {
-    const isLast = i === show.length - 1 && rest > 0;
-    return `<div style="position:relative;aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}')">
-      <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-      ${isLast ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:white;font-size:22px;font-weight:700;">+${rest + 1}</div>` : ''}
-    </div>`;
-  }).join('');
-  imgHtml = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">${cells}</div>`;
-}
+      if (show.length === 1) {
+        imgHtml = `<div style="overflow:hidden;border-radius:12px 12px 0 0;cursor:zoom-in;" onclick="openLightbox('${show[0]}', ${base})">
+          <img src="${show[0]}" style="width:100%;max-height:360px;object-fit:cover;" /></div>`;
+      } else if (show.length === 2 || show.length === 4) {
+        const cols = show.length === 2 ? 2 : 2;
+        imgHtml = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">
+          ${show.map((url, i) => cell(url, i, false)).join('')}</div>`;
+      } else if (show.length === 5) {
+        const top = show.slice(0, 2).map((url, i) => cell(url, i, false)).join('');
+        const bot = show.slice(2).map((url, i) => cell(url, i + 2, i === 2 && rest > 0)).join('');
+        imgHtml = `<div style="border-radius:12px 12px 0 0;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${top}</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:2px;">${bot}</div>
+        </div>`;
+      } else {
+        imgHtml = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">
+          ${show.map((url, i) => cell(url, i, i === show.length - 1 && rest > 0)).join('')}</div>`;
+      }
 
       return `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);">
         ${imgHtml}
