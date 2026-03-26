@@ -340,20 +340,11 @@ async function loadGallery(data) {
   grid.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
 
   try {
-    // 이벤트 room과 같은 이름의 카테고리 찾기
-    const rooms = data.rooms || [];
-    const categories = data.categories || [];
-    const room = rooms.find(r => r.id === ROOM_ID);
-    const matchCat = categories.find(c => c.name === room?.room_name);
+    // room_id 직접 사용 (category 매칭 불필요)
+    const res = await fetch(`/api/posts?room_id=${ROOM_ID}`);
+    const posts = await res.json();
 
-    let posts = [];
-    if (matchCat) {
-      const res = await fetch(`/api/posts?slug=${SLUG}&category_id=${matchCat.id}`);
-      posts = await res.json();
-      if (!Array.isArray(posts)) posts = [];
-    }
-
-    if (!posts.length) {
+    if (!Array.isArray(posts) || !posts.length) {
       grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:13px;"><span style="font-size:28px;display:block;margin-bottom:8px;">📷</span>곧 사진이 올라올 예정이에요</div>';
       return;
     }
@@ -391,7 +382,6 @@ async function loadGallery(data) {
     grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;">사진을 불러올 수 없어요</div>';
   }
 }
-
 function openGalleryAt(idx) {
   const urls = window._galleryAllUrls || [];
   document.getElementById('lightbox-img').src = urls[idx] || '';
