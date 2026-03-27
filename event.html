@@ -653,7 +653,7 @@ async function loadPostComments(postId) {
         <div class="post-comment-avatar">${getEmojiAvatar(c.author_name || '?')}</div>
         <div class="post-comment-bubble">
           <div class="post-comment-name">${escHtml(c.author_name || '익명')}</div>
-          <div class="post-comment-text">${escHtml(c.content_original || '')}</div>
+          <div class="post-comment-text">${escHtml(c.content || '')}</div>
           <div class="post-comment-date">${c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR',{month:'long',day:'numeric'}) : ''}</div>
         </div>
       </div>`).join('');
