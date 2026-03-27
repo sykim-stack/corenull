@@ -404,6 +404,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── CONFIG & STATE ──────────────────────────────────────
 const SLUG = location.pathname.replace(/^\//, '') || 'hajun';
 const OWNER_KEY = new URLSearchParams(location.search).get('owner');
 let IS_OWNER = false, HOUSE_ID = null, HOUSE_DATA = null;
@@ -449,184 +450,13 @@ const MILESTONE_DEFAULTS = {
   daily: [],
 };
 
+// ── UTILS ───────────────────────────────────────────────
 function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 function openConfirm(title, sub, onOk) { document.getElementById('confirmTitle').textContent = title; document.getElementById('confirmSub').textContent = sub; document.getElementById('confirmOk').onclick = () => { closeConfirm(); onOk(); }; document.getElementById('confirmOverlay').classList.add('open'); }
 function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
 function closeModal(id, e) { if (!e || e.target === document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 function fmtDate(str) { if (!str) return ''; const d = new Date(str); return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`; }
 function timeAgo(str) { const diff = Date.now() - new Date(str).getTime(); const m = Math.floor(diff / 60000), h = Math.floor(m / 60), d = Math.floor(h / 24); if (d > 0) return `${d}일 전`; if (h > 0) return `${h}시간 전`; if (m > 0) return `${m}분 전`; return '방금'; }
-async function resizeImg(file, maxW = 1200) { return new Promise(resolve => { const img = new Image(), url = URL.createObjectURL(file); img.onload = () => { const s = Math.min(1, maxW / img.width); const c = document.createElement('canvas'); c.width = img.width * s; c.height = img.height * s; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', .85)); }; img.src = url; }); }
-async function b64Blob(b64) { return await (await fetch(b64)).blob(); }
-
-async function checkOnboarding() {
-    return; // 임시 비활성화
-  try {
-    const res = await fetch('/api/onboarding', { headers: { 'x-device-id': DEVICE_ID } });
-    if (!res.ok) return;
-    const data = await res.json();
-    console.log('[onboarding]', data); // 이거 추가
-    if (!data.has_interest) await showInterestModal();
-  } catch (e) { console.error('[onboarding]', e); }
-}
-// house.html <script> 안에 추가
-    async function renderLivingRoom(house, rooms, posts, comments) {
-  const tab = document.getElementById('tab-content-living');
-  if (!tab) return;
-
-  // D-DAY 계산
-  let dDayHtml = '';
-  if (house.birth_date) {
-    const birth = new Date(house.birth_date);
-    const today = new Date();
-    const diff = Math.floor((today - birth) / (1000 * 60 * 60 * 24));
-    dDayHtml += `<span class="living-badge">D+${diff}</span>`;
-  }
-  if (house.hundred_date) {
-    const hundred = new Date(house.hundred_date);
-    const today = new Date();
-    const diff = Math.floor((hundred - today) / (1000 * 60 * 60 * 24));
-    if (diff >= 0) dDayHtml += `<span class="living-badge">백일 D-${diff}</span>`;
-  }
-
-  // 방 카드
-  const roomIcons = {
-    living: '🛋️', room: '👶', event: '🎂',
-    storage: '📦', library: '📚', default: '🚪'
-  };
-  const visibleRooms = rooms.filter(r => r.room_type !== 'storage');
-  const roomsHtml = visibleRooms.map(r => {
-    const icon = roomIcons[r.room_type] || roomIcons.default;
-    const isEvent = r.room_type === 'event';
-    let eventBadge = '';
-    if (isEvent && r.event_date) {
-      const diff = Math.floor((new Date(r.event_date) - new Date()) / (1000 * 60 * 60 * 24));
-      if (diff >= 0) eventBadge = `<div class="living-room-event-badge">D-${diff}</div>`;
-    }
-    return `
-      <div class="living-room-card" onclick="switchRoom('${r.id}', '${r.room_name}')">
-        <span class="living-room-icon">${icon}</span>
-        <div class="living-room-name">${r.room_name}</div>
-        <div class="living-room-count">${r.room_type === 'library' ? '사진 · 보관함' : '글 · ' + (posts.filter(p => p.room_id === r.id).length) + '개'}</div>
-        ${eventBadge}
-      </div>`;
-  }).join('');
-
-  // 최근 글 (최대 3개)
-  const recentPosts = [...posts]
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 3);
-
-  const postsHtml = recentPosts.map(p => {
-    const thumb = (p.media_urls && p.media_urls[0])
-      ? `<img src="${p.media_urls[0]}" alt="" />`
-      : '📝';
-    const cats = (p.categories || []).map(c =>
-      `<span class="living-cat-badge" style="background:${c.color}22;color:${c.color}">${c.name}</span>`
-    ).join('');
-    const timeAgo = getTimeAgo(p.created_at);
-    return `
-      <div class="living-post-item" onclick="openPost('${p.id}')">
-        <div class="living-post-thumb">${thumb}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="living-post-content">${p.content || '(사진)'}</div>
-          <div class="living-post-meta-row">${cats}${timeAgo}</div>
-        </div>
-      </div>`;
-  }).join('') || '<div style="font-size:13px;color:#555;padding:8px 0;">아직 기록이 없어요</div>';
-
-  // 방명록 (최근 5개)
-  const recentComments = [...comments]
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    .slice(0, 5);
-
-  const commentsHtml = recentComments.map(c => {
-    const initial = (c.author_name || '?')[0].toUpperCase();
-    const flag = c.lang === 'vi' ? '🇻🇳' : '🇰🇷';
-    return `
-      <div class="living-comment">
-        <div class="living-comment-header">
-          <div class="living-comment-avatar">${initial}</div>
-          <span class="living-comment-author">${c.author_name || '익명'}</span>
-          <span style="font-size:12px">${flag}</span>
-          <span class="living-comment-time">${getTimeAgo(c.created_at)}</span>
-        </div>
-        <div class="living-comment-text">${c.content || ''}</div>
-      </div>`;
-  }).join('') || '<div style="font-size:13px;color:#555;padding:8px 0;">첫 방명록을 남겨주세요</div>';
-
-  // 방문자 수
-  const visitCount = house.visit_count || 0;
-
-  // 커버
-  const coverHtml = house.cover_url
-    ? `<img class="living-hero-cover" src="${house.cover_url}" alt="" />`
-    : `<div class="living-hero-cover" style="background:#0d0d0d"></div>`;
-
-  tab.innerHTML = `
-    <div class="living-hero">
-      ${coverHtml}
-      <div class="living-hero-overlay"></div>
-      <div class="living-hero-info">
-        <div class="living-hero-name">${house.name || '우리 집'}</div>
-        <div class="living-hero-bio">${house.bio || ''}</div>
-        <div class="living-hero-badges">
-          ${house.category ? `<span class="living-badge">${house.category}</span>` : ''}
-          ${dDayHtml}
-        </div>
-      </div>
-    </div>
-
-    <div class="living-section">
-      <div class="living-section-title">방</div>
-      <div class="living-rooms-grid">${roomsHtml}</div>
-    </div>
-
-    <div class="living-section">
-      <div class="living-section-title">최근 기록</div>
-      <div class="living-post-list">${postsHtml}</div>
-    </div>
-
-    <div class="living-section">
-      <div class="living-section-title">방명록</div>
-      <div class="living-gb-form">
-        <input class="living-gb-input" id="gb-input" placeholder="메시지를 남겨주세요..." />
-        <button class="living-gb-btn" onclick="submitGuestbook()">전송</button>
-      </div>
-      <div class="living-comment-list">${commentsHtml}</div>
-    </div>
-
-    <div class="living-visitor-bar">
-      <div class="living-visitor-dot"></div>
-      <span class="living-visitor-text">전체 방문 <span class="living-visitor-count">${visitCount}회</span></span>
-    </div>
-  `;
-}
-
-// 방명록 전송
-async function submitGuestbook() {
-  const input = document.getElementById('gb-input');
-  const content = input?.value?.trim();
-  if (!content) return;
-
-  const slug = getSlug();
-  const authorName = localStorage.getItem('nickname') || '익명';
-
-  try {
-    const res = await fetch('/api/comment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, author_name: authorName, content })
-    });
-    if (res.ok) {
-      input.value = '';
-      await loadHouseData(); // 기존 데이터 리로드 함수
-    }
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-// 시간 표시 헬퍼 (없으면 추가)
 function getTimeAgo(dateStr) {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -638,6 +468,20 @@ function getTimeAgo(dateStr) {
   if (day < 7) return `${day}일 전`;
   return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
 }
+async function resizeImg(file, maxW = 1200) { return new Promise(resolve => { const img = new Image(), url = URL.createObjectURL(file); img.onload = () => { const s = Math.min(1, maxW / img.width); const c = document.createElement('canvas'); c.width = img.width * s; c.height = img.height * s; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', .85)); }; img.src = url; }); }
+async function b64Blob(b64) { return await (await fetch(b64)).blob(); }
+
+// ── ONBOARDING ──────────────────────────────────────────
+async function checkOnboarding() {
+  return; // 임시 비활성화
+  try {
+    const res = await fetch('/api/onboarding', { headers: { 'x-device-id': DEVICE_ID } });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.has_interest) await showInterestModal();
+  } catch (e) { console.error('[onboarding]', e); }
+}
+
 async function showInterestModal() {
   try {
     const res = await fetch('/api/interests', { headers: { 'x-device-id': DEVICE_ID } });
@@ -689,6 +533,7 @@ async function joinCurrentHouse() {
 
 function skipOnboarding() { document.getElementById('onboardOverlay').classList.remove('open'); }
 
+// ── API ─────────────────────────────────────────────────
 async function loadData() {
   try {
     const ownerParam = OWNER_KEY ? `&owner=${encodeURIComponent(OWNER_KEY)}` : '';
@@ -699,7 +544,6 @@ async function loadData() {
     ROOMS = data.rooms || [];
     CATEGORIES = [...(data.categories || [])];
     allMedia = data.media || []; allPosts = data.posts || [];
-    // ✅ 서버가 비교한 결과만 사용 (owner_key 클라이언트 노출 없음)
     IS_OWNER = !!data.house.is_owner;
     applyHero(data.house);
     initDday(data.house);
@@ -709,29 +553,19 @@ async function loadData() {
   } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
 }
 
-const CAT_META = { baby: { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' }, pet: { badge: '🐾 PET HOUSE', emoji: '🐾', ph: '🐾' }, travel: { badge: '✈️ TRAVEL', emoji: '✈️', ph: '✈️' }, fitness: { badge: '💪 FITNESS', emoji: '💪', ph: '💪' }, daily: { badge: '🏠 DAILY', emoji: '🏠', ph: '🏠' } };
-
-// loadData() 호출 직후 또는 applyHero() 다음에 추가
 function trackVisit(houseId) {
   const params = new URLSearchParams(location.search);
   const ref = params.get('ref') || 'direct';
-  // ref가 device_id 형식이면 → 초대받은 것
   const invited_by = ref.startsWith('dev_') ? ref : null;
-
   fetch('/api/visit', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-device-id': DEVICE_ID
-    },
-    body: JSON.stringify({
-      house_id: houseId,
-      room_id: null,
-      ref,
-      invited_by
-    })
-  }).catch(() => {});  // 실패해도 무시
+    headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
+    body: JSON.stringify({ house_id: houseId, room_id: null, ref, invited_by })
+  }).catch(() => {});
 }
+
+// ── RENDER: 히어로 & 탭 ─────────────────────────────────
+const CAT_META = { baby: { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' }, pet: { badge: '🐾 PET HOUSE', emoji: '🐾', ph: '🐾' }, travel: { badge: '✈️ TRAVEL', emoji: '✈️', ph: '✈️' }, fitness: { badge: '💪 FITNESS', emoji: '💪', ph: '💪' }, daily: { badge: '🏠 DAILY', emoji: '🏠', ph: '🏠' } };
 
 function applyHero(house) {
   const cat = CAT_META[house.category] || CAT_META['daily'];
@@ -786,8 +620,7 @@ function buildTabs(house, rooms, milestones, comments) {
     div.className = 'tab-content' + (idx === 0 ? ' active' : '');
     div.id = tabId;
     tabContents.appendChild(div);
-    // buildTabs() 안에서 renderLobby 호출 부분 수정
-if (room.room_type === 'living') renderLobby(div, house, milestones, comments, ordered);
+    if (room.room_type === 'living') renderLobby(div, house, milestones, comments, ordered);
     if (room.room_type === 'room') renderRoom(div, room);
     if (room.room_type === 'event') renderEvent(div, room);
     if (room.room_type === 'library') renderLibrary(div);
@@ -805,6 +638,7 @@ function switchTab(tabId) {
 
 function switchToRoomType(type) { const r = ROOMS.find(r => r.room_type === type); if (r) switchTab(`tab-${r.id}`); }
 
+// ── RENDER: 거실 ────────────────────────────────────────
 function renderLobby(container, house, milestones, comments, rooms) {
   let bannerHtml = '';
   if (house.hundred_date) {
@@ -884,21 +718,22 @@ function renderLobby(container, house, milestones, comments, rooms) {
       }).join('')}
     </div>` : '';
 
-const feedHtml = comments.length ? comments.map((c, i) => {
-  const txt = (c.content_original || '').replace(/'/g, '&#39;').replace(/`/g, '&#96;');
-  return `<div class="feed-item" style="animation-delay:${i * .06}s">
-    <div class="feed-head">
-      <div class="feed-av">${(c.author_name || '?')[0]}</div>
-      <div class="feed-name">${c.author_name || '익명'}</div>
-      <div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>
-      ${IS_OWNER ? `<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>` : ''}
-      <button onclick="translateComment('${c.id}','${txt}',this)" style="background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:4px;">🌐 번역</button>
-    </div>
-    ${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}
-    <div class="feed-body">${(c.content_original || '').replace(/\n/g, '<br>')}</div>
-    <div class="feed-time">${timeAgo(c.created_at)}</div>
-  </div>`;
-}).join('') : `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
+  const feedHtml = comments.length ? comments.map((c, i) => {
+    const txt = (c.content_original || '').replace(/'/g, '&#39;').replace(/`/g, '&#96;');
+    return `<div class="feed-item" style="animation-delay:${i * .06}s">
+      <div class="feed-head">
+        <div class="feed-av">${(c.author_name || '?')[0]}</div>
+        <div class="feed-name">${c.author_name || '익명'}</div>
+        <div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>
+        ${IS_OWNER ? `<button class="feed-del" onclick="deleteComment('${c.id}')">🗑️</button>` : ''}
+        <button onclick="translateComment('${c.id}','${txt}',this)" style="background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:4px;">🌐 번역</button>
+      </div>
+      ${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}
+      <div class="feed-body">${(c.content_original || '').replace(/\n/g, '<br>')}</div>
+      <div class="feed-time">${timeAgo(c.created_at)}</div>
+    </div>`;
+  }).join('') : `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
+
   container.innerHTML = `${bannerHtml}<div class="section">
     ${roomCardsHtml}
     <div class="sec-head"><div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div><button class="more-btn" onclick="switchToRoomType('library')">더 보기 →</button></div>
@@ -911,11 +746,10 @@ const feedHtml = comments.length ? comments.map((c, i) => {
   </div>`;
 }
 
-// CHANGE START: renderRoom() 전체 교체
+// ── RENDER: 방 ──────────────────────────────────────────
 function renderRoom(container, room) {
   currentRoomId = room.id;
   const chips = CATEGORIES.map(c => `<span class="cat-chip" data-id="${c.id}" onclick="filterCat('${c.id}',this)">${c.name}</span>`).join('');
-  const eventRooms = ROOMS.filter(r => r.room_type === 'event');
 
   container.innerHTML = `<div class="section">
     <div class="sec-head">
@@ -931,16 +765,11 @@ function renderRoom(container, room) {
     <div class="post-list" id="postList"></div>
   </div>
 
-  <!-- 이벤트 관리 모달 -->
   <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)" style="align-items:center;padding:24px;">
     <div class="modal-box">
       <div class="modal-handle"></div>
       <div class="modal-title">🎂 이벤트 관리</div>
-
-      <!-- 현재 이벤트 목록 -->
       <div id="eventRoomList" style="margin-bottom:16px;"></div>
-
-      <!-- 새 이벤트 추가 폼 -->
       <div style="background:var(--warm);border-radius:14px;padding:16px;">
         <div style="font-size:12px;color:var(--brown);font-weight:600;margin-bottom:10px;letter-spacing:1px;">+ 새 이벤트 추가</div>
         <input class="modal-input" id="newEventName" placeholder="이벤트 이름 (예: 돌잔치, 수능응원)">
@@ -962,15 +791,12 @@ function renderEventRoomList() {
     el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px;">아직 이벤트가 없어요</div>';
     return;
   }
-
   el.innerHTML = '';
   eventRooms.forEach(r => {
     const diff = r.event_date ? Math.ceil((new Date(r.event_date) - new Date()) / 86400000) : null;
     const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
-
     const wrap = document.createElement('div');
     wrap.style.cssText = 'background:white;border:1px solid rgba(139,94,60,.12);border-radius:12px;padding:12px 14px;margin-bottom:8px;';
-
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
     row.innerHTML = `
@@ -980,38 +806,32 @@ function renderEventRoomList() {
       </div>
       <a href="/event?slug=${SLUG}&room=${r.id}" target="_blank"
         style="background:var(--gold);color:white;border-radius:16px;padding:5px 12px;font-size:11px;text-decoration:none;">페이지</a>`;
-
     const editBtn = document.createElement('button');
     editBtn.textContent = '수정';
     editBtn.style.cssText = 'background:var(--warm);border:1px solid rgba(139,94,60,.2);border-radius:16px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:"Gowun Dodum",serif;';
     editBtn.onclick = () => openEditEventRoom(r.id, r.room_name, r.event_date || '');
     row.appendChild(editBtn);
-
     const delBtn = document.createElement('button');
     delBtn.textContent = '🗑️';
     delBtn.style.cssText = 'background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);';
     delBtn.onclick = () => deleteEventRoom(r.id);
     row.appendChild(delBtn);
-
     const editForm = document.createElement('div');
     editForm.id = `editForm-${r.id}`;
     editForm.style.cssText = 'display:none;border-top:1px solid rgba(139,94,60,.1);padding-top:10px;margin-top:4px;';
-    // CHANGE START: editForm innerHTML
-editForm.innerHTML = `
-  <input class="modal-input" id="editName-${r.id}" value="${r.room_name}" style="margin-bottom:8px;" placeholder="이벤트 이름">
-  <input class="modal-input" id="editDate-${r.id}" type="date" value="${r.event_date || ''}" style="margin-bottom:8px;">
-  <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;">📋 이벤트 공지 (선택)</div>
-  <input class="modal-input" id="editInfoTitle-${r.id}" value="${r.info_title || ''}" placeholder="제목 (예: 김하준 백일잔치)" style="margin-bottom:8px;">
-  <textarea class="modal-input" id="editInfoBody-${r.id}" placeholder="안내 문구&#10;📅 날짜/시간&#10;📍 장소" style="height:80px;margin-bottom:8px;">${r.info_body || ''}</textarea>
-  <input class="modal-input" id="editInfoAccount-${r.id}" value="${r.info_account || ''}" placeholder="계좌번호 (예: 신한 110-123-456789 김상열)" style="margin-bottom:8px;">
-  <div style="display:flex;gap:8px;">
-    <button onclick="saveEditEventRoom('${r.id}')"
-      style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">저장</button>
-    <button onclick="document.getElementById('editForm-${r.id}').style.display='none'"
-      style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
-  </div>`;
-// CHANGE END
-
+    editForm.innerHTML = `
+      <input class="modal-input" id="editName-${r.id}" value="${r.room_name}" style="margin-bottom:8px;" placeholder="이벤트 이름">
+      <input class="modal-input" id="editDate-${r.id}" type="date" value="${r.event_date || ''}" style="margin-bottom:8px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;">📋 이벤트 공지 (선택)</div>
+      <input class="modal-input" id="editInfoTitle-${r.id}" value="${r.info_title || ''}" placeholder="제목 (예: 김하준 백일잔치)" style="margin-bottom:8px;">
+      <textarea class="modal-input" id="editInfoBody-${r.id}" placeholder="안내 문구&#10;📅 날짜/시간&#10;📍 장소" style="height:80px;margin-bottom:8px;">${r.info_body || ''}</textarea>
+      <input class="modal-input" id="editInfoAccount-${r.id}" value="${r.info_account || ''}" placeholder="계좌번호 (예: 신한 110-123-456789 김상열)" style="margin-bottom:8px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="saveEditEventRoom('${r.id}')"
+          style="flex:1;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">저장</button>
+        <button onclick="document.getElementById('editForm-${r.id}').style.display='none'"
+          style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
+      </div>`;
     wrap.appendChild(row);
     wrap.appendChild(editForm);
     el.appendChild(wrap);
@@ -1020,17 +840,14 @@ editForm.innerHTML = `
 
 function openEventMgr() {
   document.getElementById('eventMgrModal').classList.add('open');
-  // open 후에 렌더 (DOM 확실히 있을 때)
   setTimeout(() => renderEventRoomList(), 50);
 }
 
 function openEditEventRoom(roomId, name, date) {
-  // 다른 수정 폼 닫기
   document.querySelectorAll('[id^="editForm-"]').forEach(el => el.style.display = 'none');
   document.getElementById(`editForm-${roomId}`).style.display = 'block';
 }
 
-// CHANGE START: saveEditEventRoom
 async function saveEditEventRoom(roomId) {
   const name = document.getElementById(`editName-${roomId}`).value.trim();
   const date = document.getElementById(`editDate-${roomId}`).value;
@@ -1053,7 +870,6 @@ async function saveEditEventRoom(roomId) {
     else showToast(data.error || '수정 실패');
   } catch(e) { showToast('오류가 발생했어요'); }
 }
-// CHANGE END
 
 async function createEventRoom() {
   const name = document.getElementById('newEventName').value.trim();
@@ -1069,30 +885,39 @@ async function createEventRoom() {
     if (data.success) {
       showToast(`${name} 이벤트가 생성됐어요 🎂`);
       document.getElementById('newEventName').value = '';
-      document.getElementById('newEventName').value = '';
-    document.getElementById('newEventDate').value = '';
-    document.getElementById('eventMgrModal').classList.remove('open');
-    await loadData();
+      document.getElementById('newEventDate').value = '';
+      document.getElementById('eventMgrModal').classList.remove('open');
+      await loadData();
     } else showToast(data.error || '생성 실패');
   } catch(e) { showToast('오류가 발생했어요'); }
 }
-
+async function deleteEventRoom(roomId) {
+  openConfirm('이벤트를 삭제할까요?', '관련 분류도 함께 삭제되고 되돌릴 수 없어요.', async () => {
+    try {
+      const res = await fetch('/api/rooms', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room_id: roomId, house_id: HOUSE_ID, owner_key: OWNER_KEY })
+      });
+      const data = await res.json();
+      if (data.success) { showToast('이벤트가 삭제됐어요 🗑️'); await loadData(); }
+      else showToast(data.error || '삭제 실패');
+    } catch(e) { showToast('오류가 발생했어요'); }
+  });
+}
 function filterCat(catId, el) {
   document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   activeCat = catId === 'all' ? null : catId;
-
   const roomObj = ROOMS.find(r => r.room_type === 'room');
   const roomPosts = roomObj ? allPosts.filter(p => p.room_id === roomObj.id) : allPosts;
-
   const filtered = activeCat
-    // category_ids 값(숫자)과 catId(문자열)를 String()으로 통일 비교
     ? roomPosts.filter(p => Array.isArray(p.category_ids) && p.category_ids.some(id => String(id) === String(activeCat)))
     : roomPosts;
-
   renderPostList(filtered);
 }
 
+// ── RENDER: 포스트 공통 ─────────────────────────────────
 function renderStoryImgs(urls, post) {
   const count = urls.length;
   const img = u => `<img src="${u}" loading="lazy">`;
@@ -1114,54 +939,21 @@ function renderStoryImgs(urls, post) {
   return `<div class="story-imgs many"><div class="row-top">${topImgs}</div><div class="row-bot">${botMid}${lastCell}</div></div>`;
 }
 
-function openPostModal(item) {
-  if (typeof item === 'string') item = JSON.parse(item);
-  const urls = item.urls || [];
-  const first = urls[0];
-  const rest  = urls.slice(1);
-  const allUrlsStr = JSON.stringify(urls).replace(/"/g, "'");
-  const restHtml = rest.length
-    ? `<div style="display:grid;grid-template-columns:repeat(${Math.min(rest.length,3)},1fr);gap:2px;">
-        ${rest.map((url,i) => `<img src="${url}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},${i+1})" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">`).join('')}
-       </div>` : '';
-  document.getElementById('postModalImgs').innerHTML = first
-    ? `<img src="${first}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},0)" style="width:100%;max-height:380px;object-fit:cover;border-radius:20px 20px 0 0;cursor:zoom-in;display:block;">${restHtml}` : '';
-  const tags = (item.category_ids || []).map(cid => { const c = CATEGORIES.find(x => x.id === cid); return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : ''; }).join('');
-  document.getElementById('postModalTags').innerHTML = tags;
-  document.getElementById('postModalContent').textContent = item.content || '';
-  document.getElementById('postModalDate').textContent = item.date ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
-  document.getElementById('postModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closePostModal(e) {
-  if (e && e.target !== document.getElementById('postModal') && !e.target.classList.contains('post-modal-close')) return;
-  document.getElementById('postModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// ─── 공통 포스트 카드 렌더러 ───────────────────────────────────────────────
-// opts.showDel   : 삭제 버튼 표시 여부 (기본: IS_OWNER)
-// opts.showTags  : 카테고리 태그 표시 여부 (기본: true)
-// opts.delay     : animation-delay 인덱스 (기본: 0)
 function renderPost(p, opts = {}) {
   const showDel  = opts.showDel  !== undefined ? opts.showDel  : IS_OWNER;
   const showTags = opts.showTags !== undefined ? opts.showTags : true;
   const delay    = opts.delay    || 0;
-
   const tags = showTags
     ? (p.category_ids || []).map(cid => {
         const c = CATEGORIES.find(x => x.id === cid);
         return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
       }).join('')
     : '';
-
   const imgs    = p.media_urls || [];
   const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
   const postData = encodeURIComponent(JSON.stringify({
     urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
   }));
-
   return `<div class="post-item" style="animation-delay:${delay * .05}s;border-radius:18px;overflow:hidden;cursor:pointer;"
       onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
     ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
@@ -1184,6 +976,7 @@ function renderPostList(posts) {
   el.innerHTML = posts.map((p, i) => renderPost(p, { delay: i })).join('');
 }
 
+// ── RENDER: 서재 ────────────────────────────────────────
 function renderLibrary(container) {
   const photos = allMedia.filter(m => m.media_type === 'photo');
   const videos = allMedia.filter(m => m.media_type === 'video');
@@ -1193,6 +986,7 @@ function renderLibrary(container) {
   container.innerHTML = `<div class="section"><div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GALLERY</div><div class="sec-title">사진첩 📷</div></div>${IS_OWNER ? `<button class="more-btn" onclick="openUploadModal(null)">+ 사진 추가</button>` : ''}</div>${photoGrid}<div class="sec-head" style="margin-top:40px;margin-bottom:16px;"><div><div class="sec-label">VIDEO</div><div class="sec-title">영상 🎬</div></div>${IS_OWNER ? `<button class="more-btn" onclick="document.getElementById('videoModal').classList.add('open')">+ 영상 추가</button>` : ''}</div><div class="video-list">${videoList}</div></div>`;
 }
 
+// ── RENDER: 이벤트 ──────────────────────────────────────
 function renderEvent(container, room) {
   const diff = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
   const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
@@ -1200,13 +994,10 @@ function renderEvent(container, room) {
   const lbUrls = eventPhotos.map(m => m.file_url);
   const photoHtml = eventPhotos.length ? `<div class="lib-grid">${eventPhotos.map((m, i) => `<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'><img src="${m.file_url}" loading="lazy">${IS_OWNER ? `<button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>` : ''}</div>`).join('')}</div>` : `<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
   const eventUrl = `/event?slug=${SLUG}&room=${room.id}`;
-
-  // 이벤트 방 포스팅
   const eventPosts = allPosts.filter(p => p.room_id === room.id);
   const postsHtml = eventPosts.length
     ? eventPosts.map((p, i) => renderPost(p, { delay: i, showTags: false })).join('')
     : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
-
   container.innerHTML = `<div class="section">
     <div class="ev-header">
       <div class="ev-title">${room.room_name}</div>
@@ -1227,41 +1018,7 @@ function renderEvent(container, room) {
   </div>`;
 }
 
-function previewGbPhoto(input) { const file = input.files[0]; if (!file) return; const r = new FileReader(); r.onload = e => { gbPhotoB64 = e.target.result; document.getElementById('gbPrevImg').src = e.target.result; document.getElementById('gbPrevWrap').style.display = 'block'; }; r.readAsDataURL(file); }
-
-async function submitGuestbook() {
-  const author = document.getElementById('gbAuthor')?.value.trim();
-  const content = document.getElementById('gbContent')?.value.trim();
-  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
-  let media_url = null;
-  if (gbPhotoB64) {
-    try {
-      showToast('사진 업로드 중... ⏳');
-      const blob = await b64Blob(gbPhotoB64); const fd = new FormData(); fd.append('file', blob, 'gb.jpg'); fd.append('upload_preset', 'corenull');
-      const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
-      const cl = await cr.json(); if (cl.secure_url) media_url = cl.secure_url;
-    } catch (e) { showToast('사진 업로드 실패'); return; }
-  }
-  try {
-    const res = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url }) });
-    const data = await res.json();
-    if (res.ok && data.success) { document.getElementById('gbAuthor').value = ''; document.getElementById('gbContent').value = ''; document.getElementById('gbPrevWrap').style.display = 'none'; gbPhotoB64 = null; showToast('메시지가 등록됐어요 💌'); await loadData(); }
-    else showToast(data.error || '등록 실패');
-  } catch (e) { showToast('오류가 발생했어요'); }
-}
-
-async function deleteComment(id) {
-  openConfirm('메시지를 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
-    await fetch('/api/comment', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment_id: id, house_id: HOUSE_ID }) });
-    showToast('삭제됐어요'); await loadData();
-  });
-}
-
-async function getAiMsg(lang) {
-  const btn = document.getElementById(lang === 'vi' ? 'aiVi' : 'aiKo'); if (!btn) return; btn.disabled = true;
-  try { const res = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'message', context: { lang } }) }); const data = await res.json(); const el = document.getElementById('aiSugg'); if (!el) return; el.innerHTML = (data.suggestions || []).map(s => `<button class="ai-chip" onclick="document.getElementById('gbContent').value=this.textContent;document.getElementById('aiSugg').style.display='none';">${s}</button>`).join(''); el.style.display = 'flex'; el.style.flexDirection = 'column'; } catch (e) { showToast('AI 문구 생성 실패'); } finally { btn.disabled = false; }
-}
-
+// ── MODAL: 글쓰기 ───────────────────────────────────────
 function openWriteModal() {
   writeFiles = [];
   document.getElementById('writeContent').value = '';
@@ -1322,6 +1079,7 @@ async function deletePost(postId) {
   });
 }
 
+// ── MODAL: 업로드 (사진/영상) ───────────────────────────
 function openUploadModal(roomId) {
   uploadRoomId = roomId || null; uploadFiles = [];
   document.getElementById('uploadContent').value = ''; document.getElementById('uploadDate').value = '';
@@ -1359,18 +1117,70 @@ function openEditModal(id, content) { document.getElementById('editMediaId').val
 async function submitEdit() { const id = document.getElementById('editMediaId').value; const content = document.getElementById('editContent').value.trim(); try { const res = await fetch('/api/media', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: id, house_id: HOUSE_ID, content }) }); if (res.ok) { showToast('수정됐어요 ✏️'); document.getElementById('editModal').classList.remove('open'); await loadData(); } else showToast('수정 실패'); } catch (e) { showToast('오류가 발생했어요'); } }
 function confirmDelMedia(id) { openConfirm('사진을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => { await fetch('/api/media', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: id, house_id: HOUSE_ID }) }); showToast('삭제됐어요'); await loadData(); }); }
 
-async function uploadCover(input) { const file = input.files[0]; if (!file) return; input.value = ''; showToast('업로드 중... ⏳'); const b64 = await resizeImg(file); const blob = await b64Blob(b64); document.getElementById('heroFrame').innerHTML = `<img src="${b64}" alt="커버"><div class="photo-upload-hint">사진 변경</div>`; try { const fd = new FormData(); fd.append('file', blob, 'cover.jpg'); fd.append('upload_preset', 'corenull'); const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd }); const cl = await cr.json(); if (!cl.secure_url) throw new Error('Cloudinary 실패'); 
-const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-body: JSON.stringify({ action: 'cover', file_url: cl.secure_url, house_id: HOUSE_ID }) });
-    const data = await res.json();
-    if (data.success) showToast('커버 사진이 저장됐어요 📷');
-    else showToast('저장 실패');
-  } catch (e) { showToast('저장 실패: ' + e.message); }
+// ── MODAL: 포스트 상세 ──────────────────────────────────
+function openPostModal(item) {
+  if (typeof item === 'string') item = JSON.parse(item);
+  const urls = item.urls || [];
+  const first = urls[0];
+  const rest  = urls.slice(1);
+  const allUrlsStr = JSON.stringify(urls).replace(/"/g, "'");
+  const restHtml = rest.length
+    ? `<div style="display:grid;grid-template-columns:repeat(${Math.min(rest.length,3)},1fr);gap:2px;">
+        ${rest.map((url,i) => `<img src="${url}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},${i+1})" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">`).join('')}
+       </div>` : '';
+  document.getElementById('postModalImgs').innerHTML = first
+    ? `<img src="${first}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},0)" style="width:100%;max-height:380px;object-fit:cover;border-radius:20px 20px 0 0;cursor:zoom-in;display:block;">${restHtml}` : '';
+  const tags = (item.category_ids || []).map(cid => { const c = CATEGORIES.find(x => x.id === cid); return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : ''; }).join('');
+  document.getElementById('postModalTags').innerHTML = tags;
+  document.getElementById('postModalContent').textContent = item.content || '';
+  document.getElementById('postModalDate').textContent = item.date ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
+  document.getElementById('postModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-function parseVideoUrl(url) { let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/); if (m) return { platform: 'YouTube', embedUrl: `https://www.youtube.com/embed/${m[1]}` }; m = url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/); if (m) return { platform: 'YouTube Shorts', embedUrl: `https://www.youtube.com/embed/${m[1]}` }; m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/); if (m) return { platform: 'TikTok', embedUrl: `https://www.tiktok.com/embed/v2/${m[1]}` }; if (url.includes('facebook.com') || url.includes('fb.watch')) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false` }; return null; }
-async function submitVideo() { const url = document.getElementById('videoUrlInput').value.trim(); if (!url) { showToast('링크를 입력해주세요'); return; } const parsed = parseVideoUrl(url); if (!parsed) { showToast('지원하지 않는 링크예요'); return; } document.getElementById('videoUrlInput').value = ''; try { await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file_url: url, house_id: HOUSE_ID, media_type: 'video', content: parsed.platform }) }); document.getElementById('videoModal').classList.remove('open'); showToast(`${parsed.platform} 영상이 저장됐어요 🎬`); await loadData(); } catch (e) { showToast('저장 실패'); } }
+function closePostModal(e) {
+  if (e && e.target !== document.getElementById('postModal') && !e.target.classList.contains('post-modal-close')) return;
+  document.getElementById('postModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
+// ── GUESTBOOK ───────────────────────────────────────────
+function previewGbPhoto(input) { const file = input.files[0]; if (!file) return; const r = new FileReader(); r.onload = e => { gbPhotoB64 = e.target.result; document.getElementById('gbPrevImg').src = e.target.result; document.getElementById('gbPrevWrap').style.display = 'block'; }; r.readAsDataURL(file); }
+
+async function submitGuestbook() {
+  const author = document.getElementById('gbAuthor')?.value.trim();
+  const content = document.getElementById('gbContent')?.value.trim();
+  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
+  let media_url = null;
+  if (gbPhotoB64) {
+    try {
+      showToast('사진 업로드 중... ⏳');
+      const blob = await b64Blob(gbPhotoB64); const fd = new FormData(); fd.append('file', blob, 'gb.jpg'); fd.append('upload_preset', 'corenull');
+      const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
+      const cl = await cr.json(); if (cl.secure_url) media_url = cl.secure_url;
+    } catch (e) { showToast('사진 업로드 실패'); return; }
+  }
+  try {
+    const res = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url }) });
+    const data = await res.json();
+    if (res.ok && data.success) { document.getElementById('gbAuthor').value = ''; document.getElementById('gbContent').value = ''; document.getElementById('gbPrevWrap').style.display = 'none'; gbPhotoB64 = null; showToast('메시지가 등록됐어요 💌'); await loadData(); }
+    else showToast(data.error || '등록 실패');
+  } catch (e) { showToast('오류가 발생했어요'); }
+}
+
+async function deleteComment(id) {
+  openConfirm('메시지를 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
+    await fetch('/api/comment', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment_id: id, house_id: HOUSE_ID }) });
+    showToast('삭제됐어요'); await loadData();
+  });
+}
+
+async function getAiMsg(lang) {
+  const btn = document.getElementById(lang === 'vi' ? 'aiVi' : 'aiKo'); if (!btn) return; btn.disabled = true;
+  try { const res = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'message', context: { lang } }) }); const data = await res.json(); const el = document.getElementById('aiSugg'); if (!el) return; el.innerHTML = (data.suggestions || []).map(s => `<button class="ai-chip" onclick="document.getElementById('gbContent').value=this.textContent;document.getElementById('aiSugg').style.display='none';">${s}</button>`).join(''); el.style.display = 'flex'; el.style.flexDirection = 'column'; } catch (e) { showToast('AI 문구 생성 실패'); } finally { btn.disabled = false; }
+}
+
+// ── LIGHTBOX ────────────────────────────────────────────
 let lbTX = 0, lbDX = 0, lbDrag = false;
 function openLightbox(images, idx) { lbImages = images; lbIndex = idx; document.getElementById('lbTrack').innerHTML = images.map(url => `<div class="lb-slide"><img src="${url}" draggable="false"></div>`).join(''); updateLb(); document.getElementById('lightbox').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function updateLb() { const t = document.getElementById('lbTrack'); t.style.transform = `translateX(-${lbIndex * 100}vw)`; document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${lbImages.length}`; document.getElementById('lbThumbs').innerHTML = lbImages.map((url, i) => `<div class="lb-thumb ${i === lbIndex ? 'active' : ''}" onclick="lbGoto(${i})"><img src="${url}"></div>`).join(''); }
@@ -1385,8 +1195,20 @@ lbEl.addEventListener('touchend', () => { if (lbDX < -50) lbNext(); else if (lbD
 lbEl.addEventListener('click', e => { if (e.target === lbEl) closeLightbox(); });
 document.addEventListener('keydown', e => { if (!document.getElementById('lightbox').classList.contains('open')) return; if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); if (e.key === 'Escape') closeLightbox(); });
 
-// 파일 끝 부분이 이렇게 끝나야 해요
-checkOnboarding();
+// ── COVER 업로드 ────────────────────────────────────────
+async function uploadCover(input) { const file = input.files[0]; if (!file) return; input.value = ''; showToast('업로드 중... ⏳'); const b64 = await resizeImg(file); const blob = await b64Blob(b64); document.getElementById('heroFrame').innerHTML = `<img src="${b64}" alt="커버"><div class="photo-upload-hint">사진 변경</div>`; try { const fd = new FormData(); fd.append('file', blob, 'cover.jpg'); fd.append('upload_preset', 'corenull'); const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd }); const cl = await cr.json(); if (!cl.secure_url) throw new Error('Cloudinary 실패');
+  const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ action: 'cover', file_url: cl.secure_url, house_id: HOUSE_ID }) });
+  const data = await res.json();
+  if (data.success) showToast('커버 사진이 저장됐어요 📷');
+  else showToast('저장 실패');
+} catch (e) { showToast('저장 실패: ' + e.message); } }
+
+// ── 영상 ────────────────────────────────────────────────
+function parseVideoUrl(url) { let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/); if (m) return { platform: 'YouTube', embedUrl: `https://www.youtube.com/embed/${m[1]}` }; m = url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/); if (m) return { platform: 'YouTube Shorts', embedUrl: `https://www.youtube.com/embed/${m[1]}` }; m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/); if (m) return { platform: 'TikTok', embedUrl: `https://www.tiktok.com/embed/v2/${m[1]}` }; if (url.includes('facebook.com') || url.includes('fb.watch')) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false` }; return null; }
+async function submitVideo() { const url = document.getElementById('videoUrlInput').value.trim(); if (!url) { showToast('링크를 입력해주세요'); return; } const parsed = parseVideoUrl(url); if (!parsed) { showToast('지원하지 않는 링크예요'); return; } document.getElementById('videoUrlInput').value = ''; try { await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file_url: url, house_id: HOUSE_ID, media_type: 'video', content: parsed.platform }) }); document.getElementById('videoModal').classList.remove('open'); showToast(`${parsed.platform} 영상이 저장됐어요 🎬`); await loadData(); } catch (e) { showToast('저장 실패'); } }
+
+// ── SHARE ───────────────────────────────────────────────
 function getShareUrl(refParam) {
   const base = `${location.origin}/${SLUG}`;
   return `${base}?ref=${refParam || DEVICE_ID}`;
@@ -1394,7 +1216,6 @@ function getShareUrl(refParam) {
 
 function shareKakao() {
   const url = getShareUrl('kakao');
-  // 카카오 SDK 없으면 링크 복사로 fallback
   if (window.Kakao?.isInitialized?.()) {
     Kakao.Share.sendDefault({
       objectType: 'feed',
@@ -1407,7 +1228,6 @@ function shareKakao() {
       buttons: [{ title: '집 방문하기', link: { mobileWebUrl: url, webUrl: url } }]
     });
   } else {
-    // SDK 없으면 카카오 공유 웹 URL로 fallback
     window.open(`https://sharer.kakao.com/talk/friends/picker/link?app_key=&url=${encodeURIComponent(url)}`, '_blank');
     copyLink('kakao');
   }
@@ -1415,7 +1235,6 @@ function shareKakao() {
 
 function shareZalo() {
   const url = getShareUrl('zalo');
-  // Zalo는 앱 딥링크 또는 링크 복사
   if (/Android|iPhone/i.test(navigator.userAgent)) {
     window.location.href = `zalo://share?url=${encodeURIComponent(url)}`;
     setTimeout(() => copyLink('zalo'), 1000);
@@ -1438,7 +1257,8 @@ function copyLink(ref) {
     showToast('링크가 복사됐어요 🔗');
   }
 }
-loadData();
+
+// ── TRANSLATE ───────────────────────────────────────────
 const translateCache = {};
 async function translateComment(id, text, btn) {
   const existing = document.getElementById('tr-' + id);
@@ -1459,6 +1279,7 @@ async function translateComment(id, text, btn) {
     showTR(id, t, btn);
   } catch { btn.textContent = '🌐 번역'; btn.disabled = false; showToast('번역 실패'); }
 }
+
 function showTR(id, text, btn) {
   const card = btn.closest('.feed-item') || btn.closest('.comment-card');
   const el = document.createElement('div');
@@ -1468,6 +1289,10 @@ function showTR(id, text, btn) {
   card.appendChild(el);
   btn.textContent = '🌐 숨기기'; btn.disabled = false;
 }
+
+// ── INIT ────────────────────────────────────────────────
+checkOnboarding();
+loadData();
 </script>
 </body>
 </html>
