@@ -115,6 +115,25 @@
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fadeIn{to{opacity:1;}}
     @media(max-width:480px){.form-row{grid-template-columns:1fr;}.lightbox-nav{display:none;}}
+    /* ── POST COMMENTS (Facebook style) ── */
+.post-actions{display:flex;gap:0;border-top:1px solid var(--border);margin-top:0;}
+.post-action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;background:none;border:none;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--muted);cursor:pointer;transition:background 0.15s;}
+.post-action-btn:hover{background:var(--warm);color:var(--brown);}
+.post-action-btn.active{color:var(--gold);}
+.post-comments-wrap{border-top:1px solid var(--border);background:var(--cream);padding:12px 16px;display:none;}
+.post-comments-wrap.open{display:block;}
+.post-comment-item{display:flex;gap:10px;margin-bottom:12px;}
+.post-comment-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--warm),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.post-comment-bubble{background:white;border-radius:12px;padding:8px 12px;flex:1;box-shadow:0 1px 4px var(--shadow);}
+.post-comment-name{font-size:12px;font-weight:700;color:var(--brown);margin-bottom:2px;}
+.post-comment-text{font-size:13px;color:var(--text);line-height:1.5;}
+.post-comment-date{font-size:10px;color:var(--muted);margin-top:4px;}
+.post-comment-input-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.post-comment-input-row .post-comment-avatar{align-self:flex-start;margin-top:4px;}
+.post-comment-input-wrap{flex:1;background:white;border-radius:20px;border:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;}
+.post-comment-input{flex:1;border:none;background:none;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--text);padding:10px 0;outline:none;}
+.post-comment-send{background:none;border:none;color:var(--gold);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0;}
+.post-comment-send:disabled{opacity:0.4;cursor:not-allowed;}
   </style>
 </head>
 <body>
@@ -412,7 +431,34 @@ async function loadGallery(data) {
       else if (show.length===2||show.length===4) imgHtml=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">${show.map((u,i)=>cell(u,i,false)).join('')}</div>`;
       else if (show.length===5) { const top=show.slice(0,2).map((u,i)=>cell(u,i,false)).join(''); const bot=show.slice(2).map((u,i)=>cell(u,i+2,i===2&&rest>0)).join(''); imgHtml=`<div style="border-radius:12px 12px 0 0;overflow:hidden;"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${top}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:2px;">${bot}</div></div>`; }
       else imgHtml=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">${show.map((u,i)=>cell(u,i,i===show.length-1&&rest>0)).join('')}</div>`;
-      return `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);">${imgHtml}${p.content?`<div style="padding:12px 16px;font-size:14px;line-height:1.7;color:var(--text);">${escHtml(p.content)}</div>`:''}<div style="padding:6px 16px 12px;font-size:11px;color:var(--muted);">${date}</div></div>`;
+      return `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);" data-post-id="${p.id}">
+  ${imgHtml}
+  ${p.content ? `<div style="padding:12px 16px;font-size:14px;line-height:1.7;color:var(--text);">${escHtml(p.content)}</div>` : ''}
+  <div style="padding:6px 16px 10px;font-size:11px;color:var(--muted);">${date}</div>
+  <div class="post-actions">
+    <button class="post-action-btn" onclick="togglePostLike(this, '${p.id}')">
+      <span>🤍</span><span class="like-label">좋아요</span>
+    </button>
+    <button class="post-action-btn" onclick="togglePostComments(this, '${p.id}')">
+      <span>💬</span><span>댓글</span>
+    </button>
+  </div>
+  <div class="post-comments-wrap" id="comments-${p.id}">
+    <div class="post-comments-list" id="comments-list-${p.id}">
+      <div style="text-align:center;font-size:12px;color:var(--muted);padding:8px 0;">불러오는 중…</div>
+    </div>
+    <div class="post-comment-input-row">
+      <div class="post-comment-avatar">${getEmojiAvatar(localStorage.getItem('cn_author_name') || '나')}</div>
+      <div class="post-comment-input-wrap">
+        <input class="post-comment-input" placeholder="댓글을 남겨주세요…" maxlength="300"
+          id="comment-input-${p.id}"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitPostComment('${p.id}');}" />
+        <button class="post-comment-send" id="comment-send-${p.id}" onclick="submitPostComment('${p.id}')">➤</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+
     }).join('');
   } catch(e) { grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;">사진을 불러올 수 없어요</div>'; }
 }
@@ -524,7 +570,79 @@ function fmtDateShort(d){return(d.getMonth()+1)+'/'+ d.getDate();}
 function pad(n){return String(Math.max(0,n)).padStart(2,'0');}
 function copyText(t){navigator.clipboard?.writeText(t).then(()=>showToast('복사됐어요 📋')).catch(()=>showToast('복사 실패'));}
 function getEmojiAvatar(n){const e=['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋'];let c=0;for(let i=0;i<n.length;i++)c+=n.charCodeAt(i);return e[c%e.length];}
+// ── POST COMMENTS ────────────────────────────────
+const _postLikes = {};
 
+function togglePostLike(btn, postId) {
+  const key = 'post_like_' + postId;
+  const active = localStorage.getItem(key) !== '1';
+  localStorage.setItem(key, active ? '1' : '0');
+  btn.classList.toggle('active', active);
+  btn.querySelector('span').textContent = active ? '❤️' : '🤍';
+  btn.querySelector('.like-label').textContent = active ? '좋아요 ✓' : '좋아요';
+}
+
+async function togglePostComments(btn, postId) {
+  const wrap = document.getElementById('comments-' + postId);
+  const isOpen = wrap.classList.contains('open');
+  if (isOpen) { wrap.classList.remove('open'); return; }
+  wrap.classList.add('open');
+  await loadPostComments(postId);
+}
+
+async function loadPostComments(postId) {
+  const list = document.getElementById('comments-list-' + postId);
+  try {
+    const res = await fetch('/api/comment?action=post-comment&post_id=' + postId);
+    const data = await res.json();
+    const comments = data.comments || [];
+    if (!comments.length) {
+      list.innerHTML = '<div style="text-align:center;font-size:12px;color:var(--muted);padding:8px 0;">첫 번째 댓글을 남겨보세요 💛</div>';
+      return;
+    }
+    list.innerHTML = comments.map(c => `
+      <div class="post-comment-item">
+        <div class="post-comment-avatar">${getEmojiAvatar(c.author_name || '?')}</div>
+        <div class="post-comment-bubble">
+          <div class="post-comment-name">${escHtml(c.author_name || '익명')}</div>
+          <div class="post-comment-text">${escHtml(c.content_original || '')}</div>
+          <div class="post-comment-date">${c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR',{month:'long',day:'numeric'}) : ''}</div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;font-size:12px;color:var(--muted);">불러올 수 없어요</div>';
+  }
+}
+
+async function submitPostComment(postId) {
+  const input = document.getElementById('comment-input-' + postId);
+  const sendBtn = document.getElementById('comment-send-' + postId);
+  const content = input.value.trim();
+  if (!content) return;
+
+  // 이름 저장/조회 (localStorage 재활용)
+  let authorName = localStorage.getItem('cn_author_name');
+  if (!authorName) {
+    authorName = prompt('이름을 입력해주세요') || '익명';
+    localStorage.setItem('cn_author_name', authorName);
+  }
+
+  sendBtn.disabled = true;
+  try {
+    const res = await fetch('/api/comment?action=post-comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId, house_id: HOUSE_ID, author_name: authorName, content })
+    });
+    if (!res.ok) throw new Error();
+    input.value = '';
+    await loadPostComments(postId);
+  } catch(e) {
+    showToast('댓글 저장에 실패했어요');
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
 init();
 </script>
 </body>
