@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { slug } = req.query;
+  const { slug, owner } = req.query;
   if (!slug) return res.status(400).json({ error: 'slug required' });
 
   const baseUrl = process.env.SUPABASE_URL;
@@ -28,6 +28,13 @@ export default async function handler(req, res) {
   if (!house) return res.status(404).json({ error: '존재하지 않는 집입니다' });
   if (!house.is_public) return res.status(403).json({ error: '비공개 집입니다' });
 
+  // ✅ 보안: owner_key 서버사이드 비교 후 boolean만 반환
+  const is_owner = !!(owner && house.owner_key && owner === house.owner_key);
+
+  // owner_key 제거 후 응답용 house 객체 생성
+  const { owner_key: _removed, ...houseSafe } = house;
+  houseSafe.is_owner = is_owner;
+
   // 병렬 조회
   const [mediaRes, milestonesRes, roomsRes, categoriesRes, postsRes, commentsRes] = await Promise.all([
     fetch(`${baseUrl}/rest/v1/media?house_id=eq.${house.id}&status=eq.approved&order=created_at.desc`, { headers }),
@@ -47,26 +54,25 @@ export default async function handler(req, res) {
     commentsRes.json(),
   ]);
 
-// CHANGE START
-let postsWithCategories = Array.isArray(posts) ? posts : [];
-if (postsWithCategories.length > 0) {
-  const postIds = postsWithCategories.map(p => p.id).join(',');
-  const pcRes = await fetch(
-    `${baseUrl}/rest/v1/post_categories?post_id=in.(${postIds})&select=post_id,category_id`,
-    { headers }
-  );
-  const pcData = await pcRes.json();
-  const pc = Array.isArray(pcData) ? pcData : [];
+  // post_categories 조회 (category_ids 병합)
+  let postsWithCategories = Array.isArray(posts) ? posts : [];
+  if (postsWithCategories.length > 0) {
+    const postIds = postsWithCategories.map(p => p.id).join(',');
+    const pcRes = await fetch(
+      `${baseUrl}/rest/v1/post_categories?post_id=in.(${postIds})&select=post_id,category_id`,
+      { headers }
+    );
+    const pcData = await pcRes.json();
+    const pc = Array.isArray(pcData) ? pcData : [];
 
-  postsWithCategories = postsWithCategories.map(p => ({
-    ...p,
-    category_ids: pc.filter(x => x.post_id === p.id).map(x => x.category_id)
-  }));
-}
-// CHANGE END
+    postsWithCategories = postsWithCategories.map(p => ({
+      ...p,
+      category_ids: pc.filter(x => x.post_id === p.id).map(x => x.category_id)
+    }));
+  }
 
   return res.status(200).json({
-    house,
+    house:      houseSafe,
     media:      Array.isArray(media)      ? media      : [],
     milestones: Array.isArray(milestones) ? milestones : [],
     rooms:      Array.isArray(rooms)      ? rooms      : [],

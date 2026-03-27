@@ -691,14 +691,16 @@ function skipOnboarding() { document.getElementById('onboardOverlay').classList.
 
 async function loadData() {
   try {
-    const res = await fetch(`/api/house?slug=${SLUG}`);
+    const ownerParam = OWNER_KEY ? `&owner=${encodeURIComponent(OWNER_KEY)}` : '';
+    const res = await fetch(`/api/house?slug=${SLUG}${ownerParam}`);
     const data = await res.json();
     if (!data.house) { showToast('집을 찾을 수 없어요'); return; }
     HOUSE_DATA = data.house; HOUSE_ID = data.house.id;
     ROOMS = data.rooms || [];
     CATEGORIES = [...(data.categories || [])];
     allMedia = data.media || []; allPosts = data.posts || [];
-    IS_OWNER = !!(OWNER_KEY && data.house.owner_key && OWNER_KEY === data.house.owner_key);
+    // ✅ 서버가 비교한 결과만 사용 (owner_key 클라이언트 노출 없음)
+    IS_OWNER = !!data.house.is_owner;
     applyHero(data.house);
     initDday(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
@@ -867,7 +869,8 @@ function renderLobby(container, house, milestones, comments, rooms) {
       ${recentPosts.map(p => {
         const tags = (p.category_ids || []).map(cid => { const c = CATEGORIES.find(x => x.id === cid); return c ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${c.color || 'var(--mint)'};color:white;">${c.name}</span>` : ''; }).join('');
         const thumb = (p.media_urls && p.media_urls[0]) ? `<img src="${p.media_urls[0]}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;">` : `<div style="width:52px;height:52px;border-radius:8px;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📝</div>`;
-        return `<div onclick="switchToRoomType('room')"
+        const pd = encodeURIComponent(JSON.stringify({urls: p.media_urls||[], content: p.content, date: p.created_at, category_ids: p.category_ids}));
+        return `<div onclick="openPostModal(JSON.parse(decodeURIComponent('${pd}')))"
             style="display:flex;gap:12px;background:white;border:1px solid rgba(139,94,60,.1);border-radius:14px;padding:12px;cursor:pointer;transition:border-color .2s;"
             onmouseover="this.style.borderColor='var(--brown)'"
             onmouseout="this.style.borderColor='rgba(139,94,60,.1)'">
@@ -1138,24 +1141,48 @@ function closePostModal(e) {
   document.body.style.overflow = '';
 }
 
+// ─── 공통 포스트 카드 렌더러 ───────────────────────────────────────────────
+// opts.showDel   : 삭제 버튼 표시 여부 (기본: IS_OWNER)
+// opts.showTags  : 카테고리 태그 표시 여부 (기본: true)
+// opts.delay     : animation-delay 인덱스 (기본: 0)
+function renderPost(p, opts = {}) {
+  const showDel  = opts.showDel  !== undefined ? opts.showDel  : IS_OWNER;
+  const showTags = opts.showTags !== undefined ? opts.showTags : true;
+  const delay    = opts.delay    || 0;
+
+  const tags = showTags
+    ? (p.category_ids || []).map(cid => {
+        const c = CATEGORIES.find(x => x.id === cid);
+        return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
+      }).join('')
+    : '';
+
+  const imgs    = p.media_urls || [];
+  const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
+  const postData = encodeURIComponent(JSON.stringify({
+    urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
+  }));
+
+  return `<div class="post-item" style="animation-delay:${delay * .05}s;border-radius:18px;overflow:hidden;cursor:pointer;"
+      onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
+    ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
+    ${p.content ? `<div class="post-body" style="padding:${tags ? '8px' : '14px'} 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
+    ${media}
+    <div class="post-foot" style="padding:10px 16px 14px;">
+      <span class="post-time">${timeAgo(p.created_at)}</span>
+      ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
+    </div>
+  </div>`;
+}
+
 function renderPostList(posts) {
-  const el = document.getElementById('postList'); if (!el) return;
-  if (!posts.length) { el.innerHTML = `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${IS_OWNER ? '<br>첫 번째 글을 써보세요!' : ''}</p></div>`; return; }
-  el.innerHTML = posts.map((p, i) => {
-    const tags = (p.category_ids || []).map(cid => { const c = CATEGORIES.find(x => x.id === cid); return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : ''; }).join('');
-    const imgs = p.media_urls || [];
-    const postData = encodeURIComponent(JSON.stringify({urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids}));
-    const media = imgs.length ? renderStoryImgs(imgs, p) : '';
-    return `<div class="post-item" style="animation-delay:${i*.05}s;border-radius:18px;overflow:hidden;cursor:pointer;" onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
-      ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
-      ${p.content ? `<div class="post-body" style="padding:${tags?'8px':'14px'} 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
-      ${media}
-      <div class="post-foot" style="padding:10px 16px 14px;">
-        <span class="post-time">${timeAgo(p.created_at)}</span>
-        ${IS_OWNER ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  const el = document.getElementById('postList');
+  if (!el) return;
+  if (!posts.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${IS_OWNER ? '<br>첫 번째 글을 써보세요!' : ''}</p></div>`;
+    return;
+  }
+  el.innerHTML = posts.map((p, i) => renderPost(p, { delay: i })).join('');
 }
 
 function renderLibrary(container) {
@@ -1177,19 +1204,9 @@ function renderEvent(container, room) {
 
   // 이벤트 방 포스팅
   const eventPosts = allPosts.filter(p => p.room_id === room.id);
-  const postsHtml = eventPosts.length ? eventPosts.map((p, i) => {
-    const imgs = p.media_urls || [];
-    const media = imgs.length ? renderStoryImgs(imgs, p) : '';
-    const postData = encodeURIComponent(JSON.stringify({urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids}));
-    return `<div class="post-item" style="animation-delay:${i*.05}s;border-radius:18px;overflow:hidden;cursor:pointer;" onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
-      ${p.content ? `<div class="post-body" style="padding:14px 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
-      ${media}
-      <div class="post-foot" style="padding:10px 16px 14px;">
-        <span class="post-time">${timeAgo(p.created_at)}</span>
-        ${IS_OWNER ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
-      </div>
-    </div>`;
-  }).join('') : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
+  const postsHtml = eventPosts.length
+    ? eventPosts.map((p, i) => renderPost(p, { delay: i, showTags: false })).join('')
+    : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
 
   container.innerHTML = `<div class="section">
     <div class="ev-header">
