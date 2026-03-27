@@ -35,8 +35,8 @@ export default async function handler(req, res) {
 
     let result = posts;
     if (posts.length > 0) {
-      const postIds = posts.map(p => `post_id=eq.${p.id}`).join(',');
-      const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?or=(${postIds})&select=post_id,category_id`, { headers });
+      const postIds = posts.map(p => p.id).join(',');
+const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${postIds})&select=post_id,category_id`, { headers });
       const pc = await pcRes.json();
       result = posts.map(p => ({
         ...p,
