@@ -950,9 +950,7 @@ function renderRoom(container, room) {
     </div>
   </div>`;
 
-  // 초기 렌더: 이 방(room_type=room)에 속한 포스트만
-  const initPosts = allPosts.filter(p => p.room_id === room.id);
-  renderPostList(initPosts);
+  renderPostList(allPosts);
   if (IS_OWNER) renderEventRoomList();
 }
 
