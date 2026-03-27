@@ -950,7 +950,9 @@ function renderRoom(container, room) {
     </div>
   </div>`;
 
-  renderPostList(allPosts);
+  // 초기 렌더: 이 방(room_type=room)에 속한 포스트만
+  const initPosts = allPosts.filter(p => p.room_id === room.id);
+  renderPostList(initPosts);
   if (IS_OWNER) renderEventRoomList();
 }
 
@@ -1077,7 +1079,6 @@ async function createEventRoom() {
   } catch(e) { showToast('오류가 발생했어요'); }
 }
 
-// CHANGE START
 function filterCat(catId, el) {
   document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
@@ -1087,12 +1088,12 @@ function filterCat(catId, el) {
   const roomPosts = roomObj ? allPosts.filter(p => p.room_id === roomObj.id) : allPosts;
 
   const filtered = activeCat
-    ? roomPosts.filter(p => p.category_ids && p.category_ids.includes(activeCat))
+    // category_ids 값(숫자)과 catId(문자열)를 String()으로 통일 비교
+    ? roomPosts.filter(p => Array.isArray(p.category_ids) && p.category_ids.some(id => String(id) === String(activeCat)))
     : roomPosts;
 
   renderPostList(filtered);
 }
-// CHANGE END
 
 function renderStoryImgs(urls, post) {
   const count = urls.length;
