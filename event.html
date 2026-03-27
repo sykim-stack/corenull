@@ -529,9 +529,29 @@ function toggleInterest() {
 async function loadComments() {
   const list = document.getElementById('guestbook-list');
   try {
-    const res = await fetch('/api/house?slug=' + SLUG);
+    async function loadComments() {
+  const list = document.getElementById('guestbook-list');
+  try {
+    const params = new URLSearchParams({ house_id: HOUSE_ID });
+    if (ROOM_ID) params.set('room_id', ROOM_ID);
+    const res = await fetch('/api/comment?' + params);
     const data = await res.json();
-    const comments = (data.comments || []).filter(c => !ROOM_ID || !c.room_id || c.room_id === ROOM_ID);
+    const comments = data.comments || [];
+    if (!comments.length) {
+      list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">아직 방명록이 없어요. 첫 번째 메시지를 남겨주세요 💛</div>';
+      return;
+    }
+    list.innerHTML = comments.map(c => {
+      const emoji = getEmojiAvatar(c.author_name || '?');
+      const date = c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : '';
+      const photo = c.media_url ? '<div class="comment-photo"><img src="' + c.media_url + '" loading="lazy" onclick="openLightbox(\'' + c.media_url + '\')" /></div>' : '';
+      const text = escHtml(c.content_original || c.content || '');
+      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div><button class="tr-btn" onclick="translateComment(\'' + c.id + '\',\'' + text.replace(/'/g,"\\'") + '\',this)">🌐 번역</button></div><div class="comment-text">' + text + '</div>' + photo + '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;">방명록을 불러올 수 없어요</div>';
+  }
+}
     if (!comments.length) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">아직 방명록이 없어요. 첫 번째 메시지를 남겨주세요 💛</div>'; return; }
     list.innerHTML = comments.map(c => {
       const emoji = getEmojiAvatar(c.author_name||'?');
