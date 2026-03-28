@@ -239,6 +239,36 @@
 .post-modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .post-modal-content{font-size:14px;line-height:1.9;color:var(--text);margin-bottom:8px;white-space:pre-wrap;}
 .post-modal-date{font-size:11px;color:var(--muted);letter-spacing:1px;}
+/* ── 포스트 관심/댓글 버튼 ── */
+.post-action-btn{background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;display:inline-flex;align-items:center;gap:4px;transition:all .2s;}
+.post-action-btn:hover{background:var(--warm);color:var(--brown);}
+.post-action-btn.liked{background:linear-gradient(135deg,#FDE8D8,#F5C6A8);border-color:var(--brown);color:var(--brown);}
+/* ── 포스트 댓글 섹션 (모달 내) ── */
+.pm-comments{border-top:1px solid rgba(139,94,60,.1);padding:16px 18px;}
+.pm-comment-item{display:flex;gap:10px;margin-bottom:14px;}
+.pm-comment-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
+.pm-comment-body{flex:1;}
+.pm-comment-name{font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;}
+.pm-comment-text{font-size:13px;color:var(--text);line-height:1.6;}
+.pm-comment-time{font-size:11px;color:var(--muted);margin-top:2px;}
+.pm-comment-form{display:flex;gap:8px;margin-top:12px;}
+.pm-comment-input{flex:1;background:var(--warm);border:none;border-radius:10px;padding:10px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--dark);outline:none;}
+.pm-comment-submit{background:var(--brown);color:white;border:none;border-radius:10px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;white-space:nowrap;}
+ /* ── 포스트 댓글 인라인 ── */
+.post-cmt-wrap{border-top:1px solid rgba(139,94,60,.08);background:#fdfaf6;overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.post-cmt-wrap.open{max-height:600px;}
+.post-cmt-list{padding:12px 16px 0;}
+.post-cmt-item{display:flex;gap:8px;margin-bottom:12px;}
+.post-cmt-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;}
+.post-cmt-body{flex:1;}
+.post-cmt-name{font-size:11px;font-weight:600;color:var(--dark);}
+.post-cmt-text{font-size:13px;color:var(--text);line-height:1.6;margin-top:1px;}
+.post-cmt-time{font-size:10px;color:var(--muted);margin-top:2px;}
+.post-cmt-form{display:flex;gap:8px;padding:10px 16px 14px;}
+.post-cmt-input{flex:1;background:var(--warm);border:none;border-radius:10px;padding:9px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--dark);outline:none;}
+.post-cmt-submit{background:var(--brown);color:white;border:none;border-radius:10px;padding:9px 14px;font-size:12px;cursor:pointer;font-family:'Gowun Dodum',serif;}
+.post-action-btn{background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;display:inline-flex;align-items:center;gap:4px;transition:all .2s;}
+.post-action-btn:hover{background:var(--warm);color:var(--brown);}
   </style>
 </head>
 <body>
@@ -744,6 +774,10 @@ function renderLobby(container, house, milestones, comments, rooms) {
     <div class="feed-list">${feedHtml}</div>
     <div class="gb-form"><div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div>
   </div>`;
+  setTimeout(() => {
+  const el = document.getElementById('gbAuthor');
+  if (el && !el.value) el.value = localStorage.getItem('cn_nickname') || '';
+}, 50);
 }
 
 // ── RENDER: 방 ──────────────────────────────────────────
@@ -943,25 +977,38 @@ function renderPost(p, opts = {}) {
   const showDel  = opts.showDel  !== undefined ? opts.showDel  : IS_OWNER;
   const showTags = opts.showTags !== undefined ? opts.showTags : true;
   const delay    = opts.delay    || 0;
+
   const tags = showTags
     ? (p.category_ids || []).map(cid => {
         const c = CATEGORIES.find(x => x.id === cid);
         return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
       }).join('')
     : '';
-  const imgs    = p.media_urls || [];
-  const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
+
+  const imgs   = p.media_urls || [];
+  const media  = imgs.length ? renderStoryImgs(imgs, p) : '';
   const postData = encodeURIComponent(JSON.stringify({
-    urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
+    id: p.id, urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
   }));
-  return `<div class="post-item" style="animation-delay:${delay * .05}s;border-radius:18px;overflow:hidden;cursor:pointer;"
-      onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
+  const cmtCount = p.comment_count || 0;
+
+  return `<div class="post-item" style="animation-delay:${delay * .05}s;border-radius:18px;overflow:hidden;padding:0;">
     ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
     ${p.content ? `<div class="post-body" style="padding:${tags ? '8px' : '14px'} 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
     ${media}
-    <div class="post-foot" style="padding:10px 16px 14px;">
-      <span class="post-time">${timeAgo(p.created_at)}</span>
+    <div class="post-foot" style="padding:10px 16px 14px;gap:8px;">
+      <button class="post-action-btn" onclick="event.stopPropagation();togglePostCmt('${p.id}')">
+        💬 <span id="cmt-cnt-${p.id}">${cmtCount > 0 ? cmtCount : '댓글'}</span>
+      </button>
+      <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
       ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
+    </div>
+    <div class="post-cmt-wrap" id="cmt-wrap-${p.id}">
+      <div class="post-cmt-list" id="cmt-list-${p.id}"></div>
+      <div class="post-cmt-form">
+        <input class="post-cmt-input" id="cmt-input-${p.id}" placeholder="댓글… (이름:내용 또는 바로 입력)" onkeydown="if(event.key==='Enter')submitPostCmt('${p.id}')">
+        <button class="post-cmt-submit" onclick="submitPostCmt('${p.id}')">전송</button>
+      </div>
     </div>
   </div>`;
 }
@@ -1118,9 +1165,10 @@ async function submitEdit() { const id = document.getElementById('editMediaId').
 function confirmDelMedia(id) { openConfirm('사진을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => { await fetch('/api/media', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: id, house_id: HOUSE_ID }) }); showToast('삭제됐어요'); await loadData(); }); }
 
 // ── MODAL: 포스트 상세 ──────────────────────────────────
-function openPostModal(item) {
+function openPostModal(item, focusComment = false) {
   if (typeof item === 'string') item = JSON.parse(item);
   const urls = item.urls || [];
+  const postId = item.id || null;
   const first = urls[0];
   const rest  = urls.slice(1);
   const allUrlsStr = JSON.stringify(urls).replace(/"/g, "'");
@@ -1134,8 +1182,32 @@ function openPostModal(item) {
   document.getElementById('postModalTags').innerHTML = tags;
   document.getElementById('postModalContent').textContent = item.content || '';
   document.getElementById('postModalDate').textContent = item.date ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
+
+  // 댓글 섹션 렌더
+  const modalBody = document.getElementById('postModalBody') || document.querySelector('.post-modal-body');
+  let cmtSection = document.getElementById('pm-cmt-section');
+  if (!cmtSection) {
+    cmtSection = document.createElement('div');
+    cmtSection.id = 'pm-cmt-section';
+    cmtSection.className = 'pm-comments';
+    document.querySelector('.post-modal-box').appendChild(cmtSection);
+  }
+  if (postId) {
+    cmtSection.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">댓글 불러오는 중…</div>';
+    loadPostComments(postId, cmtSection);
+  } else {
+    cmtSection.innerHTML = '';
+  }
+
   document.getElementById('postModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  if (focusComment && postId) {
+    setTimeout(() => {
+      const inp = document.getElementById('pm-cmt-input-' + postId);
+      if (inp) inp.focus();
+    }, 400);
+  }
 }
 
 function closePostModal(e) {
@@ -1150,6 +1222,7 @@ function previewGbPhoto(input) { const file = input.files[0]; if (!file) return;
 async function submitGuestbook() {
   const author = document.getElementById('gbAuthor')?.value.trim();
   const content = document.getElementById('gbContent')?.value.trim();
+  if (author) localStorage.setItem('cn_nickname', author);
   if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
   let media_url = null;
   if (gbPhotoB64) {
@@ -1163,6 +1236,7 @@ async function submitGuestbook() {
   try {
     const res = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url }) });
     const data = await res.json();
+    if (author) localStorage.setItem('cn_nickname', author);
     if (res.ok && data.success) { document.getElementById('gbAuthor').value = ''; document.getElementById('gbContent').value = ''; document.getElementById('gbPrevWrap').style.display = 'none'; gbPhotoB64 = null; showToast('메시지가 등록됐어요 💌'); await loadData(); }
     else showToast(data.error || '등록 실패');
   } catch (e) { showToast('오류가 발생했어요'); }
@@ -1289,7 +1363,77 @@ function showTR(id, text, btn) {
   card.appendChild(el);
   btn.textContent = '🌐 숨기기'; btn.disabled = false;
 }
+// ── 포스트 댓글 펼치기/접기 ─────────────────────────
+function togglePostCmt(postId) {
+  const wrap = document.getElementById('cmt-wrap-' + postId);
+  if (!wrap) return;
+  const isOpen = wrap.classList.contains('open');
+  if (!isOpen) {
+    wrap.classList.add('open');
+    loadPostCmts(postId);
+  } else {
+    wrap.classList.remove('open');
+  }
+}
 
+// ── 포스트 댓글 로드 ─────────────────────────────────
+async function loadPostCmts(postId) {
+  const list = document.getElementById('cmt-list-' + postId);
+  if (!list) return;
+  list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0 8px;">불러오는 중…</div>';
+  try {
+    const res = await fetch('/api/comment?post_id=' + postId);
+    const data = await res.json();
+    const cmts = data.comments || [];
+    list.innerHTML = cmts.length
+      ? cmts.map(c => `
+          <div class="post-cmt-item">
+            <div class="post-cmt-av">${(c.author_name || '?')[0]}</div>
+            <div class="post-cmt-body">
+              <div class="post-cmt-name">${c.author_name || '익명'}</div>
+              <div class="post-cmt-text">${(c.content_original || c.content || '').replace(/\n/g, '<br>')}</div>
+              <div class="post-cmt-time">${timeAgo(c.created_at)}</div>
+            </div>
+          </div>`).join('')
+      : '<div style="font-size:12px;color:var(--muted);padding:4px 0 8px;">첫 댓글을 남겨주세요!</div>';
+    // 카운트 업데이트
+    const cntEl = document.getElementById('cmt-cnt-' + postId);
+    if (cntEl) cntEl.textContent = cmts.length > 0 ? cmts.length : '댓글';
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);">불러올 수 없어요</div>';
+  }
+}
+
+// ── 포스트 댓글 제출 ─────────────────────────────────
+async function submitPostCmt(postId) {
+  const input = document.getElementById('cmt-input-' + postId);
+  const raw = input?.value.trim();
+  if (!raw) return;
+
+  let author, content;
+  if (raw.includes(':')) {
+    const idx = raw.indexOf(':');
+    author  = raw.slice(0, idx).trim();
+    content = raw.slice(idx + 1).trim();
+    if (author) localStorage.setItem('cn_nickname', author); // 닉네임 저장
+  } else {
+    author  = localStorage.getItem('cn_nickname') || '익명';
+    content = raw;
+  }
+  if (!content) { showToast('내용을 입력해주세요'); return; }
+
+  try {
+    const res = await fetch('/api/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId, author_name: author, content })
+    });
+    if (!res.ok) throw new Error();
+    input.value = '';
+    showToast('💬 댓글을 남겼어요!');
+    loadPostCmts(postId);
+  } catch(e) { showToast('댓글 등록 실패'); }
+}
 // ── INIT ────────────────────────────────────────────────
 checkOnboarding();
 loadData();
