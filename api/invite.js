@@ -74,8 +74,33 @@ export default async function handler(req, res) {
     console.error('[invite] house INSERT 실패:', e);
     return res.status(500).json({ error: '집 생성 실패', detail: e.message });
   }
+// ── 5. 기본 rooms + categories 자동생성 ──
+try {
+  await fetch(`${baseUrl}/rest/v1/rooms`, {
+    method: 'POST',
+    headers: cnHeaders,
+    body: JSON.stringify([
+      { house_id: house.id, room_name: '마당', room_type: 'yard',    order_num: 1,  is_hidden: true  },
+      { house_id: house.id, room_name: '거실', room_type: 'living',  order_num: 2,  is_hidden: false },
+      { house_id: house.id, room_name: '방',   room_type: 'room',    order_num: 3,  is_hidden: false },
+      { house_id: house.id, room_name: '서재', room_type: 'library', order_num: 4,  is_hidden: false },
+      { house_id: house.id, room_name: '창고', room_type: 'storage', order_num: 99, is_hidden: true  },
+    ])
+  });
+} catch(e) { console.error('[invite] rooms 생성 실패:', e); }
 
-  // ── 5. CoreChat 방 자동생성 ──
+try {
+  await fetch(`${baseUrl}/rest/v1/categories`, {
+    method: 'POST',
+    headers: cnHeaders,
+    body: JSON.stringify([
+      { house_id: house.id, name: '일상', color: '#8FBFAB', order_num: 1 }
+    ])
+  });
+} catch(e) { console.error('[invite] categories 생성 실패:', e); }
+
+// ── 6. CoreChat 방 자동생성 ──
+
   let chatRoom = null;
   try {
     const invite_code = Math.random().toString(36).slice(2, 8).toUpperCase();
