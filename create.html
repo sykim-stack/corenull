@@ -200,8 +200,11 @@ function copyText(elId) {
 }
 
 async function createHouse() {
-  const name = document.getElementById('houseName').value.trim();
+    const name = document.getElementById('houseName').value.trim();
+  const nickname = document.getElementById('userNickname').value.trim();
   if (!name) { showToast('집 이름을 입력해주세요'); return; }
+  // 닉네임 공통 저장 → 거실/이벤트 방명록에서 재사용
+  if (nickname) localStorage.setItem('cn_author_name', nickname);
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
