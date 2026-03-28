@@ -577,9 +577,19 @@ async function loadData() {
     IS_OWNER = !!data.house.is_owner;
     applyHero(data.house);
     initDday(data.house);
-    buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
+
+    // 거실 전용 방명록 (room_id=null)
+    let lobbyComments = [];
+    try {
+      const cr = await fetch(`/api/comment?house_id=${data.house.id}`);
+      const cd = await cr.json();
+      lobbyComments = cd.comments || [];
+    } catch(e) {}
+
+    buildTabs(data.house, data.rooms || [], data.milestones || [], lobbyComments);
+    
     trackVisit(data.house.id);
-    if (IS_OWNER) { document.getElementById('fab').style.display = 'flex'; }
+    if (IS_OWNER) document.getElementById('fab').style.display = 'flex';
   } catch (e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
 }
 
@@ -630,15 +640,18 @@ function buildTabs(house, rooms, milestones, comments) {
   const tabInner = document.getElementById('tabInner');
   const tabContents = document.getElementById('tabContents');
   tabInner.innerHTML = ''; tabContents.innerHTML = '';
+
+  // 이벤트 탭 제외
   const ordered = [
     ...rooms.filter(r => r.room_type === 'living'),
     ...rooms.filter(r => r.room_type === 'room'),
     ...rooms.filter(r => r.room_type === 'library'),
-    ...rooms.filter(r => r.room_type === 'event'),
+    // event 탭 제거
   ].filter(r => r.room_type !== 'storage');
+
   ordered.forEach((room, idx) => {
     const meta = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
-    const label = room.room_type === 'event' ? room.room_name : meta.label;
+    const label = meta.label || room.room_name;
     const tabId = `tab-${room.id}`;
     const btn = document.createElement('button');
     btn.className = 'tab-btn' + (idx === 0 ? ' active' : '');
@@ -651,8 +664,7 @@ function buildTabs(house, rooms, milestones, comments) {
     div.id = tabId;
     tabContents.appendChild(div);
     if (room.room_type === 'living') renderLobby(div, house, milestones, comments, ordered);
-    if (room.room_type === 'room') renderRoom(div, room);
-    if (room.room_type === 'event') renderEvent(div, room);
+    if (room.room_type === 'room')    renderRoom(div, room);
     if (room.room_type === 'library') renderLibrary(div);
   });
 }
@@ -774,7 +786,7 @@ function renderLobby(container, house, milestones, comments, rooms) {
     ${recentPostsHtml}
     <div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length ? comments.length + '개' : ''}</div></div>
     <div class="feed-list">${feedHtml}</div>
-    <div class="gb-form"><div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div><input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 삼촌)"><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div>
+    <div class="gb-form"><div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div><div style="font-size:12px;color:var(--muted);margin-bottom:8px;" id="gbNickLabel"></div><div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div>
   </div>`;
   // 닉네임 자동 채우기
 setTimeout(() => {
@@ -787,7 +799,17 @@ setTimeout(() => {
 // ── RENDER: 방 ──────────────────────────────────────────
 function renderRoom(container, room) {
   currentRoomId = room.id;
-  const chips = CATEGORIES.map(c => `<span class="cat-chip" data-id="${c.id}" onclick="filterCat('${c.id}',this)">${c.name}</span>`).join('');
+
+  // 이벤트 rooms (카테고리 매칭용)
+  const eventRooms = ROOMS.filter(r => r.room_type === 'event');
+
+  // 카테고리 칩 생성
+  const chips = CATEGORIES.map(c => {
+    // 이벤트 카테고리인지 확인 (room_name === category_name)
+    const matchedEvent = eventRooms.find(r => r.room_name === c.name);
+    const eventAttr = matchedEvent ? `data-event-room="${matchedEvent.id}" data-event-name="${matchedEvent.room_name}"` : '';
+    return `<span class="cat-chip" data-id="${c.id}" ${eventAttr} onclick="filterCat('${c.id}',this)">${c.name}</span>`;
+  }).join('');
 
   container.innerHTML = `<div class="section">
     <div class="sec-head">
@@ -800,9 +822,20 @@ function renderRoom(container, room) {
     <div class="cat-bar">
       <span class="cat-chip active" data-id="all" onclick="filterCat('all',this)">전체</span>${chips}
     </div>
+    <!-- 이벤트 페이지 가기 배너 (숨김 기본) -->
+    <div id="eventGoBanner" style="display:none;margin-bottom:16px;background:linear-gradient(135deg,#FEF3DC,#FDE8D8);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:14px 16px;display:none;align-items:center;gap:12px;">
+      <span style="font-size:20px;">🎂</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--dark);" id="eventGoBannerName"></div>
+        <div style="font-size:11px;color:var(--muted);">이벤트 전용 페이지에서 더 자세히 볼 수 있어요</div>
+      </div>
+      <a id="eventGoBtn" href="#" target="_blank"
+        style="background:var(--gold);color:white;border-radius:20px;padding:7px 16px;font-size:12px;text-decoration:none;white-space:nowrap;flex-shrink:0;">페이지 가기 →</a>
+    </div>
     <div class="post-list" id="postList"></div>
   </div>
 
+  <!-- 이벤트 관리 모달 -->
   <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)" style="align-items:center;padding:24px;">
     <div class="modal-box">
       <div class="modal-handle"></div>
@@ -817,7 +850,7 @@ function renderRoom(container, room) {
     </div>
   </div>`;
 
-  renderPostList(allPosts);
+  renderPostList(allPosts.filter(p => p.room_id === room.id));
   if (IS_OWNER) renderEventRoomList();
 }
 
@@ -947,12 +980,27 @@ function filterCat(catId, el) {
   document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   activeCat = catId === 'all' ? null : catId;
+
   const roomObj = ROOMS.find(r => r.room_type === 'room');
   const roomPosts = roomObj ? allPosts.filter(p => p.room_id === roomObj.id) : allPosts;
+
   const filtered = activeCat
     ? roomPosts.filter(p => Array.isArray(p.category_ids) && p.category_ids.some(id => String(id) === String(activeCat)))
     : roomPosts;
+
   renderPostList(filtered);
+
+  // 이벤트 카테고리 배너
+  const banner = document.getElementById('eventGoBanner');
+  if (!banner) return;
+  const eventRoomId = el.dataset.eventRoom;
+  if (eventRoomId) {
+    document.getElementById('eventGoBannerName').textContent = el.dataset.eventName || '';
+    document.getElementById('eventGoBtn').href = `/event?slug=${SLUG}&room=${eventRoomId}`;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
 }
 
 // ── RENDER: 포스트 공통 ─────────────────────────────────
@@ -1223,26 +1271,42 @@ function closePostModal(e) {
 function previewGbPhoto(input) { const file = input.files[0]; if (!file) return; const r = new FileReader(); r.onload = e => { gbPhotoB64 = e.target.result; document.getElementById('gbPrevImg').src = e.target.result; document.getElementById('gbPrevWrap').style.display = 'block'; }; r.readAsDataURL(file); }
 
 async function submitGuestbook() {
-  const author = document.getElementById('gbAuthor')?.value.trim();
   const content = document.getElementById('gbContent')?.value.trim();
-  if (author) localStorage.setItem('cn_nickname', author);
-  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
+  if (!content) { showToast('메시지를 입력해주세요'); return; }
+
+  // 자동닉네임 (event.html 방식 동일)
+  let author = localStorage.getItem('cn_author_name');
+  if (!author) {
+    author = prompt('이름을 입력해주세요') || '익명';
+    localStorage.setItem('cn_author_name', author);
+  }
+
   let media_url = null;
   if (gbPhotoB64) {
     try {
       showToast('사진 업로드 중... ⏳');
-      const blob = await b64Blob(gbPhotoB64); const fd = new FormData(); fd.append('file', blob, 'gb.jpg'); fd.append('upload_preset', 'corenull');
+      const blob = await b64Blob(gbPhotoB64);
+      const fd = new FormData(); fd.append('file', blob, 'gb.jpg'); fd.append('upload_preset', 'corenull');
       const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
       const cl = await cr.json(); if (cl.secure_url) media_url = cl.secure_url;
-    } catch (e) { showToast('사진 업로드 실패'); return; }
+    } catch(e) { showToast('사진 업로드 실패'); return; }
   }
+
   try {
-    const res = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url }) });
+    const res = await fetch('/api/comment', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, media_url })
+      // room_id 없음 → null → 거실 전용
+    });
     const data = await res.json();
-    localStorage.setItem('cn_nickname', author);  // ← 추가
-    if (res.ok && data.success) { document.getElementById('gbAuthor').value = ''; document.getElementById('gbContent').value = ''; document.getElementById('gbPrevWrap').style.display = 'none'; gbPhotoB64 = null; showToast('메시지가 등록됐어요 💌'); await loadData(); }
-    else showToast(data.error || '등록 실패');
-  } catch (e) { showToast('오류가 발생했어요'); }
+    if (res.ok && data.success) {
+      document.getElementById('gbContent').value = '';
+      document.getElementById('gbPrevWrap').style.display = 'none';
+      gbPhotoB64 = null;
+      showToast('메시지가 등록됐어요 💌');
+      await loadData();
+    } else showToast(data.error || '등록 실패');
+  } catch(e) { showToast('오류가 발생했어요'); }
 }
 
 async function deleteComment(id) {
