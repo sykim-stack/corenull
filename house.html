@@ -616,11 +616,20 @@ function applyHero(house) {
   document.getElementById('heroSub').textContent = house.description || '';
   document.getElementById('footerName').textContent = name;
   document.getElementById('footerEi').textContent = cat.emoji;
+
+  const frame = document.getElementById('heroFrame');
+
   if (house.cover_url) {
-    document.getElementById('heroFrame').innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
+    frame.innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
     document.querySelector('.hero').classList.add('has-cover');
   } else {
     document.getElementById('heroPlaceholder').textContent = cat.ph;
+  }
+
+  // ✅ 이 부분이 빠져 있었음
+  if (IS_OWNER) {
+    frame.classList.add('is-owner');
+    frame.onclick = () => document.getElementById('coverInput').click();
   }
 }
 
@@ -1361,7 +1370,10 @@ lbEl.addEventListener('click', e => { if (e.target === lbEl) closeLightbox(); })
 document.addEventListener('keydown', e => { if (!document.getElementById('lightbox').classList.contains('open')) return; if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); if (e.key === 'Escape') closeLightbox(); });
 
 // ── COVER 업로드 ────────────────────────────────────────
-async function uploadCover(input) { const file = input.files[0]; if (!file) return; input.value = ''; showToast('업로드 중... ⏳'); const b64 = await resizeImg(file); const blob = await b64Blob(b64); document.getElementById('heroFrame').innerHTML = `<img src="${b64}" alt="커버"><div class="photo-upload-hint">사진 변경</div>`; try { const fd = new FormData(); fd.append('file', blob, 'cover.jpg'); fd.append('upload_preset', 'corenull'); const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd }); const cl = await cr.json(); if (!cl.secure_url) throw new Error('Cloudinary 실패');
+async function uploadCover(input) { const file = input.files[0]; 
+  if (!file) return; input.value = ''; showToast('업로드 중... ⏳'); 
+  const b64 = await resizeImg(file); const blob = await b64Blob(b64); 
+  document.getElementById('heroFrame').innerHTML = `<img src="${b64}" alt="커버"><div class="photo-upload-hint">사진 변경</div>`; try { const fd = new FormData(); fd.append('file', blob, 'cover.jpg'); fd.append('upload_preset', 'corenull'); const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd }); const cl = await cr.json(); if (!cl.secure_url) throw new Error('Cloudinary 실패');
   const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ action: 'cover', file_url: cl.secure_url, house_id: HOUSE_ID }) });
   const data = await res.json();
