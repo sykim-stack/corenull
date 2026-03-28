@@ -1285,7 +1285,11 @@ async function submitGuestbook() {
   let author = localStorage.getItem('cn_author_name');
   if (!author) {
     author = prompt('이름을 입력해주세요 (한 번만 입력하면 저장돼요)') || '익명';
-    if (author !== '익명') localStorage.setItem('cn_author_name', author);
+    if (author !== '익명') {
+      localStorage.setItem('cn_author_name', author);
+      const el = document.getElementById('gbNickName');
+      if (el) el.textContent = author;
+    }
   }
 
   let media_url = null;
