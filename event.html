@@ -107,25 +107,6 @@
     .lightbox-nav.next{right:12px;}
     .lightbox-counter{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;}
 
-    /* ── 포스트 액션 바 ── */
-    .post-actions{display:flex;align-items:center;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--border);}
-    .post-act-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;display:inline-flex;align-items:center;gap:4px;transition:all 0.2s;}
-    .post-act-btn:hover{background:var(--warm);color:var(--brown);border-color:var(--gold);}
-    .post-act-btn.liked{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border-color:transparent;color:white;}
-    /* ── 포스트 댓글 영역 ── */
-    .post-comments{padding:0 16px 16px;display:none;}
-    .post-comments.open{display:block;}
-    .post-comment-item{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);}
-    .post-comment-item:last-of-type{border-bottom:none;}
-    .post-comment-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--warm),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
-    .post-comment-body{flex:1;}
-    .post-comment-name{font-family:'Nanum Myeongjo',serif;font-size:12px;font-weight:700;color:var(--brown);}
-    .post-comment-text{font-size:13px;color:var(--text);line-height:1.6;margin-top:2px;}
-    .post-comment-form{display:flex;gap:8px;margin-top:10px;}
-    .post-comment-input{flex:1;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--text);background:var(--cream);outline:none;}
-    .post-comment-input:focus{border-color:var(--gold);}
-    .post-comment-submit{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:white;font-family:'Gowun Dodum',serif;font-size:13px;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;}
-
     .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:white;font-size:13px;padding:12px 24px;border-radius:50px;opacity:0;pointer-events:none;transition:all 0.3s ease;z-index:200;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
@@ -346,7 +327,15 @@ async function loadGallery(data) {
   const grid = document.getElementById('gallery-grid');
   grid.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
   try {
-    const res = await fetch(`/api/posts?room_id=${ROOM_ID}`);
+    // 이벤트 방 이름 → 같은 이름의 category_id 찾기
+    const room = ROOM_ID ? (data.rooms || []).find(r => r.id === ROOM_ID) : null;
+    const roomName = room?.room_name;
+    const matchedCat = (data.categories || []).find(c => c.name === roomName);
+
+    let url = `/api/posts?house_id=${HOUSE_ID}`;
+    if (matchedCat) url += `&category_id=${matchedCat.id}`;
+
+    const res = await fetch(url);
     const posts = await res.json();
     if (!Array.isArray(posts) || !posts.length) {
       grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:13px;"><span style="font-size:28px;display:block;margin-bottom:8px;">📷</span>곧 사진이 올라올 예정이에요</div>';
@@ -386,88 +375,16 @@ async function loadGallery(data) {
         imgHtml = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">
           ${show.map((url, i) => cell(url, i, i === show.length - 1 && rest > 0)).join('')}</div>`;
       }
-      const liked = localStorage.getItem('post_like_' + p.id) === '1';
-      const likeCount = parseInt(localStorage.getItem('post_like_count_' + p.id) || '0');
-      const commentCount = parseInt(localStorage.getItem('post_comment_count_' + p.id) || '0');
-      return `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);" id="post-card-${p.id}">
+      return `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);">
         ${imgHtml}
         ${p.content ? `<div style="padding:12px 16px;font-size:14px;line-height:1.7;color:var(--text);">${escHtml(p.content)}</div>` : ''}
-        <div style="padding:4px 16px 0;font-size:11px;color:var(--muted);">${date}</div>
-        <div class="post-actions">
-          <button class="post-act-btn${liked ? ' liked' : ''}" id="like-btn-${p.id}" onclick="togglePostLike('${p.id}')">🌸 관심 <span id="like-count-${p.id}">${likeCount}</span></button>
-          <button class="post-act-btn" onclick="togglePostComments('${p.id}')">💬 댓글 <span id="comment-count-${p.id}">${commentCount}</span></button>
-        </div>
-        <div class="post-comments" id="post-comments-${p.id}">
-          <div id="post-comment-list-${p.id}"></div>
-          <div class="post-comment-form">
-            <input class="post-comment-input" id="post-comment-input-${p.id}" placeholder="댓글을 남겨주세요…" maxlength="200" onkeydown="if(event.key==='Enter')submitPostComment('${p.id}')" />
-            <button class="post-comment-submit" onclick="submitPostComment('${p.id}')">등록</button>
-          </div>
-        </div>
+        <div style="padding:6px 16px 12px;font-size:11px;color:var(--muted);">${date}</div>
       </div>`;
     }).join('');
   } catch(e) {
     console.error(e);
     grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;">사진을 불러올 수 없어요</div>';
   }
-}
-
-// ── 포스트 관심 ───────────────────────────────────
-function togglePostLike(postId) {
-  const likeKey = 'post_like_' + postId;
-  const countKey = 'post_like_count_' + postId;
-  const liked = localStorage.getItem(likeKey) === '1';
-  const count = parseInt(localStorage.getItem(countKey) || '0');
-  const newLiked = !liked;
-  const newCount = newLiked ? count + 1 : Math.max(0, count - 1);
-  localStorage.setItem(likeKey, newLiked ? '1' : '0');
-  localStorage.setItem(countKey, newCount);
-  // 서재 저장 (Phase 1 연동용)
-  const libraryKey = 'library_posts';
-  let library = JSON.parse(localStorage.getItem(libraryKey) || '[]');
-  if (newLiked) { if (!library.includes(postId)) library.push(postId); }
-  else { library = library.filter(id => id !== postId); }
-  localStorage.setItem(libraryKey, JSON.stringify(library));
-  const btn = document.getElementById('like-btn-' + postId);
-  const countEl = document.getElementById('like-count-' + postId);
-  if (btn) btn.classList.toggle('liked', newLiked);
-  if (countEl) countEl.textContent = newCount;
-  showToast(newLiked ? '🌸 관심을 남겼어요!' : '관심을 취소했어요');
-}
-
-// ── 포스트 댓글 ───────────────────────────────────
-function togglePostComments(postId) {
-  const area = document.getElementById('post-comments-' + postId);
-  if (!area) return;
-  const isOpen = area.classList.toggle('open');
-  if (isOpen) renderPostComments(postId);
-}
-
-function renderPostComments(postId) {
-  const list = document.getElementById('post-comment-list-' + postId);
-  if (!list) return;
-  const comments = JSON.parse(localStorage.getItem('post_comments_' + postId) || '[]');
-  if (!comments.length) { list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0;">아직 댓글이 없어요</div>'; return; }
-  list.innerHTML = comments.map(c =>
-    '<div class="post-comment-item"><div class="post-comment-avatar">' + getEmojiAvatar(c.name) + '</div><div class="post-comment-body"><div class="post-comment-name">' + escHtml(c.name) + '</div><div class="post-comment-text">' + escHtml(c.text) + '</div></div></div>'
-  ).join('');
-}
-
-function submitPostComment(postId) {
-  const input = document.getElementById('post-comment-input-' + postId);
-  if (!input) return;
-  const text = input.value.trim();
-  if (!text) { showToast('댓글을 입력해주세요'); return; }
-  const name = localStorage.getItem(NICKNAME_KEY) || generateNickname();
-  const comments = JSON.parse(localStorage.getItem('post_comments_' + postId) || '[]');
-  comments.push({ name, text, ts: Date.now() });
-  localStorage.setItem('post_comments_' + postId, JSON.stringify(comments));
-  localStorage.setItem('post_comment_count_' + postId, comments.length);
-  input.value = '';
-  renderPostComments(postId);
-  const countEl = document.getElementById('comment-count-' + postId);
-  if (countEl) countEl.textContent = comments.length;
-  showToast('댓글을 남겼어요 💬');
 }
 
 // ── INTEREST ─────────────────────────────────────
