@@ -788,14 +788,23 @@ function renderLobby(container, house, milestones, comments, rooms) {
     <div class="feed-list">${feedHtml}</div>
     <div class="gb-form">
       <div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div>
-      <input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 큰아빠)">
+      
       <div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div>
     </div>
   </div>`;
   // 닉네임 표시
   setTimeout(() => {
-    const el = document.getElementById('gbAuthor');
-    if (el) el.value = localStorage.getItem('cn_author_name') || '';
+    const el = document.getElementById('gbNickName');
+    const saved = localStorage.getItem('cn_author_name');
+    if (el) {
+      if (saved) {
+        el.textContent = saved;
+      } else {
+        el.textContent = '이름을 입력하면 저장돼요';
+        el.style.fontStyle = 'italic';
+        el.style.opacity = '0.6';
+      }
+    }
   }, 50);
 }
 
@@ -1274,11 +1283,20 @@ function closePostModal(e) {
 function previewGbPhoto(input) { const file = input.files[0]; if (!file) return; const r = new FileReader(); r.onload = e => { gbPhotoB64 = e.target.result; document.getElementById('gbPrevImg').src = e.target.result; document.getElementById('gbPrevWrap').style.display = 'block'; }; r.readAsDataURL(file); }
 
 async function submitGuestbook() {
-  const author = document.getElementById('gbAuthor')?.value.trim();
   const content = document.getElementById('gbContent')?.value.trim();
-  if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
-  // 이름 localStorage 저장 (재방문 시 자동완성)
-  localStorage.setItem('cn_author_name', author);
+  if (!content) { showToast('메시지를 입력해주세요'); return; }
+
+  // 자동닉네임
+  let author = localStorage.getItem('cn_author_name');
+  if (!author) {
+    author = prompt('이름을 입력해주세요 (한 번만 입력하면 저장돼요)') || '익명';
+    if (author !== '익명') {
+      localStorage.setItem('cn_author_name', author);
+      const el = document.getElementById('gbNickName');
+      if (el) {
+        el.textContent = author;
+        el.style.fontStyle = 'normal';
+        el.style.opacity = '1';
       }
     }
   }
