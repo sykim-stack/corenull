@@ -799,7 +799,16 @@ function renderLobby(container, house, milestones, comments, rooms) {
   // 닉네임 표시
   setTimeout(() => {
     const el = document.getElementById('gbNickName');
-    if (el) el.textContent = localStorage.getItem('cn_author_name') || '이름을 입력하면 저장돼요';
+    const saved = localStorage.getItem('cn_author_name');
+    if (el) {
+      if (saved) {
+        el.textContent = saved;
+      } else {
+        el.textContent = '이름을 입력하면 저장돼요';
+        el.style.fontStyle = 'italic';
+        el.style.opacity = '0.6';
+      }
+    }
   }, 50);
 }
 
@@ -1288,7 +1297,11 @@ async function submitGuestbook() {
     if (author !== '익명') {
       localStorage.setItem('cn_author_name', author);
       const el = document.getElementById('gbNickName');
-      if (el) el.textContent = author;
+      if (el) {
+        el.textContent = author;
+        el.style.fontStyle = 'normal';
+        el.style.opacity = '1';
+      }
     }
   }
 
