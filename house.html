@@ -786,22 +786,21 @@ function renderLobby(container, house, milestones, comments, rooms) {
     ${recentPostsHtml}
     <div class="sec-head" style="margin-bottom:16px;"><div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div><div style="font-size:12px;color:var(--muted);">${comments.length ? comments.length + '개' : ''}</div></div>
     <div class="feed-list">${feedHtml}</div>
-    <div class="gb-form"><div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;" id="gbNickLabel"></div>
-    // 대체 (삽입)
-<div id="gbNickDisplay" style="font-size:12px;color:var(--muted);margin-bottom:8px;padding:4px 0;">
-  ✏️ <span id="gbNickName">${localStorage.getItem('cn_author_name') || '이름을 입력하면 저장돼요'}</span>
-  <button onclick="localStorage.removeItem('cn_author_name');document.getElementById('gbNickName').textContent='이름을 입력하면 저장돼요';" 
-    style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;margin-left:6px;">변경</button>
-</div>
-    <div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div></div>
+    <div class="gb-form">
+      <div class="gb-title" id="gbTitle">${house.category === 'baby' ? house.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div>
+      <div id="gbNickDisplay" style="font-size:12px;color:var(--muted);margin-bottom:8px;padding:4px 0;">
+        ✏️ <span id="gbNickName"></span>
+        <button onclick="localStorage.removeItem('cn_author_name');document.getElementById('gbNickName').textContent='이름을 입력하면 저장돼요';"
+          style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;margin-left:6px;">변경</button>
+      </div>
+      <div class="ai-row"><button class="ai-btn" id="aiKo" onclick="getAiMsg('ko')">✨ 한국어 추천</button><button class="ai-btn" id="aiVi" onclick="getAiMsg('vi')">✨ Gợi ý tiếng Việt</button></div><div class="ai-sugg" id="aiSugg" style="display:none;"></div><textarea class="gb-input gb-textarea" id="gbContent" placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea><div class="gb-actions"><button class="gb-photo-btn" onclick="document.getElementById('gbPhotoInput').click()">📷</button><input type="file" id="gbPhotoInput" accept="image/*" style="display:none" onchange="previewGbPhoto(this)"><button class="gb-submit" onclick="submitGuestbook()">남기기</button></div><div id="gbPrevWrap" style="display:none;margin-top:8px;"><img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;"></div>
+    </div>
   </div>`;
-  // 닉네임 자동 채우기
-setTimeout(() => {
-  const el = document.getElementById('gbAuthor');
-  const saved = localStorage.getItem('cn_nickname');
-  if (el && saved && !el.value) el.value = saved;
-}, 80);
+  // 닉네임 표시
+  setTimeout(() => {
+    const el = document.getElementById('gbNickName');
+    if (el) el.textContent = localStorage.getItem('cn_author_name') || '이름을 입력하면 저장돼요';
+  }, 50);
 }
 
 // ── RENDER: 방 ──────────────────────────────────────────
