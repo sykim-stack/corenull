@@ -327,7 +327,15 @@ async function loadGallery(data) {
   const grid = document.getElementById('gallery-grid');
   grid.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
   try {
-    const res = await fetch(`/api/posts?room_id=${ROOM_ID}`);
+    // 이벤트 방 이름 → 같은 이름의 category_id 찾기
+    const room = ROOM_ID ? (data.rooms || []).find(r => r.id === ROOM_ID) : null;
+    const roomName = room?.room_name;
+    const matchedCat = (data.categories || []).find(c => c.name === roomName);
+
+    let url = `/api/posts?house_id=${HOUSE_ID}`;
+    if (matchedCat) url += `&category_id=${matchedCat.id}`;
+
+    const res = await fetch(url);
     const posts = await res.json();
     if (!Array.isArray(posts) || !posts.length) {
       grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;font-size:13px;"><span style="font-size:28px;display:block;margin-bottom:8px;">📷</span>곧 사진이 올라올 예정이에요</div>';
