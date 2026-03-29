@@ -1,5 +1,6 @@
 // public/tabs/room.js
 import { state } from '../js/common.js';
+import { renderPostList } from '../js/api.js';  // ← 추가
 
 export function renderRoom(container, room) {
   const eventRooms = state.rooms.filter(r => r.room_type === 'event');
