@@ -12,7 +12,8 @@
  
 </head>
 <body>
-
+window.renderPostList = renderPostList;
+window.renderPost = renderPost;
 <!-- ── Hero ───────────────────────────────────────────────────────────────── -->
 <div class="hero">
   <div class="hero-circles"><span></span><span></span><span></span></div>
@@ -928,8 +929,7 @@ window.parseVideoUrl = function(url) {
   if (fb) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}` };
   return null;
 };
-window.renderPostList = renderPostList;
-window.renderPost = renderPost;
+
 // ── Start ─────────────────────────────────────────────────────────────────
 init();
 </script>
