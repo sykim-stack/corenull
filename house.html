@@ -192,10 +192,10 @@ import {
   renderPost, renderPostList, renderStoryImgs,
 } from '/js/common.js';
 
-import { loadHouseData, submitPost, deletePost as apiDeletePost } from '/js/api.js';
-import { renderLobby }   from '/tabs/living.js';
-import { renderRoom, filterCat } from '/tabs/room.js';
-import { renderLibrary } from '/tabs/library.js';
+import { loadHouseData, submitPost, deletePost as apiDeletePost } from '/public/js/api.js';
+import { renderLobby }   from '/public/tabs/living.js';
+import { renderRoom, filterCat } from '/public/tabs/room.js';
+import { renderLibrary } from '/public/tabs/library.js';
 
 // ── 전역 노출 (HTML onclick에서 호출) ──────────────────────────────────────
 window.showToast       = showToast;
