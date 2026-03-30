@@ -915,7 +915,7 @@ function skipOnboarding() { document.getElementById('onboardOverlay').classList.
 function trackVisit(houseId) {
   const ref = new URLSearchParams(location.search).get('ref') || 'direct';
   const invited_by = ref.startsWith('dev_') ? ref : null;
-  fetch('/api/visit', {
+  fetch('/api/house', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
     body: JSON.stringify({ house_id: houseId, room_id: null, ref, invited_by })
   }).catch(() => {});
