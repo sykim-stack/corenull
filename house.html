@@ -197,6 +197,7 @@ import { renderLobby }   from '/public/tabs/living.js';
 import { renderRoom, filterCat, toggleReaction, openPostComment, submitPostComment, deletePostComment, loadReactions } from '/public/tabs/room.js';
  
 // ② window 노출 추가 (기존 window.filterCat 아래에 추가)
+window.loadCommentCounts = loadCommentCounts;
 window.toggleReaction     = toggleReaction;
 window.openPostComment    = openPostComment;
 window.submitPostComment  = submitPostComment;
@@ -206,6 +207,7 @@ window.deletePostComment  = deletePostComment;
 // buildTabs 호출 후 아래 줄 추가:
 const postIds = state.allPosts.map(p => p.id).filter(Boolean);
 loadReactions(postIds);
+loadCommentCounts(postIds);  // 추가
 
 import { renderLibrary } from '/public/tabs/library.js';
 
