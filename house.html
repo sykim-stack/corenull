@@ -195,7 +195,7 @@ import {
 import { loadHouseData, submitPost, deletePost as apiDeletePost } from '/public/js/api.js';
 import { renderLobby }   from '/public/tabs/living.js';
 import { renderRoom, filterCat, toggleReaction, openPostComment, submitPostComment, deletePostComment, loadReactions } from '/public/tabs/room.js';
- 
+window.loadCommentCounts = loadCommentCounts; 
 // ② window 노출 추가 (기존 window.filterCat 아래에 추가)
 window.toggleReaction     = toggleReaction;
 window.openPostComment    = openPostComment;
