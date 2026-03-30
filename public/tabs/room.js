@@ -26,6 +26,7 @@ export function renderRoom(container, room) {
   renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
+  if (postIds.length) loadCommentCounts(postIds);  // 추가
 }
 // ── 댓글 카운트 로드 (집주인만) ───────────────────────────────────────────
 export async function loadCommentCounts(postIds) {
@@ -58,6 +59,7 @@ export function filterCat(catId, btn) {
   renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
+  if (postIds.length) loadCommentCounts(postIds);  // 추가
 }
 
 // ── Reaction 토글 ─────────────────────────────────────────────────────────
