@@ -24,6 +24,8 @@ export function renderRoom(container, room) {
     </div>`;
 
   renderPostList(posts, `roomPostList-${room.id}`);
+
+  // reaction 로드
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
 }
@@ -53,7 +55,12 @@ export async function toggleReaction(postId, btn) {
     const res = await fetch('/api/comment?action=react', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
-      body: JSON.stringify({ house_id: state.houseId, target_id: postId, target_type: 'post', emoji: '❤️' })
+      body: JSON.stringify({
+        house_id: state.houseId,
+        target_id: postId,
+        target_type: 'post',
+        emoji: '❤️'
+      })
     });
     const data = await res.json();
     const count = parseInt(btn.dataset.count || '0');
@@ -69,8 +76,11 @@ export async function toggleReaction(postId, btn) {
       btn.style.background = 'none';
       btn.style.borderColor = 'rgba(139,94,60,.15)';
     }
-  } catch (e) { console.error('reaction 실패', e); }
-  finally { btn.disabled = false; }
+  } catch (e) {
+    console.error('reaction 실패', e);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── Reaction 수 로드 ──────────────────────────────────────────────────────
@@ -78,8 +88,10 @@ export async function loadReactions(postIds) {
   if (!postIds?.length) return;
   await Promise.all(postIds.map(async (id) => {
     try {
-      const res = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`,
-        { headers: { 'x-device-id': DEVICE_ID } });
+      const res = await fetch(
+        `/api/comment?action=react&target_id=${id}&target_type=post`,
+        { headers: { 'x-device-id': DEVICE_ID } }
+      );
       const data = await res.json();
       const btn = document.querySelector(`[data-reaction-id="${id}"]`);
       if (!btn) return;
@@ -95,108 +107,10 @@ export async function loadReactions(postIds) {
   }));
 }
 
-// ── 포스트 댓글 열기 (인스타 방식 인라인) ────────────────────────────────
-export async function openPostComment(postId) {
-  const existing = document.getElementById(`comments-${postId}`);
-
-  // 이미 열려있으면 닫기
-  if (existing) { existing.remove(); return; }
-
-  // 포스트 카드 찾기
-  const btn = document.querySelector(`[data-comment-id="${postId}"]`);
-  const card = btn?.closest('.post-item');
-  if (!card) return;
-
-  // 댓글 영역 생성
-  const wrap = document.createElement('div');
-  wrap.id = `comments-${postId}`;
-  wrap.style.cssText = 'border-top:1px solid rgba(139,94,60,.1);padding:12px 16px;background:rgba(247,238,227,.4);';
-  wrap.innerHTML = `<div id="clist-${postId}" style="margin-bottom:10px;"></div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <input id="cinput-${postId}" placeholder="댓글 달기..."
-        style="flex:1;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:8px 14px;font-size:13px;font-family:'Gowun Dodum',serif;background:white;outline:none;"
-        onkeydown="if(event.key==='Enter')submitPostComment('${postId}')">
-      <button onclick="submitPostComment('${postId}')"
-        style="background:var(--brown);color:white;border:none;border-radius:20px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:'Gowun Dodum',serif;">게시</button>
-    </div>`;
-  card.appendChild(wrap);
-
-  // 댓글 로드
-  await loadPostComments(postId);
+// ── 포스트 댓글 열기 (Phase 1 예정) ──────────────────────────────────────
+export function openPostComment(postId) {
+  showToast('댓글 기능은 곧 추가돼요 💬');
 }
 
-// ── 댓글 로드 ─────────────────────────────────────────────────────────────
-async function loadPostComments(postId) {
-  const el = document.getElementById(`clist-${postId}`);
-  if (!el) return;
-
-  try {
-    const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
-    const data = await res.json();
-    const comments = data.comments || [];
-
-    if (!comments.length) {
-      el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0;">첫 댓글을 남겨보세요 💬</div>`;
-      return;
-    }
-
-    el.innerHTML = comments.map(c => `
-      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;">
-        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
-          ${c.author_name?.charAt(0) || '?'}
-        </div>
-        <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;">
-          <div style="font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;">${escHtml(c.author_name)}</div>
-          <div style="font-size:13px;color:var(--text);">${escHtml(c.content_original)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">${timeAgo(c.created_at)}</div>
-        </div>
-        ${state.isOwner ? `<button onclick="deletePostComment('${c.id}','${postId}')"
-          style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:4px;">🗑️</button>` : ''}
-      </div>`).join('');
-  } catch (e) { console.error('댓글 로드 실패', e); }
-}
-
-// ── 댓글 작성 ─────────────────────────────────────────────────────────────
-export async function submitPostComment(postId) {
-  const input = document.getElementById(`cinput-${postId}`);
-  const content = input?.value.trim();
-  if (!content) return;
-
-  const author = localStorage.getItem('cn_author_name') || '익명';
-  input.value = '';
-  input.disabled = true;
-
-  try {
-    const res = await fetch('/api/comment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: postId })
-    });
-    const data = await res.json();
-    if (data.success) {
-      await loadPostComments(postId);
-      // 댓글 카운트 업데이트
-      const countBtn = document.querySelector(`[data-comment-id="${postId}"]`);
-      if (countBtn) {
-        const cur = parseInt(countBtn.dataset.count || '0') + 1;
-        countBtn.dataset.count = cur;
-        countBtn.innerHTML = `💬 ${cur}`;
-      }
-    } else showToast(data.error || '댓글 등록 실패');
-  } catch (e) { showToast('댓글 등록 실패'); }
-  finally { input.disabled = false; input.focus(); }
-}
-
-// ── 댓글 삭제 ─────────────────────────────────────────────────────────────
-export async function deletePostComment(commentId, postId) {
-  try {
-    const res = await fetch('/api/comment', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
-    });
-    const data = await res.json();
-    if (data.success) await loadPostComments(postId);
-    else showToast(data.error || '삭제 실패');
-  } catch (e) { showToast('삭제 실패'); }
-}
+export function submitPostComment() {}
+export function deletePostComment() {}
