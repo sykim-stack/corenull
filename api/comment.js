@@ -1,206 +1,116 @@
-// public/js/common.js
+// api/comment.js
+// 방명록 (post_id = null) + 포스트 댓글 (post_id = uuid) 통합
 
-// ── 전역 State ────────────────────────────────────────────────────────────────
-export const state = {
-  slug:       location.pathname.replace(/^\//, '') || 'hajun',
-  ownerKey:   new URLSearchParams(location.search).get('owner'),
-  isOwner:    false,
-  houseId:    null,
-  houseData:  null,
-  rooms:      [],
-  categories: [],
-  allMedia:   [],
-  allPosts:   [],
-  // write modal
-  writeFiles:   [],
-  uploadFiles:  [],
-  // lightbox
-  lbImages:  [],
-  lbIndex:   0,
-  // guestbook
-  gbPhotoB64:    null,
-  uploadRoomId:  null,
-  currentRoomId: null,
-  activeCat:     null,
-  selectedInterests: [],
-};
+import { createClient } from '@supabase/supabase-js';
 
-// ── Device ID ─────────────────────────────────────────────────────────────────
-export function getDeviceId() {
-  let id = localStorage.getItem('cn_device_id');
-  if (!id) {
-    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('cn_device_id', id);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── GET ──────────────────────────────────────────────────────────────────
+  if (req.method === 'GET') {
+    const { house_id, post_id } = req.query;
+
+    // 포스트 댓글 조회 (post_id 기준)
+    if (post_id) {
+      const { data, error } = await supabase
+        .schema('corenull')
+        .from('comments')
+        .select('*')
+        .eq('post_id', post_id)
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json({ comments: data });
+    }
+
+    // 방명록 조회 (house_id 기준, post_id = null)
+    if (!house_id) return res.status(400).json({ error: 'house_id or post_id required' });
+    const { data, error } = await supabase
+      .schema('corenull')
+      .from('comments')
+      .select('*')
+      .eq('house_id', house_id)
+      .is('post_id', null)
+      .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ comments: data });
   }
-  return id;
-}
-export const DEVICE_ID = getDeviceId();
 
-// ── 날짜/시간 유틸 ─────────────────────────────────────────────────────────────
-export function fmtDate(str) {
-  if (!str) return '';
-  const d = new Date(str);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
+  // ── POST ─────────────────────────────────────────────────────────────────
+  if (req.method === 'POST') {
+    let { house_id, slug, author_name, content, media_url, post_id } = req.body;
 
-export function timeAgo(str) {
-  const diff = Date.now() - new Date(str).getTime();
-  const m = Math.floor(diff / 60000);
-  const h = Math.floor(m / 60);
-  const d = Math.floor(h / 24);
-  if (d > 0) return `${d}일 전`;
-  if (h > 0) return `${h}시간 전`;
-  if (m > 0) return `${m}분 전`;
-  return '방금';
-}
+    // slug → house_id 변환
+    if (!house_id && slug) {
+      const { data: house, error: hErr } = await supabase
+        .schema('corenull')
+        .from('houses')
+        .select('id')
+        .eq('slug', slug)
+        .single();
+      if (hErr || !house) return res.status(404).json({ error: '집을 찾을 수 없어요' });
+      house_id = house.id;
+    }
 
-// ── 문자열 유틸 ───────────────────────────────────────────────────────────────
-export function escHtml(str) {
-  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+    // post_id → house_id 변환 (포스트 댓글, house_id 없을 때)
+    if (!house_id && post_id) {
+      const { data: post, error: pErr } = await supabase
+        .schema('corenull')
+        .from('posts')
+        .select('house_id')
+        .eq('id', post_id)
+        .single();
+      if (pErr || !post) return res.status(404).json({ error: '포스트를 찾을 수 없어요' });
+      house_id = post.house_id;
+    }
 
-// ── 이미지 유틸 ───────────────────────────────────────────────────────────────
-export async function resizeImg(file, maxW = 1200) {
-  return new Promise(resolve => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const s = Math.min(1, maxW / img.width);
-      const c = document.createElement('canvas');
-      c.width  = img.width  * s;
-      c.height = img.height * s;
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url);
-      resolve(c.toDataURL('image/jpeg', .85));
-    };
-    img.src = url;
-  });
-}
+    if (!house_id || !author_name || !content)
+      return res.status(400).json({ error: 'house_id(또는 slug/post_id), author_name, content required' });
+    if (content.length > 500)
+      return res.status(400).json({ error: '댓글은 500자 이내로 작성해주세요' });
 
-export async function b64Blob(b64) {
-  return await (await fetch(b64)).blob();
-}
+    const isKorean     = /[ㄱ-ㅎ가-힣]/.test(content);
+    const isVietnamese = /[àáảãạăắặằẳẵâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i.test(content);
+    const lang = isKorean ? 'ko' : isVietnamese ? 'vi' : 'other';
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
-export function showToast(msg) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ── Confirm Dialog ────────────────────────────────────────────────────────────
-export function openConfirm(title, sub, onOk) {
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmSub').textContent   = sub;
-  document.getElementById('confirmOk').onclick = () => { closeConfirm(); onOk(); };
-  document.getElementById('confirmOverlay').classList.add('open');
-}
-
-export function closeConfirm() {
-  document.getElementById('confirmOverlay').classList.remove('open');
-}
-
-// ── Modal ─────────────────────────────────────────────────────────────────────
-export function closeModal(id, e) {
-  if (!e || e.target === document.getElementById(id)) {
-    document.getElementById(id)?.classList.remove('open');
+    const { data, error } = await supabase
+      .schema('corenull')
+      .from('comments')
+      .insert({
+        house_id,
+        author_name,
+        content,
+        lang,
+        media_url: media_url || null,
+        post_id:   post_id   || null,   // null = 방명록, uuid = 포스트 댓글
+      })
+      .select()
+      .single();
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ success: true, comment: data });
   }
-}
 
-// ── Post 렌더러 (공통) ────────────────────────────────────────────────────────
-export function renderStoryImgs(urls, post) {
-  const count = urls.length;
-  const img = u => `<img src="${u}" loading="lazy">`;
-  if (count === 1) return `<div class="story-imgs one">${img(urls[0])}</div>`;
-  if (count === 2) return `<div class="story-imgs two">${img(urls[0])}${img(urls[1])}</div>`;
-  if (count === 3) return `<div class="story-imgs three">${img(urls[0])}${img(urls[1])}${img(urls[2])}</div>`;
-  if (count === 4) return `<div class="story-imgs four">${urls.map(img).join('')}</div>`;
-  const show = urls.slice(0, 5);
-  const rest = count - 5;
-  const topImgs = show.slice(0, 2).map(img).join('');
-  const botMid  = show.slice(2, 4).map(img).join('');
-  let lastCell;
-  if (rest > 0) {
-    const cardStr = encodeURIComponent(JSON.stringify({ urls, content: post.content, date: post.created_at, category_ids: post.category_ids }));
-    lastCell = `<div class="more-cell">${img(show[4])}<div class="more-badge" onclick="event.stopPropagation();openPostModal(JSON.parse(decodeURIComponent('${cardStr}')))">+${rest + 1}</div></div>`;
-  } else {
-    lastCell = img(show[4]);
+  // ── DELETE ───────────────────────────────────────────────────────────────
+  if (req.method === 'DELETE') {
+    const { comment_id, house_id } = req.body;
+    if (!comment_id || !house_id)
+      return res.status(400).json({ error: 'comment_id, house_id required' });
+    const { error } = await supabase
+      .schema('corenull')
+      .from('comments')
+      .delete()
+      .eq('id', comment_id)
+      .eq('house_id', house_id);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ success: true });
   }
-  return `<div class="story-imgs many"><div class="row-top">${topImgs}</div><div class="row-bot">${botMid}${lastCell}</div></div>`;
+
+  res.status(405).json({ error: 'Method not allowed' });
 }
-
-export function renderPost(p, opts = {}) {
-  const showDel  = opts.showDel  !== undefined ? opts.showDel  : state.isOwner;
-  const showTags = opts.showTags !== undefined ? opts.showTags : true;
-  const delay    = opts.delay    || 0;
-
-  const tags = showTags
-    ? (p.category_ids || []).map(cid => {
-        const c = state.categories.find(x => x.id === cid);
-        return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
-      }).join('')
-    : '';
-
-  const imgs    = p.media_urls || [];
-  const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
-  const postData = encodeURIComponent(JSON.stringify({
-    urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
-  }));
-
-  return `<div class="post-item" style="animation-delay:${delay * .05}s;border-radius:18px;overflow:hidden;cursor:pointer;"
-      onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
-    ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
-    ${p.content ? `<div class="post-body" style="padding:${tags ? '8px' : '14px'} 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
-    ${media}
-    <div class="post-foot" style="padding:10px 16px 14px;">
-      <span class="post-time">${timeAgo(p.created_at)}</span>
-      ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
-    </div>
-  </div>`;
-}
-
-export function renderPostList(posts, containerId = 'postList') {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!posts.length) {
-    el.innerHTML = `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${state.isOwner ? '<br>첫 번째 글을 써보세요!' : ''}</p></div>`;
-    return;
-  }
-  el.innerHTML = posts.map((p, i) => renderPost(p, { delay: i })).join('');
-}
-
-// ── 상수 ──────────────────────────────────────────────────────────────────────
-export const ROOM_META = {
-  living:  { icon: '🛋️', label: '거실' },
-  room:    { icon: '🚪', label: '방' },
-  library: { icon: '📚', label: '서재' },
-  event:   { icon: '🎂', label: null },
-  storage: { icon: '📦', label: '창고' },
-};
-
-export const MILESTONE_DEFAULTS = {
-  baby: [
-    { title: '태어난 날',      memo: '⭐', milestone_date: '2025-12-22' },
-    { title: '첫 미소',        memo: '😊', milestone_date: null },
-    { title: '백일',           memo: '🎂', milestone_date: '2026-03-31' },
-    { title: '첫 뒤집기',      memo: '🔄', milestone_date: null },
-    { title: '예방접종',       memo: '💉', milestone_date: null },
-    { title: '첫 걸음마',      memo: '👣', milestone_date: null },
-    { title: '첫 단어',        memo: '💬', milestone_date: null },
-    { title: '첫 번째 생일',   memo: '🎁', milestone_date: '2026-12-22' },
-  ],
-  pet:     [{ title: '입양일', memo: '🐾', milestone_date: null }],
-  travel:  [{ title: '첫 여행', memo: '✈️', milestone_date: null }],
-  fitness: [{ title: '시작일', memo: '💪', milestone_date: null }],
-  daily:   [],
-};
-
-export const CAT_META = {
-  baby:    { badge: '👶 BABY HOUSE', emoji: '👶', ph: '👶' },
-  pet:     { badge: '🐾 PET HOUSE',  emoji: '🐾', ph: '🐾' },
-  travel:  { badge: '✈️ TRAVEL',     emoji: '✈️', ph: '✈️' },
-  fitness: { badge: '💪 FITNESS',    emoji: '💪', ph: '💪' },
-  daily:   { badge: '🏠 DAILY',      emoji: '🏠', ph: '🏠' },
-};
