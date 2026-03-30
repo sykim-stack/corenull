@@ -206,6 +206,7 @@ window.deletePostComment  = deletePostComment;
 // buildTabs 호출 후 아래 줄 추가:
 const postIds = state.allPosts.map(p => p.id).filter(Boolean);
 loadReactions(postIds);
+loadCommentCounts(postIds);  // 추가
 
 import { renderLibrary } from '/public/tabs/library.js';
 
