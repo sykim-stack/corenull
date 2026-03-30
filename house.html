@@ -194,7 +194,19 @@ import {
 
 import { loadHouseData, submitPost, deletePost as apiDeletePost } from '/public/js/api.js';
 import { renderLobby }   from '/public/tabs/living.js';
-import { renderRoom, filterCat } from '/public/tabs/room.js';
+import { renderRoom, filterCat, toggleReaction, openPostComment, submitPostComment, deletePostComment, loadReactions } from '/public/tabs/room.js';
+ 
+// ② window 노출 추가 (기존 window.filterCat 아래에 추가)
+window.toggleReaction     = toggleReaction;
+window.openPostComment    = openPostComment;
+window.submitPostComment  = submitPostComment;
+window.deletePostComment  = deletePostComment;
+ 
+// ③ reloadData 함수 안에 loadReactions 호출 추가
+// buildTabs 호출 후 아래 줄 추가:
+const postIds = state.allPosts.map(p => p.id).filter(Boolean);
+loadReactions(postIds);
+
 import { renderLibrary } from '/public/tabs/library.js';
 
 // ── 전역 노출 (HTML onclick에서 호출) ──────────────────────────────────────

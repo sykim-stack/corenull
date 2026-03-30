@@ -1,79 +1,51 @@
-// public/tabs/room.js
-import { state } from '../js/common.js';
+// common.js 의 renderPost 함수만 교체하세요
+// (나머지 코드는 그대로 유지)
 
-export function renderRoom(container, room) {
-  const eventRooms = state.rooms.filter(r => r.room_type === 'event');
+export function renderPost(p, opts = {}) {
+  const showDel      = opts.showDel  !== undefined ? opts.showDel  : state.isOwner;
+  const showTags     = opts.showTags !== undefined ? opts.showTags : true;
+  const showActions  = opts.showActions !== undefined ? opts.showActions : true;
+  const delay        = opts.delay    || 0;
 
-  const chips = state.categories.map(c => {
-    const matchedEvent = eventRooms.find(r => r.room_name === c.name);
-    const eventAttr = matchedEvent
-      ? `data-event-room="${matchedEvent.id}" data-event-name="${matchedEvent.room_name}"`
-      : '';
-    return `<span class="cat-chip" data-id="${c.id}" ${eventAttr} onclick="filterCat('${c.id}',this)">${c.name}</span>`;
-  }).join('');
+  const tags = showTags
+    ? (p.category_ids || []).map(cid => {
+        const c = state.categories.find(x => x.id === cid);
+        return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
+      }).join('')
+    : '';
 
-  container.innerHTML = `<div class="section">
-    <div class="sec-head">
-      <div><div class="sec-label">ROOM</div><div class="sec-title">방 📝</div></div>
-      <div style="display:flex;gap:8px;">
-        ${state.isOwner ? `<button class="more-btn" onclick="openEventMgr()">🎂 이벤트</button>` : ''}
-        ${state.isOwner ? `<button class="more-btn" onclick="openWriteModal()">+ 글쓰기</button>` : ''}
-      </div>
-    </div>
-    <div class="cat-bar">
-      <span class="cat-chip active" data-id="all" onclick="filterCat('all',this)">전체</span>${chips}
-    </div>
-    <div id="eventGoBanner" style="display:none;margin-bottom:16px;background:linear-gradient(135deg,#FEF3DC,#FDE8D8);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:14px 16px;align-items:center;gap:12px;">
-      <span style="font-size:20px;">🎂</span>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:600;color:var(--dark);" id="eventGoBannerName"></div>
-        <div style="font-size:11px;color:var(--muted);">이벤트 전용 페이지에서 더 자세히 볼 수 있어요</div>
-      </div>
-      <a id="eventGoBtn" href="#" target="_blank"
-        style="background:var(--gold);color:white;border-radius:20px;padding:7px 16px;font-size:12px;text-decoration:none;white-space:nowrap;flex-shrink:0;">페이지 가기 →</a>
-    </div>
-    <div class="post-list" id="postList"></div>
-  </div>
+  const imgs    = p.media_urls || [];
+  const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
+  const postData = encodeURIComponent(JSON.stringify({
+    urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
+  }));
 
-  <div class="modal-overlay" id="eventMgrModal" onclick="closeModal('eventMgrModal',event)" style="align-items:center;padding:24px;">
-    <div class="modal-box">
-      <div class="modal-handle"></div>
-      <div class="modal-title">🎂 이벤트 관리</div>
-      <div id="eventRoomList" style="margin-bottom:16px;"></div>
-      <div style="background:var(--warm);border-radius:14px;padding:16px;">
-        <div style="font-size:12px;color:var(--brown);font-weight:600;margin-bottom:10px;">+ 새 이벤트 추가</div>
-        <input class="modal-input" id="newEventName" placeholder="이벤트 이름 (예: 돌잔치)">
-        <input class="modal-input" id="newEventDate" type="date">
-        <button class="modal-submit" style="margin-top:0;" onclick="createEventRoom()">생성</button>
-      </div>
-    </div>
+  // 댓글/관심 버튼 (post.id 있을 때만)
+  const actionBar = (showActions && p.id) ? `
+    <div class="post-actions" style="display:flex;align-items:center;gap:8px;padding:0 16px 14px;">
+      <button class="reaction-btn" data-reaction-id="${p.id}"
+        onclick="event.stopPropagation();toggleReaction('${p.id}',this)"
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        🤍
+      </button>
+      <button class="comment-btn" data-comment-id="${p.id}" data-count="0"
+        onclick="event.stopPropagation();openPostComment('${p.id}')"
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        💬
+      </button>
+      <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
+      ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
+    </div>` : `
+    <div class="post-foot" style="padding:10px 16px 14px;">
+      <span class="post-time">${timeAgo(p.created_at)}</span>
+      ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
+    </div>`;
+
+  return `<div class="post-item" style="animation-delay:${delay * .05}s;border-radius:18px;overflow:hidden;cursor:pointer;"
+      onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))">
+    ${tags ? `<div class="post-tags" style="padding:12px 16px 0;">${tags}</div>` : ''}
+    ${p.content ? `<div class="post-body" style="padding:${tags ? '8px' : '14px'} 16px 0;">${p.content.replace(/\n/g, '<br>')}</div>` : ''}
+    ${media}
+    ${actionBar}
   </div>`;
-
-  renderPostList(state.allPosts.filter(p => p.room_id === room.id));
-  if (state.isOwner) renderEventRoomList();
-}
-
-export function filterCat(catId, el) {
-  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-
-  const roomObj = state.rooms.find(r => r.room_type === 'room');
-  const roomPosts = roomObj ? state.allPosts.filter(p => p.room_id === roomObj.id) : state.allPosts;
-  const filtered = catId === 'all'
-    ? roomPosts
-    : roomPosts.filter(p => Array.isArray(p.category_ids) && p.category_ids.some(id => String(id) === String(catId)));
-
-  renderPostList(filtered);
-
-  // 이벤트 배너
-  const banner = document.getElementById('eventGoBanner');
-  if (!banner) return;
-  const eventRoomId = el.dataset.eventRoom;
-  if (eventRoomId) {
-    document.getElementById('eventGoBannerName').textContent = el.dataset.eventName || '';
-    document.getElementById('eventGoBtn').href = `/event?slug=${state.slug}&room=${eventRoomId}`;
-    banner.style.display = 'flex';
-  } else {
-    banner.style.display = 'none';
-  }
 }
