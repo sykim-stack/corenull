@@ -15,22 +15,24 @@ export default async function handler(req, res) {
 
     // GET: 특정 target의 reaction 수
     if (req.method === 'GET') {
-      const { target_id, target_type } = req.query;
-      if (!target_id || !target_type) return res.status(400).json({ error: 'target_id, target_type required' });
+  const { house_id, room_id, post_id } = req.query;
+  if (!house_id) return res.status(400).json({ error: 'house_id required' });
 
-      const { data, error } = await supabase
-        .schema('corenull')
-        .from('reactions')
-        .select('id, emoji, device_id')
-        .eq('target_id', target_id)
-        .eq('target_type', target_type);
+  let query = supabase
+    .schema('corenull')
+    .from('comments')
+    .select('*')
+    .eq('house_id', house_id)
+    .order('created_at', { ascending: true }); // 댓글은 오래된 순
 
-      if (error) return res.status(500).json({ error: error.message });
+  if (post_id) query = query.eq('post_id', post_id);
+  else if (room_id) query = query.eq('room_id', room_id);
+  else query = query.is('room_id', null).is('post_id', null);
 
-      const count = data.length;
-      const reacted = data.some(r => r.device_id === device_id);
-      return res.status(200).json({ count, reacted });
-    }
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(200).json({ comments: data });
+}
 
     // POST: toggle
     if (req.method === 'POST') {
@@ -102,13 +104,14 @@ export default async function handler(req, res) {
     const lang = isKorean ? 'ko' : isVietnamese ? 'vi' : 'other';
 
     const { data, error } = await supabase
-      .schema('corenull').from('comments').insert({
-        house_id, author_name,
-        content_original: content,
-        lang,
-        media_url: media_url || null,
-        room_id: room_id || null,
-      }).select().single();
+  .schema('corenull').from('comments').insert({
+    house_id, author_name,
+    content_original: content,
+    lang,
+    media_url: media_url || null,
+    room_id: room_id || null,
+    post_id: post_id || null,  // 추가
+  }).select().single();
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ success: true, comment: data });
