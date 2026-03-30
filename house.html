@@ -930,8 +930,7 @@ async function reloadData() {
     // 여기 추가
     const postIds = state.allPosts.map(p => p.id).filter(Boolean);
     loadReactions(postIds);
-    loadCommentCounts(postIds);  // 추가
-  } catch (e) { console.error(e); }
+     } catch (e) { console.error(e); }
 }
 
 // ── Video URL 파서 ────────────────────────────────────────────────────────
