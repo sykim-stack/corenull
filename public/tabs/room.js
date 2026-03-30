@@ -27,6 +27,21 @@ export function renderRoom(container, room) {
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
 }
+// ── 댓글 카운트 로드 (집주인만) ───────────────────────────────────────────
+export async function loadCommentCounts(postIds) {
+  if (!postIds?.length || !state.isOwner) return;
+  await Promise.all(postIds.map(async (id) => {
+    try {
+      const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
+      const data = await res.json();
+      const count = (data.comments || []).length;
+      const btn = document.querySelector(`[data-comment-id="${id}"]`);
+      if (!btn || count === 0) return;
+      btn.dataset.count = count;
+      btn.innerHTML = `💬 ${count}`;
+    } catch (e) {}
+  }));
+}
 
 // ── 카테고리 필터 ─────────────────────────────────────────────────────────
 export function filterCat(catId, btn) {
