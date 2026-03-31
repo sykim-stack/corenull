@@ -7,125 +7,90 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-device-id');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { action } = req.query;
-
-  // ── reaction ─────────────────────────────────────
-  if (action === 'react') {
-    const device_id = req.headers['x-device-id'] || 'anon';
-
-    // GET: 특정 target의 reaction 수
-    if (req.method === 'GET') {
-  const { house_id, room_id, post_id } = req.query;
-  if (!house_id) return res.status(400).json({ error: 'house_id required' });
-
-  let query = supabase
-    .schema('corenull')
-    .from('comments')
-    .select('*')
-    .eq('house_id', house_id)
-    .order('created_at', { ascending: true }); // 댓글은 오래된 순
-
-  if (post_id) query = query.eq('post_id', post_id);
-  else if (room_id) query = query.eq('room_id', room_id);
-  else query = query.is('room_id', null).is('post_id', null);
-
-  const { data, error } = await query;
-  if (error) return res.status(500).json({ error: error.message });
-  return res.status(200).json({ comments: data });
-}
-
-    // POST: toggle
-    if (req.method === 'POST') {
-      const { house_id, target_id, target_type, emoji } = req.body;
-      if (!house_id || !target_id || !target_type) return res.status(400).json({ error: '필수값 누락' });
-
-      // 이미 있으면 삭제, 없으면 추가
-      const { data: existing } = await supabase
-        .schema('corenull')
-        .from('reactions')
-        .select('id')
-        .eq('target_id', target_id)
-        .eq('target_type', target_type)
-        .eq('device_id', device_id)
-        .single();
-
-      if (existing) {
-        await supabase.schema('corenull').from('reactions').delete().eq('id', existing.id);
-        return res.status(200).json({ reacted: false });
-      } else {
-        await supabase.schema('corenull').from('reactions').insert({
-          house_id, target_id, target_type,
-          device_id, emoji: emoji || '❤️'
-        });
-        return res.status(200).json({ reacted: true });
-      }
-    }
-  }
-
-  // ── GET: 방명록/댓글 조회 ─────────────────────────
+  // ── GET ──────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
-    const { house_id, room_id } = req.query;
-    if (!house_id) return res.status(400).json({ error: 'house_id required' });
+    const { house_id, post_id, room_id } = req.query;
 
+    // 포스트 댓글 조회 (post_id 기준)
+    if (post_id) {
+      const { data, error } = await supabase
+        .schema('corenull')
+        .from('comments')
+        .select('*')
+        .eq('post_id', post_id)
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json({ comments: data });
+    }
+
+    // 방명록 조회 (house_id 기준, post_id = null)
+    if (!house_id) return res.status(400).json({ error: 'house_id or post_id required' });
     let query = supabase
       .schema('corenull')
       .from('comments')
       .select('*')
       .eq('house_id', house_id)
+      .is('post_id', null)
       .order('created_at', { ascending: false });
-
     if (room_id) query = query.eq('room_id', room_id);
-    else query = query.is('room_id', null);
 
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ comments: data });
   }
 
-  // ── POST: 방명록/댓글 작성 ────────────────────────
+  // ── POST ─────────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
-    let { house_id, slug, author_name, content, media_url, room_id } = req.body;
+    let { house_id, slug, author_name, content, media_url, room_id, post_id } = req.body;
 
+    // slug → house_id 변환
     if (!house_id && slug) {
-      const { data: houses, error: hErr } = await supabase
+      const { data: house, error: hErr } = await supabase
         .schema('corenull').from('houses').select('id').eq('slug', slug).single();
-      if (hErr || !houses) return res.status(404).json({ error: '집을 찾을 수 없어요' });
-      house_id = houses.id;
+      if (hErr || !house) return res.status(404).json({ error: '집을 찾을 수 없어요' });
+      house_id = house.id;
+    }
+
+    // post_id → house_id 변환
+    if (!house_id && post_id) {
+      const { data: post, error: pErr } = await supabase
+        .schema('corenull').from('posts').select('house_id').eq('id', post_id).single();
+      if (pErr || !post) return res.status(404).json({ error: '포스트를 찾을 수 없어요' });
+      house_id = post.house_id;
     }
 
     if (!house_id || !author_name || !content)
-      return res.status(400).json({ error: 'house_id(또는 slug), author_name, content required' });
-
+      return res.status(400).json({ error: 'house_id(또는 slug/post_id), author_name, content required' });
     if (content.length > 500)
       return res.status(400).json({ error: '댓글은 500자 이내로 작성해주세요' });
 
-    const isKorean = /[ㄱ-ㅎ가-힣]/.test(content);
+    const isKorean     = /[ㄱ-ㅎ가-힣]/.test(content);
     const isVietnamese = /[àáảãạăắặằẳẵâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i.test(content);
     const lang = isKorean ? 'ko' : isVietnamese ? 'vi' : 'other';
 
     const { data, error } = await supabase
-  .schema('corenull').from('comments').insert({
-    house_id, author_name,
-    content,
-    lang,
-    media_url: media_url || null,
-    room_id: room_id || null,
-    post_id: post_id || null,  // 추가
-  }).select().single();
+      .schema('corenull').from('comments').insert({
+        house_id,
+        author_name,
+        content,
+        lang,
+        media_url: media_url || null,
+        room_id:   room_id   || null,
+        post_id:   post_id   || null,
+      }).select().single();
 
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ success: true, comment: data });
   }
 
-  // ── DELETE ────────────────────────────────────────
+  // ── DELETE ───────────────────────────────────────────────────────────────
   if (req.method === 'DELETE') {
     const { comment_id, house_id } = req.body;
-    if (!comment_id || !house_id) return res.status(400).json({ error: 'comment_id, house_id required' });
-
+    if (!comment_id || !house_id)
+      return res.status(400).json({ error: 'comment_id, house_id required' });
     const { error } = await supabase
       .schema('corenull').from('comments').delete()
       .eq('id', comment_id).eq('house_id', house_id);
-
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ success: true });
   }
