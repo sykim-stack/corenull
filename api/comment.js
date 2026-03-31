@@ -106,7 +106,7 @@ export default async function handler(req, res) {
     const { data, error } = await supabase
   .schema('corenull').from('comments').insert({
     house_id, author_name,
-    content_original: content,
+    content,
     lang,
     media_url: media_url || null,
     room_id: room_id || null,

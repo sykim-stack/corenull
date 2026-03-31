@@ -109,7 +109,7 @@ export async function renderLobby(container, house, milestones, comments, rooms)
 
   // 방명록 피드
   const feedHtml = comments.length ? comments.map((c, i) => {
-    const txt = (c.content_original || '').replace(/'/g,"&#39;").replace(/`/g,"&#96;");
+    const txt = (c.content || '').replace(/'/g,"&#39;").replace(/`/g,"&#96;");
     return `<div class="feed-item" style="animation-delay:${i*.06}s">
       <div class="feed-head">
         <div class="feed-av">${(c.author_name||'?')[0]}</div>
@@ -120,7 +120,7 @@ export async function renderLobby(container, house, milestones, comments, rooms)
           style="background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:4px;">🌐 번역</button>
       </div>
       ${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}
-      <div class="feed-body">${(c.content_original||'').replace(/\n/g,'<br>')}</div>
+      <div class="feed-body">${(c.content||'').replace(/\n/g,'<br>')}</div>
       <div class="feed-time">${timeAgo(c.created_at)}</div>
     </div>`;
   }).join('')
