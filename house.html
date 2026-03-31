@@ -250,7 +250,24 @@ window.saveEditEventRoom = saveEditEventRoom;
 window.deleteEventRoom = deleteEventRoom;
 window.renderEventRoomList = renderEventRoomList;
 window.uploadCover     = uploadCover;
-window.shareKakao      = shareKakao;
+window.shareKakao = () => coreShareKakao({
+  name       : state.houseData?.name || state.slug,
+  description: state.houseData?.description,
+  cover_url  : state.houseData?.cover_url,
+  url        : location.href
+});
+window.shareZalo  = () => coreShareZalo({
+  name       : state.houseData?.name || state.slug,
+  description: state.houseData?.description,
+  cover_url  : state.houseData?.cover_url,
+  url        : location.href
+});
+window.copyLink   = () => coreCopyLink({
+  name       : state.houseData?.name || state.slug,
+  description: state.houseData?.description,
+  cover_url  : state.houseData?.cover_url,
+  url        : location.href
+});
 window.shareZalo       = shareZalo;
 window.copyLink        = copyLink;
 
