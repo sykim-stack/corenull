@@ -53,3 +53,25 @@ export async function uploadCoverImage(file) {
   const blob = await b64Blob(b64);
   return uploadOne(blob);
 }
+/**
+ * house.html onclick용 커버 업로드 래퍼
+ * @param {HTMLInputElement} input
+ * @param {{ houseId, ownerKey, isOwner }} state
+ * @param {function} showToast
+ * @param {function} reloadData
+ */
+export async function uploadCover(input, state, showToast, reloadData) {
+  if (!state.isOwner) return;
+  const file = input.files[0]; if (!file) return;
+  showToast('커버 업로드 중... ⏳');
+  try {
+    const cover_url = await uploadCoverImage(file);
+    const res = await fetch('/api/cover', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, cover_url })
+    });
+    const data = await res.json();
+    if (data.success) { showToast('커버가 변경됐어요 ✅'); await reloadData(); }
+    else showToast(data.error || '커버 변경 실패');
+  } catch { showToast('업로드 실패'); }
+}
