@@ -858,17 +858,6 @@ function openUploadModal(roomId) {
   document.getElementById('uploadModal').classList.add('open');
 }
 // ── 사진 업로드 ───────────────────────────────────────────────────────────
-function openUploadModal(roomId) {
-  state.uploadRoomId = roomId;
-  state.uploadFiles  = [];
-  document.getElementById('uploadInput').value            = '';
-  document.getElementById('uploadPrevWrap').style.display = 'none';
-  document.getElementById('uploadContent').value          = '';
-  document.getElementById('uploadDate').value             = new Date().toISOString().split('T')[0];
-  document.getElementById('uploadProgWrap').style.display = 'none';
-  document.getElementById('uploadModal').classList.add('open');
-}
-
 async function handleUploadSelect(input) {
   state.uploadFiles = [...input.files].slice(0, 10);
   const wrap  = document.getElementById('uploadPrevWrap');
