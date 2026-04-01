@@ -263,7 +263,10 @@ window.shareZalo  = () => coreShareZalo({
   url        : location.href
 });
 window.copyLink   = () => coreCopyLink({
-
+  name       : state.houseData?.name || state.slug,
+  description: state.houseData?.description,
+  cover_url  : state.houseData?.cover_url,
+  url        : location.href
 });
 window.shareZalo       = shareZalo;
 window.copyLink        = copyLink;
