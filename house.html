@@ -307,14 +307,10 @@ async function init() {
 
 // ── Hero ──────────────────────────────────────────────────────────────────
 function applyHero(house) {
-  const cat  = CAT_META[house.category] || CAT_META['daily'];
-  const name = house.name || state.slug;
-  document.title = `${name} · CoreNull`;
-  document.getElementById('heroBadge').textContent  = cat.badge;
-  document.getElementById('heroName').textContent   = name;
-  document.getElementById('heroSub').textContent    = house.description || '';
-  document.getElementById('footerName').textContent = name;
-  document.getElementById('footerEi').textContent   = cat.emoji;
+document.getElementById('heroName').textContent    = name;
+document.getElementById('heroSub')  && (document.getElementById('heroSub').textContent = house.description || '');
+document.getElementById('footerName').textContent  = name;
+document.getElementById('footerEi').textContent    = cat.emoji;
   if (house.cover_url) {
     document.getElementById('heroFrame').innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
     document.querySelector('.hero').classList.add('has-cover');
