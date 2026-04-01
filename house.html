@@ -219,18 +219,15 @@ import { openEventMgr, renderEventRoomList, openEditEventRoom, saveEditEventRoom
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
-// common
 window.showToast          = showToast;
 window.openConfirm        = openConfirm;
 window.closeConfirm       = closeConfirm;
 window.closeModal         = closeModal;
 window.fmtDate            = fmtDate;
 window.timeAgo            = timeAgo;
-// renderer
 window.renderPost         = renderPost;
 window.renderPostList     = renderPostList;
 window.renderStoryImgs    = renderStoryImgs;
-// tabs
 window.filterCat          = filterCat;
 window.toggleReaction     = toggleReaction;
 window.openPostComment    = openPostComment;
@@ -238,7 +235,6 @@ window.submitPostComment  = submitPostComment;
 window.deletePostComment  = deletePostComment;
 window.switchTab          = switchTab;
 window.switchToRoomType   = switchToRoomType;
-// post modal / lightbox
 window.openPostModal      = openPostModal;
 window.closePostModal     = closePostModal;
 window.openLightbox       = openLightbox;
@@ -246,11 +242,9 @@ window.closeLightbox      = closeLightbox;
 window.lbPrev             = lbPrev;
 window.lbNext             = lbNext;
 window.lbGoTo             = lbGoTo;
-// write
 window.openWriteModal     = openWriteModal;
 window.handleWritePhoto   = handleWritePhoto;
 window.submitWrite        = () => coreSubmitWrite(reloadData);
-// upload
 window.openUploadModal    = openUploadModal;
 window.handleUploadSelect = handleUploadSelect;
 window.submitUpload       = submitUpload;
@@ -258,34 +252,24 @@ window.submitEdit         = submitEdit;
 window.submitVideo        = submitVideo;
 window.confirmDelMedia    = confirmDelMedia;
 window.openEditModal      = openEditModal;
-// guestbook
 window.previewGbPhoto     = previewGbPhoto;
 window.submitGuestbook    = () => coreSubmitGuestbook(reloadData);
 window.deleteComment      = (id) => coreDeleteComment(id, reloadData);
 window.getAiMsg           = getAiMsg;
 window.translateComment   = translateComment;
-// post 삭제
 window.deletePost         = deletePost;
-// event-mgr
 window.openEventMgr          = openEventMgr;
 window.renderEventRoomList   = renderEventRoomList;
 window.openEditEventRoom     = openEditEventRoom;
 window.saveEditEventRoom     = (id) => coreSaveEditEventRoom(id, reloadData);
 window.createEventRoom       = () => coreCreateEventRoom(reloadData);
 window.deleteEventRoom       = (id) => coreDeleteEventRoom(id, reloadData);
-// onboarding
 window.toggleInterest     = toggleInterest;
 window.goStepHouse        = goStepHouse;
 window.joinCurrentHouse   = joinCurrentHouse;
 window.skipOnboarding     = skipOnboarding;
-// cover / share
 window.uploadCover        = (input) => uploadCover(input, state, showToast, reloadData);
-window.shareKakao         = () => coreShareKakao({
-  name: state.houseData?.name || state.slug,
-  description: state.houseData?.description,
-  cover_url: state.houseData?.cover_url,
-  url: location.href
-});
+window.shareKakao         = () => coreShareKakao({ name: state.houseData?.name || state.slug, description: state.houseData?.description, cover_url: state.houseData?.cover_url, url: location.href });
 window.shareZalo          = () => coreShareZalo(location.href);
 window.copyLink           = () => coreCopyLink(location.href, showToast);
 window.parseVideoUrl      = parseVideoUrl;
@@ -305,21 +289,47 @@ async function init() {
   }
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────
+// ── applyHero ─────────────────────────────────────────────────────────────
 function applyHero(house) {
-document.getElementById('heroName').textContent    = name;
-document.getElementById('heroSub')  && (document.getElementById('heroSub').textContent = house.description || '');
-document.getElementById('footerName').textContent  = name;
-document.getElementById('footerEi').textContent    = cat.emoji;
+  const cat  = CAT_META[house.category] || CAT_META['daily'];
+  const name = house.name || state.slug;
+  document.title = `${name} · CoreNull`;
+
+  document.getElementById('heroName').textContent   = name;
+  document.getElementById('heroSub').textContent    = house.description || '';
+  document.getElementById('footerName').textContent = name;
+  document.getElementById('footerEi').textContent   = cat.emoji;
+
+  const coverImg  = document.getElementById('coverImg');
+  const coverWrap = document.getElementById('coverWrap');
   if (house.cover_url) {
-    document.getElementById('heroFrame').innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
-    document.querySelector('.hero').classList.add('has-cover');
+    coverImg.style.backgroundImage = `url(${house.cover_url})`;
   } else {
-    document.getElementById('heroPlaceholder').textContent = cat.ph;
+    coverWrap.insertAdjacentHTML('beforeend',
+      `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`
+    );
   }
-  if (state.isOwner) document.getElementById('heroFrame').classList.add('is-owner');
+  if (state.isOwner) {
+    const editBtn = document.createElement('button');
+    editBtn.className   = 'cover-edit-btn';
+    editBtn.textContent = '📷 커버 수정';
+    editBtn.onclick     = () => document.getElementById('coverInput').click();
+    coverWrap.appendChild(editBtn);
+  }
+
+  const photo = document.getElementById('profilePhoto');
+  if (house.cover_url) {
+    photo.innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
+  } else {
+    document.getElementById('profilePlaceholder').textContent = cat.ph;
+  }
+  if (state.isOwner) {
+    photo.classList.add('is-owner');
+    photo.onclick = () => document.getElementById('coverInput').click();
+  }
 }
 
+// ── initDday ──────────────────────────────────────────────────────────────
 function initDday(house) {
   if (!house.birth_date && !house.start_date) return;
   const start   = new Date(house.birth_date || house.start_date), now = new Date();
@@ -338,11 +348,11 @@ function initDday(house) {
   ).join('');
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────────────
+// ── buildTabs ─────────────────────────────────────────────────────────────
 function buildTabs(house, rooms, milestones, comments) {
-  const tabInner    = document.getElementById('tabInner');
+  const topTabs     = document.getElementById('topTabs');
   const tabContents = document.getElementById('tabContents');
-  tabInner.innerHTML = ''; tabContents.innerHTML = '';
+  topTabs.innerHTML = ''; tabContents.innerHTML = '';
 
   const ordered = [
     ...rooms.filter(r => r.room_type === 'living'),
@@ -357,12 +367,12 @@ function buildTabs(house, rooms, milestones, comments) {
     const tabId = `tab-${room.id}`;
 
     const btn = document.createElement('button');
-    btn.className   = 'tab-btn' + (idx === 0 ? ' active' : '');
-    btn.innerHTML   = `<span class="ti">${meta.icon}</span>${label}`;
-    btn.dataset.tab = tabId;
-    btn.dataset.room = room.room_type;  // ← 이 줄 추가
-    btn.onclick     = () => switchTab(tabId);
-    tabInner.appendChild(btn);
+    btn.className    = 'top-tab-btn' + (idx === 0 ? ' active' : '');
+    btn.innerHTML    = `<span class="ti">${meta.icon}</span>${label}`;
+    btn.dataset.tab  = tabId;
+    btn.dataset.room = room.room_type;
+    btn.onclick      = () => switchTab(tabId);
+    topTabs.appendChild(btn);
 
     const div = document.createElement('div');
     div.className = 'tab-content' + (idx === 0 ? ' active' : '');
@@ -376,11 +386,12 @@ function buildTabs(house, rooms, milestones, comments) {
   });
 }
 
+// ── switchTab ─────────────────────────────────────────────────────────────
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.top-tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById(tabId)?.classList.add('active');
-  const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.dataset.tab === tabId);
+  const btn = [...document.querySelectorAll('.top-tab-btn')].find(b => b.dataset.tab === tabId);
   if (btn) btn.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -390,7 +401,7 @@ function switchToRoomType(type) {
   if (r) switchTab(`tab-${r.id}`);
 }
 
-// ── Event Tab ─────────────────────────────────────────────────────────────
+// ── renderEvent ───────────────────────────────────────────────────────────
 function renderEvent(container, room) {
   const diff     = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
   const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
@@ -430,7 +441,7 @@ function renderEvent(container, room) {
   </div>`;
 }
 
-// ── Post Modal ────────────────────────────────────────────────────────────
+// ── openPostModal ─────────────────────────────────────────────────────────
 function openPostModal(item) {
   if (typeof item === 'string') item = JSON.parse(item);
   const urls = item.urls || [];
@@ -489,17 +500,17 @@ function closeLightbox() {
 function openUploadModal(roomId) {
   state.uploadRoomId = roomId;
   state.uploadFiles  = [];
-  document.getElementById('uploadInput').value          = '';
+  document.getElementById('uploadInput').value            = '';
   document.getElementById('uploadPrevWrap').style.display = 'none';
-  document.getElementById('uploadContent').value        = '';
-  document.getElementById('uploadDate').value           = new Date().toISOString().split('T')[0];
+  document.getElementById('uploadContent').value          = '';
+  document.getElementById('uploadDate').value             = new Date().toISOString().split('T')[0];
   document.getElementById('uploadProgWrap').style.display = 'none';
   document.getElementById('uploadModal').classList.add('open');
 }
 
 async function handleUploadSelect(input) {
   state.uploadFiles = [...input.files].slice(0, 10);
-  const wrap = document.getElementById('uploadPrevWrap');
+  const wrap  = document.getElementById('uploadPrevWrap');
   const cells = document.getElementById('uploadPrevCells');
   cells.innerHTML = '';
   for (const f of state.uploadFiles) {
@@ -516,8 +527,8 @@ async function submitUpload() {
   const btn = document.getElementById('uploadSubmit'); btn.disabled = true;
   document.getElementById('uploadProgWrap').style.display = 'block';
   const urls = await uploadMany(state.uploadFiles, ({ current, total, percent }) => {
-    document.getElementById('uploadProgFill').style.width  = `${percent}%`;
-    document.getElementById('uploadProgText').textContent  = `${current}/${total} 업로드 중...`;
+    document.getElementById('uploadProgFill').style.width = `${percent}%`;
+    document.getElementById('uploadProgText').textContent = `${current}/${total} 업로드 중...`;
   });
   const res = await fetch('/api/upload', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
