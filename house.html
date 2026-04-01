@@ -203,84 +203,85 @@ import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment a
 import { openEventMgr, renderEventRoomList, openEditEventRoom, saveEditEventRoom as coreSaveEditEventRoom, createEventRoom as coreCreateEventRoom, deleteEventRoom as coreDeleteEventRoom} from '/public/js/features/event-mgr.js';
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding from '/public/js/features/onboarding.js';
 // ── 전역 노출 (HTML onclick에서 호출) ──────────────────────────────────────
-window.uploadCover = (input) => uploadCover(input, state, showToast, reloadData);
-window.showToast       = showToast;
-window.openConfirm     = openConfirm;
-window.closeConfirm    = closeConfirm;
-window.closeModal      = closeModal;
-window.fmtDate         = fmtDate;
-window.timeAgo         = timeAgo;
+
+// common
+window.showToast          = showToast;
+window.openConfirm        = openConfirm;
+window.closeConfirm       = closeConfirm;
+window.closeModal         = closeModal;
+window.fmtDate            = fmtDate;
+window.timeAgo            = timeAgo;
+
+// tabs
 window.filterCat          = filterCat;
 window.toggleReaction     = toggleReaction;
 window.openPostComment    = openPostComment;
 window.submitPostComment  = submitPostComment;
 window.deletePostComment  = deletePostComment;
-window.switchTab       = switchTab;
-window.switchToRoomType = switchToRoomType;
-window.openPostModal   = openPostModal;
-window.closePostModal  = closePostModal;
-window.openLightbox    = openLightbox;
-window.closeLightbox   = closeLightbox;
-window.lbPrev          = lbPrev;
-window.lbNext          = lbNext;
-window.openWriteModal  = openWriteModal;
-window.openUploadModal = openUploadModal;
-window.openEditModal   = openEditModal;
-// reloadData를 주입
-window.submitWrite    = () => coreSubmitWrite(reloadData);
-window.openWriteModal = openWriteModal;
-window.handleWritePhoto = handleWritePhoto;
-window.submitUpload    = submitUpload;
-window.submitEdit      = submitEdit;
-window.submitVideo     = submitVideo;
-window.submitGuestbook  = () => coreSubmitGuestbook(reloadData);
-window.deleteComment = (id) => coreDeleteComment(id, reloadData);
-window.deletePost      = deletePost;
-window.confirmDelMedia = confirmDelMedia;
-window.handleWritePhoto  = handleWritePhoto;
+window.switchTab          = switchTab;
+window.switchToRoomType   = switchToRoomType;
+
+// post modal / lightbox
+window.openPostModal      = openPostModal;
+window.closePostModal     = closePostModal;
+window.openLightbox       = openLightbox;
+window.closeLightbox      = closeLightbox;
+window.lbPrev             = lbPrev;
+window.lbNext             = lbNext;
+
+// write (features/write.js)
+window.openWriteModal     = openWriteModal;
+window.handleWritePhoto   = handleWritePhoto;
+window.submitWrite        = () => coreSubmitWrite(reloadData);
+
+// upload
+window.openUploadModal    = openUploadModal;
 window.handleUploadSelect = handleUploadSelect;
-window.previewGbPhoto   = previewGbPhoto;
-window.submitGuestbook  = () => coreSubmitGuestbook(reloadData);
-window.deleteComment    = (id) => coreDeleteComment(id, reloadData);
-window.getAiMsg         = getAiMsg;
-window.translateComment = translateComment;
-window.getAiMsg        = getAiMsg;
-window.translateComment = () => translateComment(reloadData);
-window.goStepHouse     = () => goStepHouse(reloadData);
-window.joinCurrentHouse = () => joinCurrentHouse(reloadData);
-window.skipOnboarding  = () => skipOnboarding(reloadData);
-window.createEventRoom = () => coreCreateEventRoom(reloadData);
-window.saveEditEventRoom   = (id) => coreSaveEditEventRoom(id, reloadData); // 래퍼
-window.createEventRoom     = () => coreCreateEventRoom(reloadData);         // 래퍼
-window.deleteEventRoom     = (id) => coreDeleteEventRoom(id, reloadData);   // 래퍼
-window.saveEditEventRoom   = (id) => coreSaveEditEventRoom(id, reloadData);
-window.createEventRoom     = () => coreCreateEventRoom(reloadData);
-window.deleteEventRoom     = (id) => coreDeleteEventRoom(id, reloadData);
-window.openEditEventRoom = openEditEventRoom;
-window.saveEditEventRoom = saveEditEventRoom;
-window.deleteEventRoom = deleteEventRoom;
-window.renderEventRoomList = renderEventRoomList;
-window.uploadCover     = uploadCover;
-window.shareKakao = () => coreShareKakao({
+window.submitUpload       = submitUpload;
+window.submitEdit         = submitEdit;
+window.submitVideo        = submitVideo;
+window.confirmDelMedia    = confirmDelMedia;
+window.openEditModal      = openEditModal;
+
+// guestbook (features/guestbook.js)
+window.previewGbPhoto     = previewGbPhoto;
+window.submitGuestbook    = () => coreSubmitGuestbook(reloadData);
+window.deleteComment      = (id) => coreDeleteComment(id, reloadData);
+window.getAiMsg           = getAiMsg;
+window.translateComment   = translateComment;
+
+// post 삭제
+window.deletePost         = deletePost;
+
+// event-mgr (features/event-mgr.js)
+window.openEventMgr          = openEventMgr;
+window.renderEventRoomList   = renderEventRoomList;
+window.openEditEventRoom     = openEditEventRoom;
+window.saveEditEventRoom     = (id) => coreSaveEditEventRoom(id, reloadData);
+window.createEventRoom       = () => coreCreateEventRoom(reloadData);
+window.deleteEventRoom       = (id) => coreDeleteEventRoom(id, reloadData);
+
+// onboarding (features/onboarding.js)
+window.toggleInterest     = toggleInterest;
+window.goStepHouse        = goStepHouse;
+window.joinCurrentHouse   = joinCurrentHouse;
+window.skipOnboarding     = skipOnboarding;
+
+// cover / share (core/)
+window.uploadCover        = (input) => uploadCover(input, state, showToast, reloadData);
+window.shareKakao         = () => coreShareKakao({
   name       : state.houseData?.name || state.slug,
   description: state.houseData?.description,
   cover_url  : state.houseData?.cover_url,
   url        : location.href
 });
-window.shareZalo  = () => coreShareZalo({
-  name       : state.houseData?.name || state.slug,
-  description: state.houseData?.description,
-  cover_url  : state.houseData?.cover_url,
-  url        : location.href
-});
-window.copyLink   = () => coreCopyLink({
-  name       : state.houseData?.name || state.slug,
-  description: state.houseData?.description,
-  cover_url  : state.houseData?.cover_url,
-  url        : location.href
-});
-window.shareZalo       = shareZalo;
-window.copyLink        = copyLink;
+window.shareZalo          = () => coreShareZalo(location.href);
+window.copyLink           = () => coreCopyLink(location.href, showToast);
+
+// renderer
+window.renderPostList     = renderPostList;
+window.renderPost         = renderPost;
+window.renderStoryImgs    = renderStoryImgs;
 
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
