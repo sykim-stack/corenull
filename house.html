@@ -184,20 +184,52 @@
   </div>
 </div>
 
-<!-- ── Post Modal ─────────────────────────────────────────────────────────── -->
-<div class="post-modal-overlay" id="postModal" onclick="closePostModal(event)">
-  <div class="post-modal-box">
-    <button class="post-modal-close" onclick="closePostModal()">✕</button>
-    <div id="postModalImgs"></div>
-    <div class="post-modal-body">
-      <div class="post-modal-tags" id="postModalTags"></div>
-      <div class="post-modal-content" id="postModalContent"></div>
-      <div class="post-modal-date" id="postModalDate"></div>
+<!-- ── Post Viewer Modal (페북 방식) ──────────────────────────────────────── -->
+<div class="pv-overlay" id="postModal" onclick="closePvModal(event)">
+  <div class="pv-box">
+    <!-- 좌: 사진 뷰어 -->
+    <div class="pv-media" id="pvMedia"></div>
+
+    <!-- 우: 정보 패널 -->
+    <div class="pv-panel">
+      <div class="pv-panel-head">
+        <button class="pv-close" onclick="closePvModal()">✕</button>
+      </div>
+
+      <!-- 작성자 + 내용 -->
+      <div class="pv-content-wrap">
+        <div class="pv-author">
+          <div class="pv-av" id="pvAv">🏠</div>
+          <div>
+            <div class="pv-author-name" id="pvAuthorName">---</div>
+            <div class="pv-date" id="pvDate"></div>
+          </div>
+        </div>
+        <div class="pv-text" id="pvText"></div>
+        <div class="pv-tags" id="pvTags"></div>
+      </div>
+
+      <!-- 액션바 -->
+      <div class="pv-actions">
+        <button class="pv-action-btn" id="pvReactBtn" onclick="pvToggleReact()">🤍 관심</button>
+        <button class="pv-action-btn" onclick="pvFocusComment()">💬 댓글</button>
+        <button class="pv-action-btn" onclick="pvShare()">🔗 공유</button>
+      </div>
+
+      <!-- 댓글 목록 -->
+      <div class="pv-comments" id="pvComments">
+        <div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>
+      </div>
+
+      <!-- 댓글 입력 -->
+      <div class="pv-comment-input">
+        <input id="pvCommentInput" placeholder="댓글 달기..."
+          onkeydown="if(event.key==='Enter')pvSubmitComment()">
+        <button onclick="pvSubmitComment()">게시</button>
+      </div>
     </div>
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <!-- ── Module Script ──────────────────────────────────────────────────────── -->
 <script type="module">
@@ -442,36 +474,154 @@ function renderEvent(container, room) {
   </div>`;
 }
 
-// ── openPostModal ─────────────────────────────────────────────────────────
+// ── Post Viewer (페북 방식) ────────────────────────────────────────────────
+let pvState = { postId: null, images: [], idx: 0 };
+
 function openPostModal(item) {
   if (typeof item === 'string') item = JSON.parse(item);
   const urls = item.urls || [];
-  const allUrlsStr = JSON.stringify(urls).replace(/"/g, "'");
-  const first = urls[0], rest = urls.slice(1);
-  const restHtml = rest.length
-    ? `<div style="display:grid;grid-template-columns:repeat(${Math.min(rest.length,3)},1fr);gap:2px;">
-        ${rest.map((url,i) => `<img src="${url}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},${i+1})" style="width:100%;aspect-ratio:1;object-fit:cover;cursor:zoom-in;">`).join('')}
-       </div>` : '';
-  document.getElementById('postModalImgs').innerHTML = first
-    ? `<img src="${first}" loading="lazy" onclick="event.stopPropagation();openLightbox(${allUrlsStr},0)"
-        style="width:100%;max-height:380px;object-fit:cover;border-radius:20px 20px 0 0;cursor:zoom-in;display:block;">${restHtml}` : '';
+  pvState = { postId: item.postId || null, images: urls, idx: 0 };
+
+  // 미디어 영역
+  const media = document.getElementById('pvMedia');
+  if (urls.length) {
+    media.innerHTML = `
+      <img id="pvMainImg" src="${urls[0]}">
+      ${urls.length > 1 ? `
+        <button class="pv-media-nav prev" onclick="pvNav(-1)">‹</button>
+        <button class="pv-media-nav next" onclick="pvNav(1)">›</button>
+        <div class="pv-media-counter" id="pvCounter">1 / ${urls.length}</div>` : ''}`;
+    media.style.display = '';
+  } else {
+    media.style.display = 'none';
+    // 사진 없으면 패널 전체 너비
+    document.querySelector('.pv-panel').style.width = '100%';
+  }
+
+  // 작성자 (집 이름)
+  document.getElementById('pvAuthorName').textContent = state.houseData?.name || state.slug;
+  document.getElementById('pvAv').textContent =
+    (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
+  document.getElementById('pvDate').textContent = item.date
+    ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
+
+  // 내용 + 태그
+  document.getElementById('pvText').textContent = item.content || '';
   const tags = (item.category_ids || []).map(cid => {
     const c = state.categories.find(x => x.id === cid);
     return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : '';
   }).join('');
-  document.getElementById('postModalTags').innerHTML      = tags;
-  document.getElementById('postModalContent').textContent = item.content || '';
-  document.getElementById('postModalDate').textContent    = item.date
-    ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
+  document.getElementById('pvTags').innerHTML = tags;
+
+  // 댓글 초기화 + 로드
+  document.getElementById('pvComments').innerHTML =
+    '<div class="pv-comments-empty">불러오는 중...</div>';
+  if (pvState.postId) pvLoadComments();
+
   document.getElementById('postModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-function closePostModal(e) {
-  if (e && e.target !== document.getElementById('postModal') && !e.target.classList.contains('post-modal-close')) return;
+function closePvModal(e) {
+  if (e && e.target !== document.getElementById('postModal')) return;
   document.getElementById('postModal').classList.remove('open');
+  document.querySelector('.pv-panel').style.width = '';
   document.body.style.overflow = '';
 }
+// 기존 closePostModal도 연결
+window.closePostModal = closePvModal;
+
+function pvNav(dir) {
+  pvState.idx = Math.max(0, Math.min(pvState.images.length - 1, pvState.idx + dir));
+  document.getElementById('pvMainImg').src = pvState.images[pvState.idx];
+  const counter = document.getElementById('pvCounter');
+  if (counter) counter.textContent = `${pvState.idx + 1} / ${pvState.images.length}`;
+}
+
+function pvFocusComment() {
+  document.getElementById('pvCommentInput')?.focus();
+}
+
+function pvShare() {
+  copyLink(location.href);
+}
+
+function pvToggleReact() {
+  if (!pvState.postId) return;
+  const btn = document.getElementById('pvReactBtn');
+  toggleReaction(pvState.postId, btn);
+}
+
+async function pvLoadComments() {
+  const el = document.getElementById('pvComments');
+  try {
+    const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${pvState.postId}`);
+    const data = await res.json();
+    const list = data.comments || [];
+    if (!list.length) {
+      el.innerHTML = '<div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>';
+      return;
+    }
+    el.innerHTML = list.map(c => `
+      <div class="pv-comment-item">
+        <div class="pv-comment-av">${(c.author_name||'?').charAt(0)}</div>
+        <div class="pv-comment-bubble">
+          <div class="pv-comment-name">${escHtml(c.author_name)}</div>
+          <div class="pv-comment-text">${escHtml(c.content)}</div>
+          <div class="pv-comment-time">${timeAgo(c.created_at)}</div>
+        </div>
+        ${state.isOwner ? `<button class="pv-comment-del"
+          onclick="pvDeleteComment('${c.id}')">🗑️</button>` : ''}
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="pv-comments-empty">불러오기 실패</div>'; }
+}
+
+async function pvSubmitComment() {
+  const input = document.getElementById('pvCommentInput');
+  const content = input?.value.trim();
+  if (!content || !pvState.postId) return;
+  const author = localStorage.getItem('cn_author_name') || '익명';
+  input.value = ''; input.disabled = true;
+  try {
+    const res = await fetch('/api/comment', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: pvState.postId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await pvLoadComments();
+      // 피드 댓글 카운트 동기화
+      const btn = document.querySelector(`[data-comment-id="${pvState.postId}"]`);
+      if (btn) {
+        const cur = parseInt(btn.dataset.count||'0') + 1;
+        btn.dataset.count = cur; btn.innerHTML = `💬 ${cur}`;
+      }
+    } else showToast(data.error||'댓글 등록 실패');
+  } catch(e) { showToast('댓글 등록 실패'); }
+  finally { input.disabled = false; input.focus(); }
+}
+
+async function pvDeleteComment(commentId) {
+  try {
+    const res = await fetch('/api/comment', {
+      method:'DELETE', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
+    });
+    const data = await res.json();
+    if (data.success) await pvLoadComments();
+    else showToast(data.error||'삭제 실패');
+  } catch(e) { showToast('삭제 실패'); }
+}
+
+// 전역 노출
+window.closePvModal    = closePvModal;
+window.pvNav           = pvNav;
+window.pvFocusComment  = pvFocusComment;
+window.pvShare         = pvShare;
+window.pvToggleReact   = pvToggleReact;
+window.pvSubmitComment = pvSubmitComment;
+window.pvDeleteComment = pvDeleteComment;
+window.escHtml = escHtml;
 
 // ── Lightbox ──────────────────────────────────────────────────────────────
 function openLightbox(images, startIdx = 0) {

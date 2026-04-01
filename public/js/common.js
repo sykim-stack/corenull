@@ -150,6 +150,7 @@ export function renderPost(p, opts = {}) {
   const imgs   = p.media_urls || [];
   const media  = imgs.length ? renderStoryImgs(imgs, p) : '';
   const postData = encodeURIComponent(JSON.stringify({
+    postId: p.id,   // ← 이거 추가
     urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
   }));
 
