@@ -186,7 +186,7 @@
 <!-- ── Module Script ──────────────────────────────────────────────────────── -->
 <script type="module">
 import {
-  state, DEVICE_ID, CAT_META, ROOM_META, MILESTONE_DEFAULTS,
+  state, DEVICE_ID, CAT_META, ROOM_META,
   showToast, openConfirm, closeConfirm, closeModal,
   fmtDate, timeAgo, resizeImg, b64Blob,
   renderPost, renderPostList, renderStoryImgs,
@@ -199,11 +199,11 @@ import { renderLibrary } from '/public/tabs/library.js';
 import { uploadMany, uploadCoverImage, uploadCover } from '/public/js/core/upload.js';
 import { shareKakao as coreShareKakao, shareZalo as coreShareZalo, copyLink as coreCopyLink } from '/public/js/core/share.js';
 import { openWriteModal, handleWritePhoto, submitWrite as coreSubmitWrite } from '/public/js/features/write.js';
-import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment} from '/public/js/features/guestbook.js';
-import { openEventMgr, renderEventRoomList, openEditEventRoom, saveEditEventRoom as coreSaveEditEventRoom, createEventRoom as coreCreateEventRoom, deleteEventRoom as coreDeleteEventRoom} from '/public/js/features/event-mgr.js';
+import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
+import { openEventMgr, renderEventRoomList, openEditEventRoom, saveEditEventRoom as coreSaveEditEventRoom, createEventRoom as coreCreateEventRoom, deleteEventRoom as coreDeleteEventRoom } from '/public/js/features/event-mgr.js';
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
-// ── 전역 노출 (HTML onclick에서 호출) ──────────────────────────────────────
 
+// ── 전역 노출 ──────────────────────────────────────────────────────────────
 // common
 window.showToast          = showToast;
 window.openConfirm        = openConfirm;
@@ -211,7 +211,10 @@ window.closeConfirm       = closeConfirm;
 window.closeModal         = closeModal;
 window.fmtDate            = fmtDate;
 window.timeAgo            = timeAgo;
-
+// renderer
+window.renderPost         = renderPost;
+window.renderPostList     = renderPostList;
+window.renderStoryImgs    = renderStoryImgs;
 // tabs
 window.filterCat          = filterCat;
 window.toggleReaction     = toggleReaction;
@@ -220,7 +223,6 @@ window.submitPostComment  = submitPostComment;
 window.deletePostComment  = deletePostComment;
 window.switchTab          = switchTab;
 window.switchToRoomType   = switchToRoomType;
-
 // post modal / lightbox
 window.openPostModal      = openPostModal;
 window.closePostModal     = closePostModal;
@@ -228,12 +230,11 @@ window.openLightbox       = openLightbox;
 window.closeLightbox      = closeLightbox;
 window.lbPrev             = lbPrev;
 window.lbNext             = lbNext;
-
-// write (features/write.js)
+window.lbGoTo             = lbGoTo;
+// write
 window.openWriteModal     = openWriteModal;
 window.handleWritePhoto   = handleWritePhoto;
 window.submitWrite        = () => coreSubmitWrite(reloadData);
-
 // upload
 window.openUploadModal    = openUploadModal;
 window.handleUploadSelect = handleUploadSelect;
@@ -242,46 +243,37 @@ window.submitEdit         = submitEdit;
 window.submitVideo        = submitVideo;
 window.confirmDelMedia    = confirmDelMedia;
 window.openEditModal      = openEditModal;
-
-// guestbook (features/guestbook.js)
+// guestbook
 window.previewGbPhoto     = previewGbPhoto;
 window.submitGuestbook    = () => coreSubmitGuestbook(reloadData);
 window.deleteComment      = (id) => coreDeleteComment(id, reloadData);
 window.getAiMsg           = getAiMsg;
 window.translateComment   = translateComment;
-
 // post 삭제
 window.deletePost         = deletePost;
-
-// event-mgr (features/event-mgr.js)
+// event-mgr
 window.openEventMgr          = openEventMgr;
 window.renderEventRoomList   = renderEventRoomList;
 window.openEditEventRoom     = openEditEventRoom;
 window.saveEditEventRoom     = (id) => coreSaveEditEventRoom(id, reloadData);
 window.createEventRoom       = () => coreCreateEventRoom(reloadData);
 window.deleteEventRoom       = (id) => coreDeleteEventRoom(id, reloadData);
-
-// onboarding (features/onboarding.js)
+// onboarding
 window.toggleInterest     = toggleInterest;
 window.goStepHouse        = goStepHouse;
 window.joinCurrentHouse   = joinCurrentHouse;
 window.skipOnboarding     = skipOnboarding;
-
-// cover / share (core/)
+// cover / share
 window.uploadCover        = (input) => uploadCover(input, state, showToast, reloadData);
 window.shareKakao         = () => coreShareKakao({
-  name       : state.houseData?.name || state.slug,
+  name: state.houseData?.name || state.slug,
   description: state.houseData?.description,
-  cover_url  : state.houseData?.cover_url,
-  url        : location.href
+  cover_url: state.houseData?.cover_url,
+  url: location.href
 });
 window.shareZalo          = () => coreShareZalo(location.href);
 window.copyLink           = () => coreCopyLink(location.href, showToast);
-
-// renderer
-window.renderPostList     = renderPostList;
-window.renderPost         = renderPost;
-window.renderStoryImgs    = renderStoryImgs;
+window.parseVideoUrl      = parseVideoUrl;
 
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
@@ -300,14 +292,14 @@ async function init() {
 
 // ── Hero ──────────────────────────────────────────────────────────────────
 function applyHero(house) {
-  const cat = CAT_META[house.category] || CAT_META['daily'];
+  const cat  = CAT_META[house.category] || CAT_META['daily'];
   const name = house.name || state.slug;
   document.title = `${name} · CoreNull`;
-  document.getElementById('heroBadge').textContent = cat.badge;
-  document.getElementById('heroName').textContent  = name;
-  document.getElementById('heroSub').textContent   = house.description || '';
+  document.getElementById('heroBadge').textContent  = cat.badge;
+  document.getElementById('heroName').textContent   = name;
+  document.getElementById('heroSub').textContent    = house.description || '';
   document.getElementById('footerName').textContent = name;
-  document.getElementById('footerEi').textContent  = cat.emoji;
+  document.getElementById('footerEi').textContent   = cat.emoji;
   if (house.cover_url) {
     document.getElementById('heroFrame').innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="photo-upload-hint">사진 변경</div>`;
     document.querySelector('.hero').classList.add('has-cover');
@@ -319,7 +311,7 @@ function applyHero(house) {
 
 function initDday(house) {
   if (!house.birth_date && !house.start_date) return;
-  const start = new Date(house.birth_date || house.start_date), now = new Date();
+  const start   = new Date(house.birth_date || house.start_date), now = new Date();
   const elapsed = Math.floor((now - start) / 86400000);
   let items = [{ num: elapsed + '일', label: '지난 날' }];
   if (house.category === 'baby' && house.hundred_date) {
@@ -337,7 +329,7 @@ function initDday(house) {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────
 function buildTabs(house, rooms, milestones, comments) {
-  const tabInner   = document.getElementById('tabInner');
+  const tabInner    = document.getElementById('tabInner');
   const tabContents = document.getElementById('tabContents');
   tabInner.innerHTML = ''; tabContents.innerHTML = '';
 
@@ -388,10 +380,10 @@ function switchToRoomType(type) {
 
 // ── Event Tab ─────────────────────────────────────────────────────────────
 function renderEvent(container, room) {
-  const diff = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
+  const diff     = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
   const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
   const eventPhotos = state.allMedia.filter(m => m.media_type === 'photo' && m.room_id === room.id);
-  const lbUrls = eventPhotos.map(m => m.file_url);
+  const lbUrls   = eventPhotos.map(m => m.file_url);
   const photoHtml = eventPhotos.length
     ? `<div class="lib-grid">${eventPhotos.map((m, i) =>
         `<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'>
@@ -401,7 +393,7 @@ function renderEvent(container, room) {
     : `<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
 
   const eventPosts = state.allPosts.filter(p => p.room_id === room.id);
-  const postsHtml = eventPosts.length
+  const postsHtml  = eventPosts.length
     ? eventPosts.map((p, i) => renderPost(p, { delay: i, showTags: false })).join('')
     : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
 
@@ -443,9 +435,9 @@ function openPostModal(item) {
     const c = state.categories.find(x => x.id === cid);
     return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : '';
   }).join('');
-  document.getElementById('postModalTags').innerHTML   = tags;
+  document.getElementById('postModalTags').innerHTML      = tags;
   document.getElementById('postModalContent').textContent = item.content || '';
-  document.getElementById('postModalDate').textContent = item.date
+  document.getElementById('postModalDate').textContent    = item.date
     ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
   document.getElementById('postModal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -468,12 +460,12 @@ function openLightbox(images, startIdx = 0) {
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-window.lbGoTo = function(idx) {
+function lbGoTo(idx) {
   state.lbIndex = idx;
   document.getElementById('lbTrack').style.transform = `translateX(-${idx * 100}vw)`;
-  document.getElementById('lbCounter').textContent = `${idx + 1} / ${state.lbImages.length}`;
+  document.getElementById('lbCounter').textContent   = `${idx + 1} / ${state.lbImages.length}`;
   document.querySelectorAll('.lb-thumb').forEach((t,i) => t.classList.toggle('active', i === idx));
-};
+}
 function lbPrev() { if (state.lbIndex > 0) lbGoTo(state.lbIndex - 1); }
 function lbNext() { if (state.lbIndex < state.lbImages.length - 1) lbGoTo(state.lbIndex + 1); }
 function closeLightbox() {
@@ -481,26 +473,25 @@ function closeLightbox() {
   document.body.style.overflow = '';
 }
 
-
 // ── 사진 업로드 ───────────────────────────────────────────────────────────
 function openUploadModal(roomId) {
   state.uploadRoomId = roomId;
   state.uploadFiles  = [];
-  document.getElementById('uploadInput').value = '';
+  document.getElementById('uploadInput').value          = '';
   document.getElementById('uploadPrevWrap').style.display = 'none';
-  document.getElementById('uploadContent').value = '';
-  document.getElementById('uploadDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('uploadContent').value        = '';
+  document.getElementById('uploadDate').value           = new Date().toISOString().split('T')[0];
   document.getElementById('uploadProgWrap').style.display = 'none';
   document.getElementById('uploadModal').classList.add('open');
 }
 
 async function handleUploadSelect(input) {
   state.uploadFiles = [...input.files].slice(0, 10);
-  const wrap  = document.getElementById('uploadPrevWrap');
+  const wrap = document.getElementById('uploadPrevWrap');
   const cells = document.getElementById('uploadPrevCells');
   cells.innerHTML = '';
   for (const f of state.uploadFiles) {
-    const b64 = await resizeImg(f);
+    const b64  = await resizeImg(f);
     const cell = document.createElement('div'); cell.className = 'prev-cell';
     cell.innerHTML = `<img src="${b64}"><button class="prev-rm" onclick="this.parentElement.remove()">✕</button>`;
     cells.appendChild(cell);
@@ -512,20 +503,17 @@ async function submitUpload() {
   if (!state.uploadFiles.length) { showToast('사진을 선택해주세요'); return; }
   const btn = document.getElementById('uploadSubmit'); btn.disabled = true;
   document.getElementById('uploadProgWrap').style.display = 'block';
-  const urls = [];
-  for (let i = 0; i < state.uploadFiles.length; i++) {
-    document.getElementById('uploadProgFill').style.width = `${((i+1)/state.uploadFiles.length)*100}%`;
-    document.getElementById('uploadProgText').textContent = `${i+1}/${state.uploadFiles.length} 업로드 중...`;
-    const b64 = await resizeImg(state.uploadFiles[i]);
-    const blob = await b64Blob(b64);
-    const fd = new FormData(); fd.append('file', blob, 'photo.jpg'); fd.append('upload_preset', 'corenull');
-    const cr = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method:'POST', body: fd });
-    const cl = await cr.json();
-    if (cl.secure_url) urls.push(cl.secure_url);
-  }
+  const urls = await uploadMany(state.uploadFiles, ({ current, total, percent }) => {
+    document.getElementById('uploadProgFill').style.width  = `${percent}%`;
+    document.getElementById('uploadProgText').textContent  = `${current}/${total} 업로드 중...`;
+  });
   const res = await fetch('/api/upload', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, room_id: state.uploadRoomId, file_urls: urls, media_type: 'photo', content: document.getElementById('uploadContent').value.trim() })
+    body: JSON.stringify({
+      house_id: state.houseId, owner_key: state.ownerKey,
+      room_id: state.uploadRoomId, file_urls: urls, media_type: 'photo',
+      content: document.getElementById('uploadContent').value.trim()
+    })
   });
   const data = await res.json();
   btn.disabled = false;
@@ -535,8 +523,8 @@ async function submitUpload() {
 
 // ── 사진 설명 수정 ────────────────────────────────────────────────────────
 function openEditModal(mediaId, content) {
-  document.getElementById('editMediaId').value  = mediaId;
-  document.getElementById('editContent').value  = content;
+  document.getElementById('editMediaId').value = mediaId;
+  document.getElementById('editContent').value = content;
   document.getElementById('editModal').classList.add('open');
 }
 
@@ -589,7 +577,7 @@ async function deletePost(postId) {
 
 // ── Visit 추적 ────────────────────────────────────────────────────────────
 function trackVisit(houseId) {
-  const ref = new URLSearchParams(location.search).get('ref') || 'direct';
+  const ref        = new URLSearchParams(location.search).get('ref') || 'direct';
   const invited_by = ref.startsWith('dev_') ? ref : null;
   fetch('/api/house', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
@@ -602,14 +590,13 @@ async function reloadData() {
   try {
     const data = await loadHouseData();
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
-// 아래 줄 추가
-const postIds = state.allPosts.map(p => p.id).filter(Boolean);
-loadReactions(postIds);
-     } catch (e) { console.error(e); }
+    const postIds = state.allPosts.map(p => p.id).filter(Boolean);
+    loadReactions(postIds);
+  } catch (e) { console.error(e); }
 }
 
 // ── Video URL 파서 ────────────────────────────────────────────────────────
-window.parseVideoUrl = function(url) {
+function parseVideoUrl(url) {
   if (!url) return null;
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
   if (yt) return { platform: 'YouTube', embedUrl: `https://www.youtube.com/embed/${yt[1]}` };
@@ -618,14 +605,10 @@ window.parseVideoUrl = function(url) {
   const fb = url.match(/facebook\.com\/(?:watch\/?\?v=|.*\/videos\/)(\d+)/);
   if (fb) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}` };
   return null;
-};
+}
 
 // ── Start ─────────────────────────────────────────────────────────────────
 init();
-window.renderPostList = renderPostList;
-window.renderPost = renderPost;
-window.renderStoryImgs = renderStoryImgs;
-window.openPostModal = openPostModal;
 </script>
 </body>
 </html>
