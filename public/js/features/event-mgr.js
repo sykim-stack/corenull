@@ -1,7 +1,8 @@
 // ── features/event-mgr.js ──────────────────────────────────────────────────
-// CoreNull · 이벤트 관리
-
 import { state, showToast, fmtDate, openConfirm } from '/public/js/common.js';
+
+// reloadData를 모듈 레벨에서 보관
+let _reload = null;
 
 export function openEventMgr() {
   document.getElementById('eventMgrModal').classList.add('open');
@@ -9,7 +10,8 @@ export function openEventMgr() {
 }
 
 export function renderEventRoomList() {
-  const el = document.getElementById('eventRoomList'); if (!el) return;
+  const el = document.getElementById('eventRoomList');
+  if (!el) return;
   const eventRooms = state.rooms.filter(r => r.room_type === 'event');
   if (!eventRooms.length) {
     el.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px;">아직 이벤트가 없어요</div>';
@@ -40,9 +42,10 @@ export function renderEventRoomList() {
     const delBtn = document.createElement('button');
     delBtn.textContent = '🗑️';
     delBtn.style.cssText = 'background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);';
-    delBtn.onclick = () => _deleteEventRoom(r.id);
+    delBtn.onclick = () => _deleteEventRoom(r.id);  // ← _reload는 모듈 레벨에서 참조
 
-    row.appendChild(editBtn); row.appendChild(delBtn);
+    row.appendChild(editBtn);
+    row.appendChild(delBtn);
 
     const editForm = document.createElement('div');
     editForm.id = `editForm-${r.id}`;
@@ -61,7 +64,8 @@ export function renderEventRoomList() {
           style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;cursor:pointer;">취소</button>
       </div>`;
 
-    wrap.appendChild(row); wrap.appendChild(editForm);
+    wrap.appendChild(row);
+    wrap.appendChild(editForm);
     el.appendChild(wrap);
   });
 }
@@ -72,6 +76,7 @@ export function openEditEventRoom(roomId) {
 }
 
 export async function saveEditEventRoom(roomId, reloadData) {
+  if (reloadData) _reload = reloadData;  // 최신 reload 저장
   const name        = document.getElementById(`editName-${roomId}`).value.trim();
   const date        = document.getElementById(`editDate-${roomId}`).value;
   const infoTitle   = document.getElementById(`editInfoTitle-${roomId}`).value.trim();
@@ -80,22 +85,28 @@ export async function saveEditEventRoom(roomId, reloadData) {
   if (!name) { showToast('이름을 입력해주세요'); return; }
   const res = await fetch('/api/rooms', {
     method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ room_id: roomId, house_id: state.houseId, owner_key: state.ownerKey,
+    body: JSON.stringify({
+      room_id: roomId, house_id: state.houseId, owner_key: state.ownerKey,
       room_name: name, event_date: date || null,
-      info_title: infoTitle, info_body: infoBody, info_account: infoAccount })
+      info_title: infoTitle, info_body: infoBody, info_account: infoAccount
+    })
   });
   const data = await res.json();
-  if (data.success) { showToast('수정됐어요 ✅'); await reloadData(); }
+  if (data.success) { showToast('수정됐어요 ✅'); await _reload?.(); }
   else showToast(data.error || '수정 실패');
 }
 
 export async function createEventRoom(reloadData) {
+  if (reloadData) _reload = reloadData;  // 최신 reload 저장
   const name = document.getElementById('newEventName').value.trim();
   const date = document.getElementById('newEventDate').value;
   if (!name) { showToast('이벤트 이름을 입력해주세요'); return; }
   const res = await fetch('/api/rooms', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, room_name: name, event_date: date || null })
+    body: JSON.stringify({
+      house_id: state.houseId, owner_key: state.ownerKey,
+      room_name: name, event_date: date || null
+    })
   });
   const data = await res.json();
   if (data.success) {
@@ -103,18 +114,18 @@ export async function createEventRoom(reloadData) {
     document.getElementById('newEventName').value = '';
     document.getElementById('newEventDate').value = '';
     document.getElementById('eventMgrModal').classList.remove('open');
-    await reloadData();
+    await _reload?.();
   } else showToast(data.error || '생성 실패');
 }
 
-async function _deleteEventRoom(roomId, reloadData) {
+async function _deleteEventRoom(roomId) {
   openConfirm('이벤트를 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
     const res = await fetch('/api/rooms', {
       method: 'DELETE', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ room_id: roomId, house_id: state.houseId, owner_key: state.ownerKey })
     });
     const data = await res.json();
-    if (data.success) { showToast('삭제됐어요'); await reloadData(); }
+    if (data.success) { showToast('삭제됐어요'); await _reload?.(); }
     else showToast(data.error || '삭제 실패');
   });
 }
