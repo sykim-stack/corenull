@@ -67,7 +67,18 @@
 </div>
 
 <!-- ── FAB ───────────────────────────────────────────────────────────────── -->
-<button class="fab" id="fab" onclick="openWriteModal()">✏️</button>
+<button class="fab" id="fab" onclick="toggleFabSheet()">✏️</button>
+
+<!-- ── FAB 액션시트 ────────────────────────────────────────────────────────── -->
+<div class="fab-sheet" id="fabSheet">
+  <button class="fab-sheet-btn" onclick="closeFabSheet();openWriteModal()">
+    <span>✏️</span><span>글쓰기</span>
+  </button>
+  <button class="fab-sheet-btn" onclick="closeFabSheet();openUploadModal(null)">
+    <span>📷</span><span>사진 올리기</span>
+  </button>
+</div>
+<div class="fab-sheet-backdrop" id="fabBackdrop" onclick="closeFabSheet()"></div>
 
 <!-- ── 글쓰기 모달 ─────────────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="writeModal" onclick="closeModal('writeModal',event)" style="align-items:center;padding:24px;">
@@ -75,17 +86,50 @@
     <div class="modal-handle" style="display:none;"></div>
     <div class="modal-title">글쓰기 ✏️</div>
     <textarea class="modal-input" id="writeContent" placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
-    <div id="writePrevWrap" style="display:none;margin-bottom:10px;"><div class="prev-grid" id="writePrevCells"></div></div>
-    <div style="margin-bottom:12px;">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">분류 선택 (복수 가능)</div>
-      <div class="cat-sel-wrap" id="writeCatWrap"></div>
+    <div id="writePrevWrap" style="display:none;margin-bottom:10px;">
+      <div class="prev-grid" id="writePrevCells"></div>
     </div>
+
+    <!-- 분류 선택 -->
+    <div class="compose-section">
+      <div class="compose-section-head">
+        <span class="compose-label">분류</span>
+        <button class="compose-add-btn" onclick="openAddCatInline('write')">+ 분류 만들기</button>
+      </div>
+      <div class="cat-sel-wrap" id="writeCatWrap"></div>
+      <div id="writeCatInline" style="display:none;margin-top:8px;">
+        <div style="display:flex;gap:6px;">
+          <input class="modal-input" id="writeCatName" placeholder="분류 이름" style="margin:0;flex:1;">
+          <button onclick="submitAddCat('write')"
+            style="background:var(--brown);color:white;border:none;border-radius:10px;padding:0 14px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Gowun Dodum',serif;">추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 방 선택 -->
+    <div class="compose-section">
+      <div class="compose-section-head">
+        <span class="compose-label">방</span>
+        <button class="compose-add-btn" onclick="openAddEventRoomInline('write')">+ 이벤트방 만들기</button>
+      </div>
+      <div class="room-sel-wrap" id="writeRoomWrap"></div>
+      <div id="writeEventInline" style="display:none;margin-top:8px;">
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input class="modal-input" id="writeEventName" placeholder="이벤트 이름" style="margin:0;flex:1;">
+          <input class="modal-input" id="writeEventDate" type="date" style="margin:0;width:140px;">
+        </div>
+        <button onclick="submitAddEventRoom('write')"
+          style="width:100%;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;">이벤트방 생성</button>
+      </div>
+    </div>
+
     <div class="prog-wrap" id="writeProgWrap">
       <div class="prog-bar"><div class="prog-fill" id="writeProgFill"></div></div>
       <div class="prog-text" id="writeProgText"></div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;" onclick="document.getElementById('writePhotoInput').click()">📷</button>
+      <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;"
+        onclick="document.getElementById('writePhotoInput').click()">📷</button>
       <input type="file" id="writePhotoInput" accept="image/*" multiple style="display:none" onchange="handleWritePhoto(this)">
       <button class="modal-submit" style="margin-top:0;" onclick="submitWrite()">등록</button>
     </div>
@@ -96,7 +140,7 @@
 <div class="modal-overlay" id="uploadModal" onclick="closeModal('uploadModal',event)">
   <div class="modal-box">
     <div class="modal-handle"></div>
-    <div class="modal-title">사진 업로드 📷</div>
+    <div class="modal-title">사진 올리기 📷</div>
     <div class="drop-zone" onclick="document.getElementById('uploadInput').click()">
       <div style="font-size:36px;margin-bottom:8px;">🖼️</div>
       <div style="font-size:13px;">사진을 선택하세요</div>
@@ -105,6 +149,40 @@
     <input type="file" id="uploadInput" accept="image/*" multiple style="display:none" onchange="handleUploadSelect(this)">
     <div id="uploadPrevWrap" style="display:none;"><div class="prev-grid" id="uploadPrevCells"></div></div>
     <textarea class="modal-input" id="uploadContent" placeholder="사진 설명 (선택)" style="height:60px;"></textarea>
+
+    <!-- 분류 선택 -->
+    <div class="compose-section">
+      <div class="compose-section-head">
+        <span class="compose-label">분류</span>
+        <button class="compose-add-btn" onclick="openAddCatInline('upload')">+ 분류 만들기</button>
+      </div>
+      <div class="cat-sel-wrap" id="uploadCatWrap"></div>
+      <div id="uploadCatInline" style="display:none;margin-top:8px;">
+        <div style="display:flex;gap:6px;">
+          <input class="modal-input" id="uploadCatName" placeholder="분류 이름" style="margin:0;flex:1;">
+          <button onclick="submitAddCat('upload')"
+            style="background:var(--brown);color:white;border:none;border-radius:10px;padding:0 14px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Gowun Dodum',serif;">추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 방 선택 -->
+    <div class="compose-section">
+      <div class="compose-section-head">
+        <span class="compose-label">방</span>
+        <button class="compose-add-btn" onclick="openAddEventRoomInline('upload')">+ 이벤트방 만들기</button>
+      </div>
+      <div class="room-sel-wrap" id="uploadRoomWrap"></div>
+      <div id="uploadEventInline" style="display:none;margin-top:8px;">
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input class="modal-input" id="uploadEventName" placeholder="이벤트 이름" style="margin:0;flex:1;">
+          <input class="modal-input" id="uploadEventDate" type="date" style="margin:0;width:140px;">
+        </div>
+        <button onclick="submitAddEventRoom('upload')"
+          style="width:100%;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;">이벤트방 생성</button>
+      </div>
+    </div>
+
     <input type="date" class="modal-input" id="uploadDate">
     <div class="prog-wrap" id="uploadProgWrap">
       <div class="prog-bar"><div class="prog-fill" id="uploadProgFill"></div></div>
@@ -307,7 +385,116 @@ window.shareKakao         = () => coreShareKakao({ name: state.houseData?.name |
 window.shareZalo          = () => coreShareZalo(location.href);
 window.copyLink           = () => coreCopyLink(location.href, showToast);
 window.parseVideoUrl      = parseVideoUrl;
+// ── FAB 액션시트 ──────────────────────────────────────────────────────────
+function toggleFabSheet() {
+  const sheet    = document.getElementById('fabSheet');
+  const backdrop = document.getElementById('fabBackdrop');
+  const fab      = document.getElementById('fab');
+  const isOpen   = sheet.classList.contains('open');
+  sheet.classList.toggle('open', !isOpen);
+  backdrop.classList.toggle('open', !isOpen);
+  fab.classList.toggle('sheet-open', !isOpen);
+}
+function closeFabSheet() {
+  document.getElementById('fabSheet').classList.remove('open');
+  document.getElementById('fabBackdrop').classList.remove('open');
+  document.getElementById('fab').classList.remove('sheet-open');
+}
+window.toggleFabSheet = toggleFabSheet;
+window.closeFabSheet  = closeFabSheet;
 
+// ── 모달 공통: 방/분류 렌더 ───────────────────────────────────────────────
+function renderComposeRooms(prefix) {
+  const wrap = document.getElementById(`${prefix}RoomWrap`);
+  if (!wrap) return;
+  const rooms = state.rooms.filter(r => r.room_type === 'room' || r.room_type === 'event');
+  if (!rooms.length) { wrap.innerHTML = '<span style="font-size:12px;color:var(--muted);">방이 없어요</span>'; return; }
+  wrap.innerHTML = rooms.map(r => {
+    const isEvent = r.room_type === 'event';
+    return `<span class="room-sel${isEvent?' event-type':''}" data-id="${r.id}"
+      onclick="selectComposeRoom('${prefix}','${r.id}',this)">${isEvent ? '🎂 ' : ''}${r.room_name}</span>`;
+  }).join('');
+  // 현재 currentRoomId 있으면 자동 선택
+  if (state.currentRoomId) {
+    const chip = wrap.querySelector(`[data-id="${state.currentRoomId}"]`);
+    chip?.classList.add('on');
+  } else {
+    // 기본: 첫 번째 일반 방 선택
+    const first = wrap.querySelector('.room-sel:not(.event-type)');
+    first?.classList.add('on');
+  }
+}
+
+function selectComposeRoom(prefix, roomId, el) {
+  document.querySelectorAll(`#${prefix}RoomWrap .room-sel`).forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function renderComposeCats(prefix) {
+  const wrap = document.getElementById(`${prefix}CatWrap`);
+  if (!wrap) return;
+  wrap.innerHTML = state.categories.map(c =>
+    `<span class="cat-sel" data-id="${c.id}" onclick="this.classList.toggle('on')"
+      style="--cat-color:${c.color||'var(--mint)'};">${c.name}</span>`
+  ).join('');
+}
+
+// ── 분류 인라인 추가 ──────────────────────────────────────────────────────
+function openAddCatInline(prefix) {
+  const el = document.getElementById(`${prefix}CatInline`);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitAddCat(prefix) {
+  const input = document.getElementById(`${prefix}CatName`);
+  const name  = input?.value.trim();
+  if (!name) { showToast('분류 이름을 입력해주세요'); return; }
+  const res = await fetch('/api/categories', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, name })
+  });
+  const data = await res.json();
+  if (data.success || data.id) {
+    showToast(`${name} 분류가 추가됐어요`);
+    input.value = '';
+    document.getElementById(`${prefix}CatInline`).style.display = 'none';
+    await reloadData();
+    renderComposeCats(prefix);
+  } else showToast(data.error || '추가 실패');
+}
+
+// ── 이벤트방 인라인 생성 ──────────────────────────────────────────────────
+function openAddEventRoomInline(prefix) {
+  const el = document.getElementById(`${prefix}EventInline`);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitAddEventRoom(prefix) {
+  const name = document.getElementById(`${prefix}EventName`).value.trim();
+  const date = document.getElementById(`${prefix}EventDate`).value;
+  if (!name) { showToast('이벤트 이름을 입력해주세요'); return; }
+  const res = await fetch('/api/rooms', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey,
+      room_name: name, room_type: 'event', event_date: date || null })
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast(`${name} 이벤트방이 생성됐어요 🎂`);
+    document.getElementById(`${prefix}EventName`).value = '';
+    document.getElementById(`${prefix}EventDate`).value = '';
+    document.getElementById(`${prefix}EventInline`).style.display = 'none';
+    await reloadData();
+    renderComposeRooms(prefix);
+  } else showToast(data.error || '생성 실패');
+}
+
+window.openAddCatInline       = openAddCatInline;
+window.submitAddCat           = submitAddCat;
+window.openAddEventRoomInline = openAddEventRoomInline;
+window.submitAddEventRoom     = submitAddEventRoom;
+window.renderComposeRooms     = renderComposeRooms;
+window.selectComposeRoom      = selectComposeRoom;
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -647,7 +834,29 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
   document.body.style.overflow = '';
 }
-
+function openUploadModal(roomId) {
+  state.uploadRoomId = roomId;
+  state.uploadFiles  = [];
+  document.getElementById('uploadInput').value             = '';
+  document.getElementById('uploadPrevWrap').style.display  = 'none';
+  document.getElementById('uploadContent').value           = '';
+  document.getElementById('uploadDate').value              = new Date().toISOString().split('T')[0];
+  document.getElementById('uploadProgWrap').style.display  = 'none';
+  document.getElementById('uploadCatInline').style.display   = 'none';
+  document.getElementById('uploadEventInline').style.display = 'none';
+  renderComposeCats('upload');
+  renderComposeRooms('upload');
+  // roomId 있으면 해당 방 자동 선택
+  if (roomId) {
+    state.currentRoomId = roomId;
+    setTimeout(() => {
+      const chip = document.querySelector(`#uploadRoomWrap [data-id="${roomId}"]`);
+      document.querySelectorAll('#uploadRoomWrap .room-sel').forEach(c => c.classList.remove('on'));
+      chip?.classList.add('on');
+    }, 50);
+  }
+  document.getElementById('uploadModal').classList.add('open');
+}
 // ── 사진 업로드 ───────────────────────────────────────────────────────────
 function openUploadModal(roomId) {
   state.uploadRoomId = roomId;
@@ -686,7 +895,7 @@ async function submitUpload() {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       house_id: state.houseId, owner_key: state.ownerKey,
-      room_id: state.uploadRoomId, file_urls: urls, media_type: 'photo',
+      room_id: document.querySelector('#uploadRoomWrap .room-sel.on')?.dataset.id || state.uploadRoomId, file_urls: urls, media_type: 'photo',
       content: document.getElementById('uploadContent').value.trim()
     })
   });

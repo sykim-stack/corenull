@@ -10,11 +10,13 @@ export function openWriteModal() {
   document.getElementById('writeContent').value = '';
   document.getElementById('writePrevWrap').style.display = 'none';
   document.getElementById('writeProgWrap').style.display = 'none';
-  const wrap = document.getElementById('writeCatWrap');
-  wrap.innerHTML = state.categories.map(c =>
-    `<span class="cat-sel" data-id="${c.id}" onclick="this.classList.toggle('on')">${c.name}</span>`
-  ).join('');
+  renderComposeCats('write');
+  renderComposeRooms('write');
+  document.getElementById('writeCatInline').style.display    = 'none';
+  document.getElementById('writeEventInline').style.display  = 'none';
   document.getElementById('writeModal').classList.add('open');
+  window.renderComposeCats('write');
+  window.renderComposeRooms('write');
 }
 
 export async function handleWritePhoto(input) {
@@ -34,7 +36,9 @@ export async function handleWritePhoto(input) {
 export async function submitWrite(reloadData) {
   const content = document.getElementById('writeContent').value.trim();
   const catIds  = [...document.querySelectorAll('.cat-sel.on')].map(el => el.dataset.id);
-  const roomId  = state.currentRoomId || state.rooms.find(r => r.room_type === 'room')?.id;
+  const roomId = document.querySelector('#writeRoomWrap .room-sel.on')?.dataset.id
+  || state.currentRoomId
+  || state.rooms.find(r => r.room_type === 'room')?.id;
   if (!content && state.writeFiles.length === 0) { showToast('내용을 입력해주세요'); return; }
 
   let mediaUrls = [];

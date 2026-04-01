@@ -487,3 +487,65 @@
   .pv-media  { height:55vw; max-height:55vw; flex:none; }
   .pv-panel  { width:100%; flex:1; overflow:hidden; }
 }
+
+/* ── FAB 액션시트 ────────────────────────────────────────────────────────── */
+.fab-sheet-backdrop {
+  display:none; position:fixed; inset:0; z-index:197;
+}
+.fab-sheet-backdrop.open { display:block; }
+
+.fab-sheet {
+  position:fixed; bottom:96px; right:24px; z-index:198;
+  display:flex; flex-direction:column; gap:8px; align-items:flex-end;
+  opacity:0; transform:translateY(10px) scale(.97);
+  pointer-events:none; transition:all .2s ease;
+}
+.fab-sheet.open {
+  opacity:1; transform:translateY(0) scale(1); pointer-events:auto;
+}
+.fab-sheet-btn {
+  display:flex; align-items:center; gap:10px;
+  background:var(--cb-bg); color:var(--cb-text);
+  border:1px solid var(--cb-border); border-radius:24px;
+  padding:12px 20px; font-size:13px; cursor:pointer;
+  font-family:'Gowun Dodum',serif; letter-spacing:1px;
+  box-shadow:0 4px 16px rgba(0,0,0,.3); transition:background .2s;
+  white-space:nowrap;
+}
+.fab-sheet-btn:hover { background:var(--cb-surface); }
+
+/* FAB 열렸을 때 회전 */
+.fab.sheet-open { transform:rotate(45deg); }
+
+/* ── Compose 공통 섹션 ───────────────────────────────────────────────────── */
+.compose-section {
+  margin-bottom:12px;
+  background:var(--warm);
+  border-radius:14px;
+  padding:12px 14px;
+}
+.compose-section-head {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:8px;
+}
+.compose-label {
+  font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+}
+.compose-add-btn {
+  background:none; border:none; font-size:11px; color:var(--brown);
+  cursor:pointer; font-family:'Gowun Dodum',serif; letter-spacing:1px;
+  padding:0;
+}
+.compose-add-btn:hover { text-decoration:underline; }
+
+/* 방 선택 칩 */
+.room-sel-wrap { display:flex; flex-wrap:wrap; gap:6px; }
+.room-sel {
+  background:white; border:1px solid rgba(139,94,60,.2); border-radius:20px;
+  padding:6px 14px; font-size:12px; color:var(--muted); cursor:pointer;
+  font-family:'Gowun Dodum',serif; transition:all .2s;
+}
+.room-sel.on { background:var(--cb-bg); color:var(--cb-accent); border-color:var(--cb-bg); }
+.room-sel:hover:not(.on) { background:var(--peach); }
+.room-sel.event-type { border-color:rgba(196,120,75,.3); color:var(--room-event); }
+.room-sel.event-type.on { background:var(--room-event); color:white; border-color:var(--room-event); }
