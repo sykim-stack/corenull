@@ -71,36 +71,41 @@
 
 <!-- ── FAB 액션시트 ────────────────────────────────────────────────────────── -->
 <div class="fab-sheet" id="fabSheet">
-  <button class="fab-sheet-btn" onclick="closeFabSheet();openWriteModal()">
-    <span>✏️</span><span>글쓰기</span>
-  </button>
-  <button class="fab-sheet-btn" onclick="closeFabSheet();openUploadModal(null)">
-    <span>📷</span><span>사진 올리기</span>
-  </button>
+<button class="fab-sheet-btn" onclick="closeFabSheet();openWriteModal('write')">
+  <span>✏️</span><span>글쓰기</span>
+</button>
+<button class="fab-sheet-btn" onclick="closeFabSheet();openWriteModal('photo')">
+  <span>📷</span><span>사진 올리기</span>
+</button>
 </div>
 <div class="fab-sheet-backdrop" id="fabBackdrop" onclick="closeFabSheet()"></div>
 
 <!-- ── 글쓰기 모달 ─────────────────────────────────────────────────────────── -->
-<div class="modal-overlay" id="writeModal" onclick="closeModal('writeModal',event)" style="align-items:center;padding:24px;">
+<!-- ── 통합 작성 모달 ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="composeModal" onclick="closeModal('composeModal',event)">
   <div class="modal-box" style="border-radius:20px;">
     <div class="modal-handle" style="display:none;"></div>
-    <div class="modal-title">글쓰기 ✏️</div>
-    <textarea class="modal-input" id="writeContent" placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
-    <div id="writePrevWrap" style="display:none;margin-bottom:10px;">
-      <div class="prev-grid" id="writePrevCells"></div>
+    <div class="modal-title" id="composeTitle">작성하기 ✏️</div>
+
+    <textarea class="modal-input" id="composeContent"
+      placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
+
+    <!-- 사진 미리보기 -->
+    <div id="composePrevWrap" style="display:none;margin-bottom:10px;">
+      <div class="prev-grid" id="composePrevCells"></div>
     </div>
 
     <!-- 분류 선택 -->
     <div class="compose-section">
       <div class="compose-section-head">
         <span class="compose-label">분류</span>
-        <button class="compose-add-btn" onclick="openAddCatInline('write')">+ 분류 만들기</button>
+        <button class="compose-add-btn" onclick="openAddCatInline('compose')">+ 분류 만들기</button>
       </div>
-      <div class="cat-sel-wrap" id="writeCatWrap"></div>
-      <div id="writeCatInline" style="display:none;margin-top:8px;">
+      <div class="cat-sel-wrap" id="composeCatWrap"></div>
+      <div id="composeCatInline" style="display:none;margin-top:8px;">
         <div style="display:flex;gap:6px;">
-          <input class="modal-input" id="writeCatName" placeholder="분류 이름" style="margin:0;flex:1;">
-          <button onclick="submitAddCat('write')"
+          <input class="modal-input" id="composeCatName" placeholder="분류 이름" style="margin:0;flex:1;">
+          <button onclick="submitAddCat('compose')"
             style="background:var(--brown);color:white;border:none;border-radius:10px;padding:0 14px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Gowun Dodum',serif;">추가</button>
         </div>
       </div>
@@ -110,85 +115,33 @@
     <div class="compose-section">
       <div class="compose-section-head">
         <span class="compose-label">방</span>
-        <button class="compose-add-btn" onclick="openAddEventRoomInline('write')">+ 이벤트방 만들기</button>
+        <button class="compose-add-btn" onclick="openAddEventRoomInline('compose')">+ 이벤트방 만들기</button>
       </div>
-      <div class="room-sel-wrap" id="writeRoomWrap"></div>
-      <div id="writeEventInline" style="display:none;margin-top:8px;">
+      <div class="room-sel-wrap" id="composeRoomWrap"></div>
+      <div id="composeEventInline" style="display:none;margin-top:8px;">
         <div style="display:flex;gap:6px;margin-bottom:6px;">
-          <input class="modal-input" id="writeEventName" placeholder="이벤트 이름" style="margin:0;flex:1;">
-          <input class="modal-input" id="writeEventDate" type="date" style="margin:0;width:140px;">
+          <input class="modal-input" id="composeEventName" placeholder="이벤트 이름" style="margin:0;flex:1;">
+          <input class="modal-input" id="composeEventDate" type="date" style="margin:0;width:140px;">
         </div>
-        <button onclick="submitAddEventRoom('write')"
+        <button onclick="submitAddEventRoom('compose')"
           style="width:100%;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;">이벤트방 생성</button>
       </div>
     </div>
 
-    <div class="prog-wrap" id="writeProgWrap">
-      <div class="prog-bar"><div class="prog-fill" id="writeProgFill"></div></div>
-      <div class="prog-text" id="writeProgText"></div>
+    <!-- 업로드 진행 -->
+    <div class="prog-wrap" id="composeProgWrap">
+      <div class="prog-bar"><div class="prog-fill" id="composeProgFill"></div></div>
+      <div class="prog-text" id="composeProgText"></div>
     </div>
-    <div style="display:flex;gap:8px;">
+
+    <!-- 하단 액션 -->
+    <div style="display:flex;gap:8px;margin-top:4px;">
       <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;"
-        onclick="document.getElementById('writePhotoInput').click()">📷</button>
-      <input type="file" id="writePhotoInput" accept="image/*" multiple style="display:none" onchange="handleWritePhoto(this)">
+        onclick="document.getElementById('composePhotoInput').click()">📷</button>
+      <input type="file" id="composePhotoInput" accept="image/*" multiple style="display:none"
+        onchange="handleWritePhoto(this)">
       <button class="modal-submit" style="margin-top:0;" onclick="submitWrite()">등록</button>
     </div>
-  </div>
-</div>
-
-<!-- ── 사진 업로드 모달 ───────────────────────────────────────────────────── -->
-<div class="modal-overlay" id="uploadModal" onclick="closeModal('uploadModal',event)">
-  <div class="modal-box">
-    <div class="modal-handle"></div>
-    <div class="modal-title">사진 올리기 📷</div>
-    <div class="drop-zone" onclick="document.getElementById('uploadInput').click()">
-      <div style="font-size:36px;margin-bottom:8px;">🖼️</div>
-      <div style="font-size:13px;">사진을 선택하세요</div>
-      <div style="font-size:11px;margin-top:4px;opacity:.6;">여러 장 동시 선택 · 최대 10장</div>
-    </div>
-    <input type="file" id="uploadInput" accept="image/*" multiple style="display:none" onchange="handleUploadSelect(this)">
-    <div id="uploadPrevWrap" style="display:none;"><div class="prev-grid" id="uploadPrevCells"></div></div>
-    <textarea class="modal-input" id="uploadContent" placeholder="사진 설명 (선택)" style="height:60px;"></textarea>
-
-    <!-- 분류 선택 -->
-    <div class="compose-section">
-      <div class="compose-section-head">
-        <span class="compose-label">분류</span>
-        <button class="compose-add-btn" onclick="openAddCatInline('upload')">+ 분류 만들기</button>
-      </div>
-      <div class="cat-sel-wrap" id="uploadCatWrap"></div>
-      <div id="uploadCatInline" style="display:none;margin-top:8px;">
-        <div style="display:flex;gap:6px;">
-          <input class="modal-input" id="uploadCatName" placeholder="분류 이름" style="margin:0;flex:1;">
-          <button onclick="submitAddCat('upload')"
-            style="background:var(--brown);color:white;border:none;border-radius:10px;padding:0 14px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'Gowun Dodum',serif;">추가</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 방 선택 -->
-    <div class="compose-section">
-      <div class="compose-section-head">
-        <span class="compose-label">방</span>
-        <button class="compose-add-btn" onclick="openAddEventRoomInline('upload')">+ 이벤트방 만들기</button>
-      </div>
-      <div class="room-sel-wrap" id="uploadRoomWrap"></div>
-      <div id="uploadEventInline" style="display:none;margin-top:8px;">
-        <div style="display:flex;gap:6px;margin-bottom:6px;">
-          <input class="modal-input" id="uploadEventName" placeholder="이벤트 이름" style="margin:0;flex:1;">
-          <input class="modal-input" id="uploadEventDate" type="date" style="margin:0;width:140px;">
-        </div>
-        <button onclick="submitAddEventRoom('upload')"
-          style="width:100%;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;">이벤트방 생성</button>
-      </div>
-    </div>
-
-    <input type="date" class="modal-input" id="uploadDate">
-    <div class="prog-wrap" id="uploadProgWrap">
-      <div class="prog-bar"><div class="prog-fill" id="uploadProgFill"></div></div>
-      <div class="prog-text" id="uploadProgText"></div>
-    </div>
-    <button class="modal-submit" id="uploadSubmit" onclick="submitUpload()">올리기</button>
   </div>
 </div>
 
