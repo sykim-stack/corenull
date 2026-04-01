@@ -349,6 +349,7 @@ function buildTabs(house, rooms, milestones, comments) {
     btn.className   = 'tab-btn' + (idx === 0 ? ' active' : '');
     btn.innerHTML   = `<span class="ti">${meta.icon}</span>${label}`;
     btn.dataset.tab = tabId;
+    btn.dataset.room = room.room_type;  // ← 이 줄 추가
     btn.onclick     = () => switchTab(tabId);
     tabInner.appendChild(btn);
 
