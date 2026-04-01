@@ -13,34 +13,49 @@
 </head>
 <body>
 
-<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
-<div class="hero">
-  <div class="hero-circles"><span></span><span></span><span></span></div>
-  <div class="hero-badge" id="heroBadge">🏠 CoreNull</div>
-  <div class="photo-frame" id="heroFrame">
-    <div class="photo-frame-placeholder" id="heroPlaceholder">🏠</div>
-    <div class="photo-upload-hint">사진 변경</div>
+<!-- ── Top Nav (CoreBlack 고정) ─────────────────────────────────────────── -->
+<nav class="top-nav" id="topNav">
+  <div class="top-nav-inner">
+    <div class="top-logo">CoreNull</div>
+    <div class="top-tabs" id="topTabs"></div>
+    <div class="top-actions" id="topActions"></div>
   </div>
+</nav>
+
+<!-- ── Cover Banner ─────────────────────────────────────────────────────── -->
+<div class="cover-wrap" id="coverWrap">
+  <div class="cover-img" id="coverImg"></div>
+  <div class="cover-gradient"></div>
   <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCover(this)">
-  <div class="hero-name" id="heroName">---</div>
-  <div class="hero-sub" id="heroSub">불러오는 중...</div>
-  <div class="dday-wrap" id="ddayWrap"></div>
-  <div id="shareWrap" style="display:flex;gap:10px;margin-top:24px;animation:fadeUp .8s .6s ease both;flex-wrap:wrap;justify-content:center;">
-    <button onclick="shareKakao()" style="display:flex;align-items:center;gap:8px;background:#FEE500;border:none;border-radius:24px;padding:12px 20px;font-family:'Gowun Dodum',serif;font-size:13px;color:#3C1E1E;cursor:pointer;font-weight:600;box-shadow:0 4px 16px rgba(254,229,0,.4);">
-      <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" style="width:20px;height:20px;border-radius:50%;">카카오톡
-    </button>
-    <button onclick="shareZalo()" style="display:flex;align-items:center;gap:8px;background:#0068FF;border:none;border-radius:24px;padding:12px 20px;font-family:'Gowun Dodum',serif;font-size:13px;color:white;cursor:pointer;font-weight:600;box-shadow:0 4px 16px rgba(0,104,255,.3);">
-      <span style="font-size:16px;">💬</span>Zalo
-    </button>
-    <button onclick="copyLink()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.7);border-radius:24px;padding:12px 20px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--brown);cursor:pointer;font-weight:600;">
-      <span style="font-size:16px;">🔗</span>링크 복사
-    </button>
-  </div>
-  <div class="scroll-hint"><span>↓</span><span>SCROLL</span></div>
 </div>
 
-<!-- ── Tab Nav ────────────────────────────────────────────────────────────── -->
-<nav class="tab-nav"><div class="tab-inner" id="tabInner"></div></nav>
+<!-- ── Profile Area ─────────────────────────────────────────────────────── -->
+<div class="profile-area">
+  <div class="profile-inner">
+    <div class="profile-left">
+      <div class="profile-photo" id="profilePhoto">
+        <div class="profile-photo-placeholder" id="profilePlaceholder">🏠</div>
+        <div class="profile-photo-hint">변경</div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name" id="heroName">---</div>
+        <div class="profile-sub"  id="heroSub"></div>
+        <div class="profile-dday" id="ddayWrap"></div>
+      </div>
+    </div>
+    <div class="profile-right" id="profileActions">
+      <div id="shareWrap" class="share-wrap">
+        <button onclick="shareKakao()" class="share-btn kakao">
+          <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" style="width:16px;height:16px;border-radius:50%;">카카오
+        </button>
+        <button onclick="shareZalo()"  class="share-btn zalo">💬 Zalo</button>
+        <button onclick="copyLink()"   class="share-btn link">🔗 복사</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab Contents ──────────────────────────────────────────────────────── -->
 <div id="tabContents"></div>
 
 <!-- ── Footer ────────────────────────────────────────────────────────────── -->
