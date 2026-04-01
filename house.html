@@ -248,10 +248,10 @@ window.translateComment = translateComment;
 window.goStepHouse     = goStepHouse;
 window.joinCurrentHouse = joinCurrentHouse;
 window.skipOnboarding  = skipOnboarding;
-window.createEventRoom = createEventRoom;
-window.openEventMgr        = openEventMgr;
-window.renderEventRoomList = renderEventRoomList;
-window.openEditEventRoom   = openEditEventRoom;
+window.createEventRoom = () => coreCreateEventRoom(reloadData);
+window.saveEditEventRoom   = (id) => coreSaveEditEventRoom(id, reloadData); // 래퍼
+window.createEventRoom     = () => coreCreateEventRoom(reloadData);         // 래퍼
+window.deleteEventRoom     = (id) => coreDeleteEventRoom(id, reloadData);   // 래퍼
 window.saveEditEventRoom   = (id) => coreSaveEditEventRoom(id, reloadData);
 window.createEventRoom     = () => coreCreateEventRoom(reloadData);
 window.deleteEventRoom     = (id) => coreDeleteEventRoom(id, reloadData);
