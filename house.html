@@ -201,6 +201,7 @@ import { shareKakao as coreShareKakao, shareZalo as coreShareZalo, copyLink as c
 import { openWriteModal, handleWritePhoto, submitWrite as coreSubmitWrite } from '/public/js/features/write.js';
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment} from '/public/js/features/guestbook.js';
 import { openEventMgr, renderEventRoomList, openEditEventRoom, saveEditEventRoom as coreSaveEditEventRoom, createEventRoom as coreCreateEventRoom, deleteEventRoom as coreDeleteEventRoom} from '/public/js/features/event-mgr.js';
+import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding from '/public/js/features/onboarding.js';
 // ── 전역 노출 (HTML onclick에서 호출) ──────────────────────────────────────
 window.uploadCover = (input) => uploadCover(input, state, showToast, reloadData);
 window.showToast       = showToast;
@@ -244,10 +245,10 @@ window.deleteComment    = (id) => coreDeleteComment(id, reloadData);
 window.getAiMsg         = getAiMsg;
 window.translateComment = translateComment;
 window.getAiMsg        = getAiMsg;
-window.translateComment = translateComment;
-window.goStepHouse     = goStepHouse;
-window.joinCurrentHouse = joinCurrentHouse;
-window.skipOnboarding  = skipOnboarding;
+window.translateComment = () => translateComment(reloadData);
+window.goStepHouse     = () => goStepHouse(reloadData);
+window.joinCurrentHouse = () => joinCurrentHouse(reloadData);
+window.skipOnboarding  = () => skipOnboarding(reloadData);
 window.createEventRoom = () => coreCreateEventRoom(reloadData);
 window.saveEditEventRoom   = (id) => coreSaveEditEventRoom(id, reloadData); // 래퍼
 window.createEventRoom     = () => coreCreateEventRoom(reloadData);         // 래퍼
@@ -584,61 +585,6 @@ async function deletePost(postId) {
     else showToast(data.error || '삭제 실패');
   });
 }
-
-// ── Onboarding ────────────────────────────────────────────────────────────
-let selectedInterests = [];
-
-async function showInterestModal() {
-  try {
-    const res = await fetch('/api/interests', { headers: { 'x-device-id': DEVICE_ID } });
-    const interests = await res.json();
-    document.getElementById('interestGrid').innerHTML = interests.map(i =>
-      `<div class="interest-chip" data-id="${i.id}" onclick="toggleInterest(this)">
-        <div class="interest-emoji">${i.emoji}</div>
-        <div class="interest-name">${i.name}</div>
-      </div>`
-    ).join('');
-    document.getElementById('onboardOverlay').classList.add('open');
-  } catch (e) { console.error('[interest modal]', e); }
-}
-
-window.toggleInterest = function(el) {
-  el.classList.toggle('on');
-  selectedInterests = [...document.querySelectorAll('.interest-chip.on')].map(e => e.dataset.id);
-  document.getElementById('onboardBtn').disabled = selectedInterests.length < 3;
-};
-
-async function goStepHouse() {
-  if (selectedInterests.length < 3) return;
-  try {
-    await fetch('/api/interests', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
-      body: JSON.stringify({ interest_ids: selectedInterests })
-    });
-  } catch {}
-  document.getElementById('stepInterest').style.display = 'none';
-  document.getElementById('stepHouse').style.display    = 'block';
-  if (state.houseData) {
-    const catEmoji = { baby:'👶', pet:'🐾', travel:'✈️', fitness:'💪', daily:'🏠' };
-    document.getElementById('houseStepEmoji').textContent = catEmoji[state.houseData.category] || '🏠';
-    document.getElementById('houseStepName').textContent  = state.houseData.name || state.slug;
-    document.getElementById('houseStepSub').textContent   = `${state.houseData.name || state.slug}에 멤버로 등록됩니다`;
-  }
-}
-
-async function joinCurrentHouse() {
-  if (!state.houseId) { skipOnboarding(); return; }
-  try {
-    await fetch('/api/onboarding?action=join-house', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
-      body: JSON.stringify({ house_id: state.houseId, role: 'member' })
-    });
-    showToast('환영해요! 🏠');
-  } catch {}
-  document.getElementById('onboardOverlay').classList.remove('open');
-}
-
-function skipOnboarding() { document.getElementById('onboardOverlay').classList.remove('open'); }
 
 // ── Visit 추적 ────────────────────────────────────────────────────────────
 function trackVisit(houseId) {
