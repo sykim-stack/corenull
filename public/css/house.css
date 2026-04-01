@@ -124,18 +124,56 @@
 /* ══════════════════════════════════════════════════════════════
    POST
    ══════════════════════════════════════════════════════════════ */
-.post-list { display:flex; flex-direction:column; gap:14px; }
+/* ── Post (수정) ──────────────────────────────────────────────────────────── */
 .post-item {
-  background:white; border:1px solid rgba(139,94,60,.1);
-  border-radius:18px; padding:18px; animation:fadeUp .4s ease both;
+  background:white;
+  border:1px solid rgba(139,94,60,.1);
+  border-radius:18px;
+  overflow:hidden;
+  animation:fadeUp .4s ease both;
 }
-.post-body { font-size:14px; line-height:1.8; color:var(--text); margin-bottom:10px; }
-.post-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
-.post-tag { font-size:11px; padding:3px 10px; border-radius:10px; color:white; background:var(--mint); }
-.post-foot { display:flex; align-items:center; justify-content:space-between; }
-.post-time { font-size:11px; color:var(--muted); }
-.post-del { background:none; border:none; font-size:14px; cursor:pointer; color:var(--muted); }
-.post-del:hover { color:#e55; }
+/* 텍스트/태그 영역 패딩 */
+.post-tags  { padding:12px 16px 0; display:flex; flex-wrap:wrap; gap:6px; }
+.post-body  { padding:12px 16px 0; font-size:14px; line-height:1.8; color:var(--text); }
+.post-tags + .post-body { padding-top:8px; }
+
+/* ── Post Actions Bar ────────────────────────────────────────────────────── */
+.post-actions {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 14px 14px;
+  flex-wrap:nowrap;        /* 모바일 줄바꿈 방지 */
+}
+.post-actions .reaction-btn,
+.post-actions .comment-btn {
+  display:flex; align-items:center; gap:4px;
+  background:none;
+  border:1px solid rgba(139,94,60,.15);
+  border-radius:20px;
+  padding:6px 12px;
+  font-size:12px;
+  cursor:pointer;
+  color:var(--brown);
+  transition:all .2s;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.post-actions .reaction-btn:hover { background:rgba(255,100,100,.08); }
+.post-actions .comment-btn:hover  { background:rgba(139,94,60,.08); }
+.post-actions .post-time {
+  font-size:11px;
+  color:var(--muted);
+  margin-left:auto;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.post-actions .post-del {
+  background:none; border:none;
+  font-size:14px; cursor:pointer; color:var(--muted);
+  flex-shrink:0;
+}
 
 /* ══════════════════════════════════════════════════════════════
    LIBRARY (서재)

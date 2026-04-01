@@ -337,9 +337,30 @@ body {
 /* ══════════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════════ */
-@media(max-width:480px) {
-  .profile-inner { flex-direction:column; align-items:flex-start; }
-  .profile-right { width:100%; }
-  .share-wrap { justify-content:flex-start; }
-  .profile-name { font-size:20px; }
+@media(max-width:600px) {
+  /* 프로필 */
+  .profile-inner   { flex-direction:column; align-items:flex-start; gap:10px; }
+  .profile-right   { width:100%; }
+  .share-wrap      { justify-content:flex-start; flex-wrap:wrap; }
+  .profile-name    { font-size:18px; }
+  .profile-photo   { width:80px; height:80px; margin-top:-32px; }
+
+  /* 네비 탭 */
+  .top-tab-btn     { padding:5px 10px; font-size:11px; }
+  .top-logo        { font-size:13px; }
+
+  /* 섹션 여백 */
+  .section         { padding:24px 14px; }
+
+  /* 커버 */
+  .cover-wrap      { aspect-ratio:16/7; }
+
+  /* D-day 박스 */
+  .dday-box        { min-width:48px; padding:5px 10px; }
+  .dday-num        { font-size:15px; }
+}
+
+@media(max-width:380px) {
+  .share-btn       { padding:7px 10px; font-size:11px; }
+  .profile-name    { font-size:16px; }
 }
