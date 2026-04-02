@@ -549,3 +549,29 @@
 .room-sel:hover:not(.on) { background:var(--peach); }
 .room-sel.event-type { border-color:rgba(196,120,75,.3); color:var(--room-event); }
 .room-sel.event-type.on { background:var(--room-event); color:white; border-color:var(--room-event); }
+
+/* FAB 버튼 */
+
+.cat-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cat-divider { height: 1px; background: var(--border, #eee); margin: 8px 0; }
+.cat-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cat-add-btn {
+  font-size: 11px; padding: 4px 8px; border-radius: 20px;
+  border: 1px dashed var(--muted, #aaa); background: transparent;
+  color: var(--muted, #aaa); cursor: pointer;
+}
+.cat-add-btn:hover { border-color: var(--mint); color: var(--mint); }
+.cat-add-event { border-color: #F7C59F; color: #c97a2a; }
+.cat-add-event:hover { border-color: #e08c2a; color: #e08c2a; }
+.cat-inline-form {
+  display: flex; gap: 6px; align-items: center; margin-top: 6px;
+}
+.cat-inline-form input {
+  flex: 1; padding: 4px 8px; border-radius: 8px;
+  border: 1px solid var(--border, #ddd); font-size: 13px;
+}
+.cat-inline-form button {
+  padding: 4px 10px; border-radius: 8px; border: none;
+  background: var(--mint); color: white; cursor: pointer; font-size: 12px;
+}
+.cat-empty { font-size: 12px; color: var(--muted); }
