@@ -163,6 +163,7 @@ export async function submitWrite(reloadData) {
   }
 
   const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId });
+  console.log('submitPost 응답:', data);  // ← 추가
   if (data.success) {
     showToast('등록됐어요 ✅');
     document.getElementById('composeModal').classList.remove('open');
