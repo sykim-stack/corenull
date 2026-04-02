@@ -9,7 +9,21 @@ export default async function handler(req, res) {
 
   // ── GET ──────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
-    const { house_id, post_id, room_id } = req.query;
+    const { house_id, post_id, room_id, action, target_id, target_type } = req.query;
+    const device_id = req.headers['x-device-id'] || '';
+
+    // reaction 조회
+    if (action === 'react') {
+      if (!target_id) return res.status(400).json({ error: 'target_id required' });
+      const { data, error } = await supabase
+        .schema('corenull').from('reactions')
+        .select('id, device_id')
+        .eq('target_id', target_id)
+        .eq('target_type', target_type || 'post');
+      if (error) return res.status(500).json({ error: error.message });
+      const reacted = data.some(r => r.device_id === device_id);
+      return res.status(200).json({ count: data.length, reacted });
+    }
 
     // 포스트 댓글 조회 (post_id 기준)
     if (post_id) {
@@ -41,6 +55,39 @@ export default async function handler(req, res) {
 
   // ── POST ─────────────────────────────────────────────────────────────────
   if (req.method === 'POST') {
+    const device_id = req.headers['x-device-id'] || '';
+
+    // reaction 토글
+    if (req.body.action === 'react') {
+      const { house_id, target_id, target_type, emoji } = req.body;
+      if (!target_id) return res.status(400).json({ error: 'target_id required' });
+
+      // 이미 있으면 삭제 (토글)
+      const { data: existing } = await supabase
+        .schema('corenull').from('reactions')
+        .select('id')
+        .eq('target_id', target_id)
+        .eq('device_id', device_id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.schema('corenull').from('reactions').delete().eq('id', existing.id);
+        return res.status(200).json({ reacted: false });
+      }
+
+      const { error } = await supabase.schema('corenull').from('reactions').insert({
+        house_id:    house_id    || null,
+        target_id,
+        target_type: target_type || 'post',
+        device_id,
+        emoji:       emoji       || '❤️',
+        action_type: 'react',
+      });
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json({ reacted: true });
+    }
+
+    // 댓글 등록
     let { house_id, slug, author_name, content, media_url, room_id, post_id } = req.body;
 
     // slug → house_id 변환
