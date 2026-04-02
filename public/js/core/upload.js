@@ -66,9 +66,14 @@ export async function uploadCover(input, state, showToast, reloadData) {
   showToast('커버 업로드 중... ⏳');
   try {
     const cover_url = await uploadCoverImage(file);
-    const res = await fetch('/api/cover', {
+    const res = await fetch('/api/upload', {                          // ← /api/cover → /api/upload
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, cover_url })
+      body: JSON.stringify({ 
+        action: 'cover',                                               // ← action 추가
+        house_id: state.houseId, 
+        owner_key: state.ownerKey, 
+        file_url: cover_url                                            // ← cover_url → file_url
+      })
     });
     const data = await res.json();
     if (data.success) { showToast('커버가 변경됐어요 ✅'); await reloadData(); }
