@@ -29,27 +29,34 @@ export default async function handler(req, res) {
       }
     }
   
-    // POST — 분류 생성
-    if (req.method === 'POST') {
-      const { house_id, name, color } = req.body;
-      if (!house_id || !name) return res.status(400).json({ error: 'house_id, name required' });
-      const CAT_COLORS = ['#8FBFAB','#E8A0A8','#C9A84C','#8B5E3C','#7BA7BC','#D4956A'];
-      const autoColor  = color || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
-      const r    = await fetch(`${baseUrl}/rest/v1/categories`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ house_id, name: name.trim(), color: autoColor, order_num: 99 })
-      });
-      const text = await r.text();
-      try {
-        const data = JSON.parse(text);
-        const cat  = Array.isArray(data) ? data[0] : data;
-        if (!cat?.id) return res.status(500).json({ error: '분류 생성 실패', raw: text, status: r.status });
-        return res.status(200).json(cat);
-      } catch(e) {
-        return res.status(500).json({ error: 'parse error', raw: text, status: r.status });
-      }
-    }
+// POST — 분류 생성
+if (req.method === 'POST') {
+  const { house_id, name, color, is_event, event_date } = req.body;
+  if (!house_id || !name) return res.status(400).json({ error: 'house_id, name required' });
+  const CAT_COLORS = ['#8FBFAB','#E8A0A8','#C9A84C','#8B5E3C','#7BA7BC','#D4956A'];
+  const autoColor  = color || CAT_COLORS[Math.floor(Math.random() * CAT_COLORS.length)];
+  const r    = await fetch(`${baseUrl}/rest/v1/categories`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      house_id,
+      name: name.trim(),
+      color: autoColor,
+      order_num: 99,
+      is_event: is_event === true || is_event === 'true' ? true : false,
+      event_date: is_event && event_date ? event_date : null,
+    })
+  });
+  const text = await r.text();
+  try {
+    const data = JSON.parse(text);
+    const cat  = Array.isArray(data) ? data[0] : data;
+    if (!cat?.id) return res.status(500).json({ error: '분류 생성 실패', raw: text, status: r.status });
+    return res.status(200).json(cat);
+  } catch(e) {
+    return res.status(500).json({ error: 'parse error', raw: text, status: r.status });
+  }
+}
   
     // DELETE
     if (req.method === 'DELETE') {
