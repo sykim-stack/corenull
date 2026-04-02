@@ -828,8 +828,6 @@ async function reloadData() {
   try {
     const data = await loadHouseData();
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
-    const postIds = state.allPosts.map(p => p.id).filter(Boolean);
-    loadReactions(postIds);
   } catch (e) { console.error(e); }
 }
 
