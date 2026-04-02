@@ -43,7 +43,22 @@ export default async function handler(req, res) {
     }
     return res.status(200).json({ success: true, cover_url: coverUrl });
   }
-
+// ── action=profile : houses.profile_url 업데이트
+if (action === 'profile') {
+  const profileUrl = file_url;
+  if (!profileUrl || !house_id) {
+    return res.status(400).json({ error: 'file_url, house_id 필수' });
+  }
+  const dbRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/houses?id=eq.${house_id}`,
+    { method: 'PATCH', headers: HEADERS, body: JSON.stringify({ profile_url: profileUrl }) }
+  );
+  if (!dbRes.ok) {
+    const detail = await dbRes.text();
+    return res.status(500).json({ error: 'DB 저장 실패', detail });
+  }
+  return res.status(200).json({ success: true, profile_url: profileUrl });
+}
   // ── action=media (기본값) : media 테이블 저장
   const mediaUrl = file_url || file_base64;
   if (!mediaUrl || !house_id) {

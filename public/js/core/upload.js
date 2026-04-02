@@ -66,17 +66,52 @@ export async function uploadCover(input, state, showToast, reloadData) {
   showToast('커버 업로드 중... ⏳');
   try {
     const cover_url = await uploadCoverImage(file);
-    const res = await fetch('/api/upload', {                          // ← /api/cover → /api/upload
+    const res = await fetch('/api/upload', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        action: 'cover',                                               // ← action 추가
-        house_id: state.houseId, 
-        owner_key: state.ownerKey, 
-        file_url: cover_url                                            // ← cover_url → file_url
+      body: JSON.stringify({ action: 'cover', house_id: state.houseId, owner_key: state.ownerKey, file_url: cover_url })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('커버가 변경됐어요 ✅');
+
+      // 커버 배너 즉시 반영
+      const coverImg = document.getElementById('coverImg');
+      if (coverImg) coverImg.style.backgroundImage = `url(${cover_url})`;
+
+      // 프로필 사진은 그대로 유지 (커버와 분리)
+      // reloadData는 호출하되 프로필 이미지는 덮어쓰지 않도록
+      state.houseData = { ...state.houseData, cover_url };
+      await reloadData();
+    }
+    else showToast(data.error || '커버 변경 실패');
+  } catch { showToast('업로드 실패'); }
+}
+
+export async function uploadProfile(input, state, showToast, reloadData) {
+  if (!state.isOwner) return;
+  const file = input.files[0]; if (!file) return;
+  showToast('프로필 업로드 중... ⏳');
+  try {
+    const { resizeImg, b64Blob } = await import('/public/js/common.js');
+    const b64  = await resizeImg(file, 400);
+    const blob = await b64Blob(b64);
+    const profile_url = await uploadOne(blob);
+    const res = await fetch('/api/upload', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'profile',
+        house_id: state.houseId,
+        owner_key: state.ownerKey,
+        file_url: profile_url
       })
     });
     const data = await res.json();
-    if (data.success) { showToast('커버가 변경됐어요 ✅'); await reloadData(); }
-    else showToast(data.error || '커버 변경 실패');
+    if (data.success) {
+      showToast('프로필이 변경됐어요 ✅');
+      // 즉시 반영
+      const photo = document.getElementById('profilePhoto');
+      if (photo) photo.innerHTML = `<img src="${profile_url}" alt="profile"><div class="profile-photo-hint">변경</div>`;
+      state.houseData = { ...state.houseData, profile_url };
+    } else showToast(data.error || '프로필 변경 실패');
   } catch { showToast('업로드 실패'); }
 }

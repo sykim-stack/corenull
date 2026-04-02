@@ -28,6 +28,8 @@
   <div class="cover-img" id="coverImg"></div>
   <div class="cover-gradient"></div>
   <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCover(this)">
+  <input type="file" id="profileInput" accept="image/*" style="display:none"
+  onchange="uploadProfile(this)">
 </div>
 
 <!-- ── Profile Area ─────────────────────────────────────────────────────── -->
@@ -264,6 +266,7 @@ import { shareKakao as coreShareKakao, shareZalo as coreShareZalo, copyLink as c
 import { openWriteModal, handleWritePhoto, submitWrite as coreSubmitWrite } from '/public/js/features/write.js';
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
+import { uploadMany, uploadCoverImage, uploadCover, uploadProfile } from '/public/js/core/upload.js';
 
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
 window.showToast          = showToast;
@@ -314,6 +317,7 @@ window.shareKakao         = () => coreShareKakao({ name: state.houseData?.name |
 window.shareZalo          = () => coreShareZalo(location.href);
 window.copyLink           = () => coreCopyLink(location.href, showToast);
 window.parseVideoUrl      = parseVideoUrl;
+window.uploadProfile = (input) => uploadProfile(input, state, showToast, reloadData);
 // ── FAB 액션시트 ──────────────────────────────────────────────────────────
 function toggleFabSheet() {
   const sheet    = document.getElementById('fabSheet');
@@ -402,15 +406,14 @@ function applyHero(house) {
   }
 
   const photo = document.getElementById('profilePhoto');
-  if (house.cover_url) {
-    photo.innerHTML = `<img src="${house.cover_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
-  } else {
-    document.getElementById('profilePlaceholder').textContent = cat.ph;
-  }
-  if (state.isOwner) {
-    photo.classList.add('is-owner');
-    photo.onclick = () => document.getElementById('coverInput').click();
-  }
+if (house.profile_url) {
+  photo.innerHTML = `<img src="${house.profile_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
+} else {
+  document.getElementById('profilePlaceholder').textContent = cat.ph;
+}
+if (state.isOwner) {
+  photo.classList.add('is-owner');
+  photo.onclick = () => document.getElementById('profileInput').click(); // ← coverInput → profileInput
 }
 
 // ── initDday ──────────────────────────────────────────────────────────────
