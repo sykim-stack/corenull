@@ -28,8 +28,7 @@
   <div class="cover-img" id="coverImg"></div>
   <div class="cover-gradient"></div>
   <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="uploadCover(this)">
-  <input type="file" id="profileInput" accept="image/*" style="display:none"
-  onchange="uploadProfile(this)">
+  <input type="file" id="profileInput" accept="image/*" style="display:none" onchange="uploadProfile(this)">
 </div>
 
 <!-- ── Profile Area ─────────────────────────────────────────────────────── -->
@@ -414,6 +413,7 @@ if (house.profile_url) {
 if (state.isOwner) {
   photo.classList.add('is-owner');
   photo.onclick = () => document.getElementById('profileInput').click(); // ← coverInput → profileInput
+}
 }
 
 // ── initDday ──────────────────────────────────────────────────────────────
