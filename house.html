@@ -101,7 +101,7 @@
         onclick="document.getElementById('composePhotoInput').click()">📷</button>
       <input type="file" id="composePhotoInput" accept="image/*" multiple style="display:none"
         onchange="handleWritePhoto(this)">
-      <button class="modal-submit" style="margin-top:0;" onclick="submitWrite(loadData)">등록</button>
+      <button class="modal-submit" style="margin-top:0;" onclick="submitWrite(reloadData)">등록</button>
     </div>
   </div>
 </div>
@@ -337,6 +337,12 @@ async function submitAddCat(prefix) {
 
 window.openAddCatInline       = openAddCatInline;
 window.submitAddCat           = submitAddCat;
+// init() 바로 위에 추가
+async function reloadData() {
+  const data = await loadHouseData();
+  applyHero(data.house);
+  buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
+}
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   try {
