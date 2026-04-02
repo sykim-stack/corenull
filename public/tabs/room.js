@@ -6,19 +6,22 @@ export function renderRoom(container, room) {
   const posts = state.allPosts.filter(p => p.room_id === room.id);
   const cats = state.categories || [];
   
-  const normal = cats.filter(c => !c.is_event);
-const events = cats.filter(c =>  c.is_event);
+  const catHtml = cats.length ? `
+    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
+      ${cats.map(c => `<button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+        style="--cat-color:${c.color||'var(--mint)'};">${c.name}</button>`).join('')}
+    </div>` : '';
 
-const makeChip = c =>
-  `<button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-    style="--cat-color:${c.color||'var(--mint)'};">${c.name}</button>`;
-
-const catHtml = cats.length ? `
-  <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
-    <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
-    ${normal.map(makeChip).join('')}
-    ${events.length ? `<span style="color:var(--muted);font-size:11px;margin:0 2px;">|</span>${events.map(makeChip).join('')}` : ''}
-  </div>` : '';
+  container.innerHTML = `
+    <div class="section">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+        ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+      </div>
+      ${catHtml}
+      <div id="roomPostList-${room.id}"></div>
+    </div>`;
 
   renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
