@@ -111,23 +111,6 @@
       </div>
     </div>
 
-    <!-- 방 선택 -->
-    <div class="compose-section">
-      <div class="compose-section-head">
-        <span class="compose-label">방</span>
-        <button class="compose-add-btn" onclick="openAddEventRoomInline('compose')">+ 이벤트방 만들기</button>
-      </div>
-      <div class="room-sel-wrap" id="composeRoomWrap"></div>
-      <div id="composeEventInline" style="display:none;margin-top:8px;">
-        <div style="display:flex;gap:6px;margin-bottom:6px;">
-          <input class="modal-input" id="composeEventName" placeholder="이벤트 이름" style="margin:0;flex:1;">
-          <input class="modal-input" id="composeEventDate" type="date" style="margin:0;width:140px;">
-        </div>
-        <button onclick="submitAddEventRoom('compose')"
-          style="width:100%;background:var(--brown);color:white;border:none;border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:'Gowun Dodum',serif;">이벤트방 생성</button>
-      </div>
-    </div>
-
     <!-- 업로드 진행 -->
     <div class="prog-wrap" id="composeProgWrap">
       <div class="prog-bar"><div class="prog-fill" id="composeProgFill"></div></div>
@@ -280,7 +263,6 @@ import { uploadMany, uploadCoverImage, uploadCover } from '/public/js/core/uploa
 import { shareKakao as coreShareKakao, shareZalo as coreShareZalo, copyLink as coreCopyLink } from '/public/js/core/share.js';
 import { openWriteModal, handleWritePhoto, submitWrite as coreSubmitWrite } from '/public/js/features/write.js';
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
-import { openEventMgr, renderEventRoomList, openEditEventRoom, saveEditEventRoom as coreSaveEditEventRoom, createEventRoom as coreCreateEventRoom, deleteEventRoom as coreDeleteEventRoom } from '/public/js/features/event-mgr.js';
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
@@ -323,12 +305,6 @@ window.deleteComment      = (id) => coreDeleteComment(id, reloadData);
 window.getAiMsg           = getAiMsg;
 window.translateComment   = translateComment;
 window.deletePost         = deletePost;
-window.openEventMgr          = openEventMgr;
-window.renderEventRoomList   = renderEventRoomList;
-window.openEditEventRoom     = openEditEventRoom;
-window.saveEditEventRoom     = (id) => coreSaveEditEventRoom(id, reloadData);
-window.createEventRoom       = () => coreCreateEventRoom(reloadData);
-window.deleteEventRoom       = (id) => coreDeleteEventRoom(id, reloadData);
 window.toggleInterest     = toggleInterest;
 window.goStepHouse        = goStepHouse;
 window.joinCurrentHouse   = joinCurrentHouse;
@@ -356,42 +332,6 @@ function closeFabSheet() {
 window.toggleFabSheet = toggleFabSheet;
 window.closeFabSheet  = closeFabSheet;
 
-// ── 모달 공통: 방/분류 렌더 ───────────────────────────────────────────────
-function renderComposeRooms(prefix) {
-  const wrap = document.getElementById(`${prefix}RoomWrap`);
-  if (!wrap) return;
-  const rooms = state.rooms.filter(r => r.room_type === 'room' || r.room_type === 'event');
-  if (!rooms.length) { wrap.innerHTML = '<span style="font-size:12px;color:var(--muted);">방이 없어요</span>'; return; }
-  wrap.innerHTML = rooms.map(r => {
-    const isEvent = r.room_type === 'event';
-    return `<span class="room-sel${isEvent?' event-type':''}" data-id="${r.id}"
-      onclick="selectComposeRoom('${prefix}','${r.id}',this)">${isEvent ? '🎂 ' : ''}${r.room_name}</span>`;
-  }).join('');
-  // 현재 currentRoomId 있으면 자동 선택
-  if (state.currentRoomId) {
-    const chip = wrap.querySelector(`[data-id="${state.currentRoomId}"]`);
-    chip?.classList.add('on');
-  } else {
-    // 기본: 첫 번째 일반 방 선택
-    const first = wrap.querySelector('.room-sel:not(.event-type)');
-    first?.classList.add('on');
-  }
-}
-
-function selectComposeRoom(prefix, roomId, el) {
-  document.querySelectorAll(`#${prefix}RoomWrap .room-sel`).forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-}
-
-function renderComposeCats(prefix) {
-  const wrap = document.getElementById(`${prefix}CatWrap`);
-  if (!wrap) return;
-  wrap.innerHTML = state.categories.map(c =>
-    `<span class="cat-sel" data-id="${c.id}" onclick="this.classList.toggle('on')"
-      style="--cat-color:${c.color||'var(--mint)'};">${c.name}</span>`
-  ).join('');
-}
-
 // ── 분류 인라인 추가 ──────────────────────────────────────────────────────
 function openAddCatInline(prefix) {
   const el = document.getElementById(`${prefix}CatInline`);
@@ -416,38 +356,8 @@ async function submitAddCat(prefix) {
   } else showToast(data.error || '추가 실패');
 }
 
-// ── 이벤트방 인라인 생성 ──────────────────────────────────────────────────
-function openAddEventRoomInline(prefix) {
-  const el = document.getElementById(`${prefix}EventInline`);
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
-async function submitAddEventRoom(prefix) {
-  const name = document.getElementById(`${prefix}EventName`).value.trim();
-  const date = document.getElementById(`${prefix}EventDate`).value;
-  if (!name) { showToast('이벤트 이름을 입력해주세요'); return; }
-  const res = await fetch('/api/rooms', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey,
-      room_name: name, room_type: 'event', event_date: date || null })
-  });
-  const data = await res.json();
-  if (data.success) {
-    showToast(`${name} 이벤트방이 생성됐어요 🎂`);
-    document.getElementById(`${prefix}EventName`).value = '';
-    document.getElementById(`${prefix}EventDate`).value = '';
-    document.getElementById(`${prefix}EventInline`).style.display = 'none';
-    await reloadData();
-    renderComposeRooms(prefix);
-  } else showToast(data.error || '생성 실패');
-}
-
 window.openAddCatInline       = openAddCatInline;
 window.submitAddCat           = submitAddCat;
-window.openAddEventRoomInline = openAddEventRoomInline;
-window.submitAddEventRoom     = submitAddEventRoom;
-window.renderComposeRooms     = renderComposeRooms;
-window.selectComposeRoom      = selectComposeRoom;
 // ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -528,35 +438,53 @@ function buildTabs(house, rooms, milestones, comments) {
   const tabContents = document.getElementById('tabContents');
   topTabs.innerHTML = ''; tabContents.innerHTML = '';
 
-  const ordered = [
+  const spaceRooms = [
     ...rooms.filter(r => r.room_type === 'living'),
     ...rooms.filter(r => r.room_type === 'room'),
     ...rooms.filter(r => r.room_type === 'library'),
-    ...rooms.filter(r => r.room_type === 'event'),
-  ].filter(r => r.room_type !== 'storage');
+  ];
 
-  ordered.forEach((room, idx) => {
-    const meta  = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
-    const label = room.room_type === 'event' ? room.room_name : meta.label;
-    const tabId = `tab-${room.id}`;
+  const eventCats = (state.categories || []).filter(c => c.is_event);
 
-    const btn = document.createElement('button');
-    btn.className    = 'top-tab-btn' + (idx === 0 ? ' active' : '');
-    btn.innerHTML    = `<span class="ti">${meta.icon}</span>${label}`;
-    btn.dataset.tab  = tabId;
-    btn.dataset.room = room.room_type;
-    btn.onclick      = () => switchTab(tabId);
-    topTabs.appendChild(btn);
+  const allTabs = [
+    ...spaceRooms.map(r => ({ kind: 'room', data: r })),
+    ...eventCats.map(c => ({ kind: 'event', data: c })),
+  ];
 
-    const div = document.createElement('div');
-    div.className = 'tab-content' + (idx === 0 ? ' active' : '');
-    div.id = tabId;
-    tabContents.appendChild(div);
-
-    if (room.room_type === 'living')  renderLobby(div, house, milestones, comments, ordered);
-    if (room.room_type === 'room')    renderRoom(div, room);
-    if (room.room_type === 'library') renderLibrary(div);
-    if (room.room_type === 'event')   renderEvent(div, room);
+  allTabs.forEach((tab, idx) => {
+    const isFirst = idx === 0;
+    if (tab.kind === 'room') {
+      const room  = tab.data;
+      const meta  = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
+      const tabId = `tab-${room.id}`;
+      const btn = document.createElement('button');
+      btn.className   = 'top-tab-btn' + (isFirst ? ' active' : '');
+      btn.innerHTML   = `<span class="ti">${meta.icon}</span>${meta.label}`;
+      btn.dataset.tab = tabId;
+      btn.onclick     = () => switchTab(tabId);
+      topTabs.appendChild(btn);
+      const div = document.createElement('div');
+      div.className = 'tab-content' + (isFirst ? ' active' : '');
+      div.id = tabId;
+      tabContents.appendChild(div);
+      if (room.room_type === 'living')  renderLobby(div, house, milestones, comments, spaceRooms);
+      if (room.room_type === 'room')    renderRoom(div, room);
+      if (room.room_type === 'library') renderLibrary(div);
+    } else {
+      const cat   = tab.data;
+      const tabId = `tab-ev-${cat.id}`;
+      const btn = document.createElement('button');
+      btn.className   = 'top-tab-btn' + (isFirst ? ' active' : '');
+      btn.innerHTML   = `<span class="ti">🎂</span>${cat.name}`;
+      btn.dataset.tab = tabId;
+      btn.onclick     = () => switchTab(tabId);
+      topTabs.appendChild(btn);
+      const div = document.createElement('div');
+      div.className = 'tab-content' + (isFirst ? ' active' : '');
+      div.id = tabId;
+      tabContents.appendChild(div);
+      renderEvent(div, cat);
+    }
   });
 }
 
@@ -576,43 +504,42 @@ function switchToRoomType(type) {
 }
 
 // ── renderEvent ───────────────────────────────────────────────────────────
-function renderEvent(container, room) {
-  const diff     = room.event_date ? Math.ceil((new Date(room.event_date) - new Date()) / 86400000) : null;
-  const ddayText = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
-  const eventPhotos = state.allMedia.filter(m => m.media_type === 'photo' && m.room_id === room.id);
-  const lbUrls   = eventPhotos.map(m => m.file_url);
-  const photoHtml = eventPhotos.length
-    ? `<div class="lib-grid">${eventPhotos.map((m, i) =>
-        `<div class="lib-item" onclick='openLightbox(${JSON.stringify(lbUrls)},${i})'>
-          <img src="${m.file_url}" loading="lazy">
-          ${state.isOwner ? `<button class="lib-del" onclick="event.stopPropagation();confirmDelMedia('${m.id}')">🗑️</button>` : ''}
-        </div>`).join('')}</div>`
-    : `<div class="empty"><div class="ei">📷</div><p>이벤트 사진을 올려주세요</p></div>`;
+function renderEvent(container, cat) {
+  const diff = cat.event_date
+    ? Math.ceil((new Date(cat.event_date) - new Date()) / 86400000)
+    : null;
+  const ddayText = diff === null ? ''
+    : diff > 0  ? `D-${diff}`
+    : diff === 0 ? 'D-DAY 🎉'
+    : '완료 🎂';
 
-  const eventPosts = state.allPosts.filter(p => p.room_id === room.id);
-  const postsHtml  = eventPosts.length
+  const eventPosts = (state.allPosts || []).filter(p =>
+    (p.category_ids || []).includes(cat.id)
+  );
+
+  const postsHtml = eventPosts.length
     ? eventPosts.map((p, i) => renderPost(p, { delay: i, showTags: false })).join('')
     : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
 
-  container.innerHTML = `<div class="section">
-    <div class="ev-header">
-      <div class="ev-title">${room.room_name}</div>
-      ${room.event_date ? `<div class="ev-date">${fmtDate(room.event_date)}</div>` : ''}
-      ${ddayText ? `<div class="ev-dday">${ddayText}</div>` : ''}
-      <a href="/event?slug=${state.slug}&room=${room.id}" target="_blank"
-        style="display:inline-block;margin-top:14px;background:var(--gold);color:white;border-radius:20px;padding:8px 20px;font-size:12px;text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
-    </div>
-    <div class="sec-head" style="margin-bottom:16px;">
-      <div><div class="sec-label">POSTS</div><div class="sec-title">글</div></div>
-      ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
-    </div>
-    <div class="post-list">${postsHtml}</div>
-    <div class="sec-head" style="margin-top:36px;margin-bottom:16px;">
-      <div><div class="sec-label">PHOTOS</div><div class="sec-title">사진</div></div>
-      ${state.isOwner ? `<button class="more-btn" onclick="openUploadModal('${room.id}')">+ 사진 추가</button>` : ''}
-    </div>
-    ${photoHtml}
-  </div>`;
+  container.innerHTML = `
+    <div class="section">
+      <div class="ev-header">
+        <div class="ev-title">${cat.name}</div>
+        ${cat.event_date ? `<div class="ev-date">${fmtDate(cat.event_date)}</div>` : ''}
+        ${ddayText       ? `<div class="ev-dday">${ddayText}</div>`               : ''}
+        <a href="/event?slug=${state.slug}&cat=${cat.id}" target="_blank"
+          style="display:inline-block;margin-top:14px;background:var(--gold);color:white;
+                 border-radius:20px;padding:8px 20px;font-size:12px;
+                 text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
+      </div>
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-label">POSTS</div><div class="sec-title">글</div></div>
+        ${state.isOwner
+          ? `<button class="more-btn" onclick="openWriteModal('write')">+ 글쓰기</button>`
+          : ''}
+      </div>
+      <div class="post-list">${postsHtml}</div>
+    </div>`;
 }
 
 // ── Post Viewer (페북 방식) ────────────────────────────────────────────────
