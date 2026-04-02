@@ -108,8 +108,7 @@ export function openWriteModal(mode = 'write') {
   document.getElementById('composePrevWrap').style.display = 'none';
   document.getElementById('composePrevCells').innerHTML    = '';
   document.getElementById('composeProgWrap').style.display = 'none';
-  document.getElementById('composeCatInline').style.display = 'none';
-
+  
   _renderComposeCats();
   document.getElementById('composeModal').classList.add('open');
 
