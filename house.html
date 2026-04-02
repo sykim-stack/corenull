@@ -314,6 +314,7 @@ window.shareKakao         = () => coreShareKakao({ name: state.houseData?.name |
 window.shareZalo          = () => coreShareZalo(location.href);
 window.copyLink           = () => coreCopyLink(location.href, showToast);
 window.parseVideoUrl      = parseVideoUrl;
+window.renderComposeCats = renderComposeCats;  // ← 이게 있어야 함
 // ── FAB 액션시트 ──────────────────────────────────────────────────────────
 function toggleFabSheet() {
   const sheet    = document.getElementById('fabSheet');

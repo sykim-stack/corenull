@@ -4,7 +4,7 @@ import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHt
 // ── 방 렌더 ───────────────────────────────────────────────────────────────
 export function renderRoom(container, room) {
   const posts = state.allPosts.filter(p => p.room_id === room.id);
-  const cats  = state.categories;
+  const cats = state.categories.filter(c => !c.is_event);
 
   const catHtml = cats.length ? `
     <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">

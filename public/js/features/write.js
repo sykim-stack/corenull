@@ -3,6 +3,42 @@ import { state, showToast, resizeImg } from '/public/js/common.js';
 import { submitPost } from '/public/js/api.js';
 import { uploadMany } from '/public/js/core/upload.js';
 
+// renderComposeCats를 write.js 내부에서 직접 처리
+function _renderComposeCats() {
+  const wrap = document.getElementById('composeCatWrap');
+  if (!wrap) return;
+  // is_event 제외한 일반 카테고리만
+  const cats = (state.categories || []).filter(c => !c.is_event);
+  wrap.innerHTML = cats.length
+    ? cats.map(c =>
+        `<span class="cat-sel" data-id="${c.id}"
+          onclick="this.classList.toggle('on')"
+          style="--cat-color:${c.color||'var(--mint)'};">${c.name}</span>`
+      ).join('')
+    : '<span style="font-size:12px;color:var(--muted);">분류 없음</span>';
+}
+
+export function openWriteModal(mode = 'write') {
+  state.writeFiles = [];
+
+  document.getElementById('composeContent').value          = '';
+  document.getElementById('composePrevWrap').style.display = 'none';
+  document.getElementById('composePrevCells').innerHTML    = '';
+  document.getElementById('composeProgWrap').style.display = 'none';
+  document.getElementById('composeCatInline').style.display = 'none';
+
+  _renderComposeCats();  // window 의존 제거
+
+  document.getElementById('composeModal').classList.add('open');
+
+  if (mode === 'write') {
+    setTimeout(() => document.getElementById('composeContent').focus(), 120);
+  } else {
+    setTimeout(() => document.getElementById('composePhotoInput').click(), 120);
+  }
+}
+
+
 export function openWriteModal(mode = 'write') {
   state.writeFiles = [];
 

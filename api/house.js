@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       fetch(`${baseUrl}/rest/v1/rooms?house_id=eq.${house.id}&is_hidden=eq.false&order=order_num.asc`, { headers }),
       fetch(`${baseUrl}/rest/v1/categories?house_id=eq.${house.id}&order=order_num.asc`, { headers }),
       fetch(`${baseUrl}/rest/v1/posts?house_id=eq.${house.id}&order=created_at.desc&limit=50`, { headers }),
-      fetch(`${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&order=created_at.desc&limit=20`, { headers }),
+      fetch(`${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&post_id=is.null&order=created_at.desc&limit=20`, { headers }),
     ]);
 
     const [media, milestones, rooms, categories, posts, comments] = await Promise.all([
