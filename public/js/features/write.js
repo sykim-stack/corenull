@@ -165,7 +165,10 @@ export async function submitWrite(reloadData) {
   if (data.success) {
     showToast('등록됐어요 ✅');
     document.getElementById('composeModal').classList.remove('open');
-    await reloadData();
+    await reloadData();           // 데이터 갱신
+    // 현재 활성 탭 재렌더
+    const activeTab = document.querySelector('.tab-btn.active')?.dataset?.tab;
+    if (activeTab && window.switchTab) window.switchTab(activeTab);
   } else {
     showToast(data.error || '등록 실패');
   }
