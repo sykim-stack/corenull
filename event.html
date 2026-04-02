@@ -17,6 +17,8 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html{scroll-behavior:smooth;}
     body{background:var(--cream);color:var(--text);font-family:'Gowun Dodum',serif;min-height:100vh;overflow-x:hidden;}
+
+    /* ── Hero ── */
     .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px 80px;overflow:hidden;}
     .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,201,154,0.35) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(200,151,90,0.12) 0%,transparent 60%);pointer-events:none;}
     .hero-bg::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' fill='rgba(122,82,48,0.04)'/%3E%3C/svg%3E");background-size:4px 4px;}
@@ -37,18 +39,15 @@
     .dday-label{font-family:'Nanum Myeongjo',serif;font-size:clamp(16px,4vw,22px);font-weight:700;color:var(--brown);background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.4));padding:14px 32px;border-radius:50px;border:1px solid var(--gold-lt);}
     .scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:11px;letter-spacing:2px;opacity:0;animation:fadeIn 1s ease 2s forwards;}
     .scroll-hint::before{content:'';display:block;width:1px;height:32px;background:linear-gradient(to bottom,transparent,var(--gold));}
+
+    /* ── Layout ── */
     .divider{display:flex;align-items:center;gap:16px;padding:0 24px;max-width:900px;margin:0 auto 48px;}
     .divider-line{flex:1;height:1px;background:var(--border);}
     .divider-icon{font-size:16px;color:var(--gold);}
     .section{max-width:900px;margin:0 auto;padding:0 24px 64px;}
     .section-title{font-family:'Nanum Myeongjo',serif;font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:32px;}
-    .info-list{display:flex;flex-direction:column;gap:0;margin-bottom:32px;background:white;border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);}
-    .info-row{display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);}
-    .info-row:last-child{border-bottom:none;}
-    .info-label{font-size:12px;color:var(--muted);letter-spacing:1px;min-width:80px;flex-shrink:0;}
-    .info-value{font-size:14px;color:var(--text);flex:1;line-height:1.5;}
-    .info-action{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;white-space:nowrap;text-decoration:none;display:inline-block;}
-    .info-action:hover{background:var(--warm);color:var(--brown);}
+
+    /* ── Interest ── */
     .interest-wrap{text-align:center;padding:48px 0;}
     .interest-btn{background:none;border:1.5px solid var(--gold-lt);color:var(--brown);font-family:'Gowun Dodum',serif;font-size:15px;padding:16px 40px;border-radius:50px;cursor:pointer;transition:all 0.25s ease;display:inline-flex;align-items:center;gap:10px;position:relative;overflow:hidden;}
     .interest-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--warm),rgba(232,201,154,0.3));opacity:0;transition:opacity 0.25s;}
@@ -58,58 +57,15 @@
     .interest-btn.active::before{opacity:0;}
     .interest-icon{font-size:18px;position:relative;z-index:1;}
     .interest-text{position:relative;z-index:1;}
-    .guestbook-list{display:flex;flex-direction:column;gap:16px;margin-bottom:32px;}
-    .comment-card{background:white;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 2px 12px var(--shadow);}
-    .comment-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-    .comment-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--warm),var(--gold-lt));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-    .comment-name{font-family:'Nanum Myeongjo',serif;font-weight:700;font-size:14px;color:var(--brown);}
-    .comment-date{font-size:11px;color:var(--muted);}
-    .comment-text{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
-    .comment-photo{margin-top:12px;border-radius:10px;overflow:hidden;}
-    .comment-photo img{width:100%;max-height:200px;object-fit:cover;display:block;}
-    .tr-result{margin-top:10px;padding:10px 12px;background:var(--warm);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;border-left:3px solid var(--gold);}
-    .tr-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:auto;flex-shrink:0;}
-    .tr-btn:hover{background:var(--warm);color:var(--brown);}
-    .write-form{background:white;border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 4px 20px var(--shadow);}
-    .write-form h3{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;color:var(--brown);margin-bottom:16px;}
-    .nickname-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;background:var(--warm);border:1px solid var(--border);border-radius:10px;padding:10px 14px;}
-    .nickname-label{font-size:11px;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
-    .nickname-value{font-family:'Nanum Myeongjo',serif;font-size:14px;font-weight:700;color:var(--brown);flex:1;}
-    .nickname-shuffle{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--muted);transition:all 0.2s;line-height:1;flex-shrink:0;}
-    .nickname-shuffle:hover{background:var(--cream);color:var(--brown);border-color:var(--gold);}
-    .nickname-shuffle.spin{animation:shuffleSpin 0.3s ease;}
-    @keyframes shuffleSpin{0%{transform:rotate(0deg) scale(0.8);}50%{transform:rotate(180deg) scale(1.1);}100%{transform:rotate(360deg) scale(1);}}
-    .form-row{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px;}
-    .form-input,.form-textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'Gowun Dodum',serif;font-size:14px;color:var(--text);background:var(--cream);transition:border-color 0.2s;outline:none;resize:none;}
-    .form-input:focus,.form-textarea:focus{border-color:var(--gold);}
-    .form-textarea{height:80px;display:block;}
-    .form-photo-label{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;padding:8px 0;}
-    .form-photo-label input{display:none;}
-    .form-submit{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:white;font-family:'Gowun Dodum',serif;font-size:15px;padding:14px;border-radius:12px;cursor:pointer;margin-top:12px;transition:opacity 0.2s,transform 0.2s;}
-    .form-submit:hover{opacity:0.9;transform:translateY(-1px);}
-    .form-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-    .footer{text-align:center;padding:40px 24px 60px;color:var(--muted);font-size:12px;line-height:1.8;}
-    .footer-logo{font-family:'Nanum Myeongjo',serif;font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;}
-    .lightbox{display:none;position:fixed;inset:0;background:rgba(30,15,5,0.92);z-index:100;align-items:center;justify-content:center;padding:24px;}
-    .lightbox.open{display:flex;}
-    .lightbox-img-wrap{position:relative;max-width:100%;max-height:90svh;display:flex;align-items:center;justify-content:center;}
-    .lightbox-img-wrap img{max-width:100%;max-height:90svh;border-radius:12px;object-fit:contain;display:block;}
-    .lightbox-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;}
-    .lightbox-close:hover{background:rgba(255,255,255,0.2);}
-    .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:rgba(255,255,255,0.12);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:1;}
-    .lightbox-nav:hover{background:rgba(255,255,255,0.25);}
-    .lightbox-nav.prev{left:12px;}
-    .lightbox-nav.next{right:12px;}
-    .lightbox-counter{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;}
-    .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:white;font-size:13px;padding:12px 24px;border-radius:50px;opacity:0;pointer-events:none;transition:all 0.3s ease;z-index:200;white-space:nowrap;}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes fadeIn{to{opacity:1;}}
-    @media(max-width:480px){.lightbox-nav{display:none;}}
+
+    /* ── Post Card ── */
+    .post-card{background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);}
     .post-actions{display:flex;align-items:center;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--border);}
     .post-act-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;display:inline-flex;align-items:center;gap:4px;transition:all 0.2s;}
     .post-act-btn:hover{background:var(--warm);color:var(--brown);border-color:var(--gold);}
     .post-act-btn.liked{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border-color:transparent;color:white;}
+
+    /* ── Post Comments ── */
     .post-comments{padding:0 16px 16px;display:none;}
     .post-comments.open{display:block;}
     .post-comment-item{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);}
@@ -122,6 +78,29 @@
     .post-comment-input{flex:1;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--text);background:var(--cream);outline:none;}
     .post-comment-input:focus{border-color:var(--gold);}
     .post-comment-submit{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;color:white;font-family:'Gowun Dodum',serif;font-size:13px;padding:9px 16px;border-radius:10px;cursor:pointer;}
+
+    /* ── Lightbox ── */
+    .lightbox{display:none;position:fixed;inset:0;background:rgba(30,15,5,0.92);z-index:100;align-items:center;justify-content:center;padding:24px;}
+    .lightbox.open{display:flex;}
+    .lightbox-img-wrap{position:relative;max-width:100%;max-height:90svh;display:flex;align-items:center;justify-content:center;}
+    .lightbox-img-wrap img{max-width:100%;max-height:90svh;border-radius:12px;object-fit:contain;display:block;}
+    .lightbox-close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;}
+    .lightbox-close:hover{background:rgba(255,255,255,0.2);}
+    .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:rgba(255,255,255,0.12);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:1;}
+    .lightbox-nav:hover{background:rgba(255,255,255,0.25);}
+    .lightbox-nav.prev{left:12px;}
+    .lightbox-nav.next{right:12px;}
+    .lightbox-counter{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;}
+
+    /* ── Toast / Footer ── */
+    .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:white;font-size:13px;padding:12px 24px;border-radius:50px;opacity:0;pointer-events:none;transition:all 0.3s ease;z-index:200;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .footer{text-align:center;padding:40px 24px 60px;color:var(--muted);font-size:12px;line-height:1.8;}
+    .footer-logo{font-family:'Nanum Myeongjo',serif;font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes fadeIn{to{opacity:1;}}
+    @media(max-width:480px){.lightbox-nav{display:none;}}
   </style>
 </head>
 <body>
@@ -137,13 +116,16 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- ── Hero ── -->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-badge" id="hero-badge">CoreNull · Event</div>
   <div class="hero-photo-wrap">
     <div class="hero-photo-ring"></div>
-    <img class="hero-photo" id="hero-photo" src="" alt="" onerror="this.style.display='none';document.getElementById('hero-placeholder').style.display='flex';" />
-    <div class="hero-photo-placeholder" id="hero-placeholder" style="display:none;position:absolute;inset:0;">🎉</div>
+    <img class="hero-photo" id="hero-photo" src="" alt=""
+      onerror="this.style.display='none';document.getElementById('hero-placeholder').style.display='flex';" />
+    <div class="hero-photo-placeholder" id="hero-placeholder"
+      style="display:none;position:absolute;inset:0;">🎉</div>
   </div>
   <div class="hero-name" id="hero-name">불러오는 중…</div>
   <div class="hero-subtitle" id="hero-subtitle"></div>
@@ -151,18 +133,16 @@
   <div class="scroll-hint">SCROLL</div>
 </section>
 
-<div class="divider"><div class="divider-line"></div><div class="divider-icon">✦</div><div class="divider-line"></div></div>
-<section class="section">
-  <div class="section-title">Info</div>
-  <div id="info-section"></div>
-</section>
-
+<!-- ── Gallery ── -->
 <div class="divider"><div class="divider-line"></div><div class="divider-icon">✿</div><div class="divider-line"></div></div>
 <section class="section">
   <div class="section-title">Photo Gallery</div>
-  <div id="gallery-grid"><div class="gallery-loading" style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0;">사진을 불러오는 중…</div></div>
+  <div id="gallery-grid" style="display:flex;flex-direction:column;gap:16px;">
+    <div style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0;">사진을 불러오는 중…</div>
+  </div>
 </section>
 
+<!-- ── Interest ── -->
 <div class="divider"><div class="divider-line"></div><div class="divider-icon">♡</div><div class="divider-line"></div></div>
 <section class="section">
   <div class="section-title">관심 남기기</div>
@@ -174,27 +154,7 @@
   </div>
 </section>
 
-<div class="divider"><div class="divider-line"></div><div class="divider-icon">✉</div><div class="divider-line"></div></div>
-<section class="section">
-  <div class="section-title">방명록</div>
-  <div class="guestbook-list" id="guestbook-list"><div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">불러오는 중…</div></div>
-  <div class="write-form">
-    <h3>✍️ 메시지 남기기</h3>
-    <div class="nickname-row">
-      <span class="nickname-label">닉네임</span>
-      <span class="nickname-value" id="nickname-display"></span>
-      <button class="nickname-shuffle" id="shuffle-btn" onclick="shuffleNickname()" title="다른 닉네임으로">🔀</button>
-    </div>
-    <div class="form-row">
-      <input class="form-input" id="input-lang" placeholder="한국어 / 베트남어 / 기타" maxlength="10" />
-    </div>
-    <textarea class="form-textarea" id="input-msg" placeholder="메시지를 남겨주세요 💛" maxlength="300"></textarea>
-    <label class="form-photo-label">📷 사진 첨부 (선택)<input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(this)" /></label>
-    <div id="photo-preview" style="margin-top:8px;"></div>
-    <button class="form-submit" id="submit-btn" onclick="submitComment()">메시지 남기기</button>
-  </div>
-</section>
-
+<!-- ── Footer ── -->
 <footer class="footer">
   <div class="footer-logo">CORE NULL</div>
   <div id="footer-name">소중한 순간을 함께 기록해요</div>
@@ -203,109 +163,103 @@
 
 <script>
 const SLUG        = new URLSearchParams(location.search).get('slug') || 'hajun';
-// ✅ ROOM_ID → CATEGORY_ID 로 전환
 const CATEGORY_ID = new URLSearchParams(location.search).get('cat') || null;
 const OWNER_KEY   = new URLSearchParams(location.search).get('owner') || null;
-const CLOUDINARY_CLOUD = 'dqzazs9hb';
-const CLOUDINARY_PRESET = 'corenull';
-let HOUSE_ID = null, EVENT_DATE = null, IS_OWNER = false;
+const NICKNAME_KEY = 'corenull_nickname_' + SLUG;
+let HOUSE_ID = null, EVENT_DATE = null;
 
-// ── 닉네임 자동 생성 ─────────────────────────────
+// ── 닉네임 ───────────────────────────────────────
 const ANIMALS = ['🐻 곰돌이','🐰 토끼','🦊 여우','🐼 판다','🐨 코알라','🦁 사자','🐯 호랑이','🦋 나비','🐧 펭귄','🦙 알파카','🐸 개구리','🦔 고슴도치','🐹 햄스터','🦦 수달','🐺 늑대'];
 const MOODS   = ['행복한','신나는','따뜻한','설레는','포근한','반짝이는','조용한','귀여운','달콤한','수줍은','눈부신','산뜻한','사랑스런','두근두근','느긋한'];
-const NICKNAME_KEY = 'corenull_nickname_' + SLUG;
-
 function generateNickname() {
-  const a = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-  const m = MOODS[Math.floor(Math.random() * MOODS.length)];
-  return m + ' ' + a;
+  return MOODS[Math.floor(Math.random()*MOODS.length)] + ' ' + ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
 }
 function getNickname() {
   let nick = localStorage.getItem(NICKNAME_KEY);
   if (!nick) { nick = generateNickname(); localStorage.setItem(NICKNAME_KEY, nick); }
   return nick;
 }
-function renderNickname() { document.getElementById('nickname-display').textContent = getNickname(); }
-function shuffleNickname() {
-  const btn = document.getElementById('shuffle-btn');
-  btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin');
-  const nick = generateNickname();
-  localStorage.setItem(NICKNAME_KEY, nick);
-  document.getElementById('nickname-display').textContent = nick;
-  setTimeout(() => btn.classList.remove('spin'), 400);
-}
 
 // ── INIT ─────────────────────────────────────────
 async function init() {
-  renderNickname();
   try {
     const res  = await fetch('/api/house?slug=' + SLUG);
     const data = await res.json();
     if (!data.house) { document.getElementById('hero-name').textContent = '페이지를 찾을 수 없어요'; return; }
 
     HOUSE_ID = data.house.id;
-    IS_OWNER = !!(OWNER_KEY && data.house.owner_key && OWNER_KEY === data.house.owner_key);
 
-    // ✅ category 기반으로 메타 정보 가져오기
-    const cat = CATEGORY_ID ? (data.categories || []).find(c => c.id === CATEGORY_ID) : null;
-    const catName  = cat?.name  || data.house.name || 'Event';
-    const catDate  = cat?.event_date || null;
+    const cat     = CATEGORY_ID ? (data.categories || []).find(c => c.id === CATEGORY_ID) : null;
+    const catName = cat?.name || data.house.name || 'Event';
+    const catDate = cat?.event_date || null;
     EVENT_DATE = catDate ? new Date(catDate) : null;
 
     document.title = catName + ' · CoreNull';
-    document.getElementById('hero-badge').textContent = (data.house.name || SLUG) + ' · Event';
-    document.getElementById('hero-name').textContent  = catName;
-    document.getElementById('footer-name').textContent = catName + ' · 소중한 순간을 함께 기록해요';
+    document.getElementById('hero-badge').textContent    = (data.house.name || SLUG) + ' · Event';
+    document.getElementById('hero-name').textContent     = catName;
+    document.getElementById('footer-name').textContent   = catName + ' · 소중한 순간을 함께 기록해요';
     if (catDate) document.getElementById('hero-subtitle').textContent = '📅 ' + fmtDate(catDate);
 
     const coverUrl = data.house.cover_url || '';
     const heroPhoto = document.getElementById('hero-photo');
     const heroPlaceholder = document.getElementById('hero-placeholder');
     if (coverUrl) {
-      heroPhoto.src = coverUrl; heroPhoto.style.display = 'block'; heroPlaceholder.style.display = 'none';
+      heroPhoto.src = coverUrl;
+      heroPhoto.style.display = 'block';
+      heroPlaceholder.style.display = 'none';
     } else {
-      heroPhoto.style.display = 'none'; heroPlaceholder.style.display = 'flex';
+      heroPhoto.style.display = 'none';
+      heroPlaceholder.style.display = 'flex';
     }
 
     renderCountdown();
     setInterval(tickCountdown, 1000);
     updateInterestUI(localStorage.getItem('event_interest_' + SLUG + '_' + CATEGORY_ID) === '1');
-    await Promise.all([loadInfo(), loadGallery(data), loadComments()]);
-  } catch(e) { console.error(e); }
+    await loadGallery();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('hero-name').textContent = '불러오기 실패';
+  }
 }
 
+// ── Countdown ────────────────────────────────────
 function renderCountdown() {
   const container = document.getElementById('countdown-container');
   if (!EVENT_DATE) return;
   const diff = EVENT_DATE - new Date();
-  if (diff <= 0) { container.innerHTML = '<div class="dday-label">🎉 오늘이에요!</div>'; return; }
-  const days = Math.floor(diff/86400000), hours = Math.floor((diff%86400000)/3600000), mins = Math.floor((diff%3600000)/60000), secs = Math.floor((diff%60000)/1000);
-  container.innerHTML = '<div class="countdown-wrap"><div class="countdown-unit"><div class="countdown-num" id="cd-days">'+pad(days)+'</div><div class="countdown-label">Days</div></div><div class="countdown-sep">:</div><div class="countdown-unit"><div class="countdown-num" id="cd-hours">'+pad(hours)+'</div><div class="countdown-label">Hours</div></div><div class="countdown-sep">:</div><div class="countdown-unit"><div class="countdown-num" id="cd-mins">'+pad(mins)+'</div><div class="countdown-label">Mins</div></div><div class="countdown-sep">:</div><div class="countdown-unit"><div class="countdown-num" id="cd-secs">'+pad(secs)+'</div><div class="countdown-label">Secs</div></div></div>';
+  if (diff <= 0) {
+    const elapsed = Math.floor((new Date() - EVENT_DATE) / 86400000);
+    container.innerHTML = `<div class="dday-label">${elapsed === 0 ? '🎉 오늘이에요!' : '완료 🎂 +' + elapsed + '일'}</div>`;
+    return;
+  }
+  const days = Math.floor(diff/86400000), hours = Math.floor((diff%86400000)/3600000),
+        mins = Math.floor((diff%3600000)/60000), secs = Math.floor((diff%60000)/1000);
+  container.innerHTML = `
+    <div class="countdown-wrap">
+      <div class="countdown-unit"><div class="countdown-num" id="cd-days">${pad(days)}</div><div class="countdown-label">Days</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-hours">${pad(hours)}</div><div class="countdown-label">Hours</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-mins">${pad(mins)}</div><div class="countdown-label">Mins</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-secs">${pad(secs)}</div><div class="countdown-label">Secs</div></div>
+    </div>`;
 }
 function tickCountdown() {
   if (!EVENT_DATE) return;
   const diff = EVENT_DATE - new Date();
   if (diff <= 0) return;
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = pad(v); };
-  set('cd-days', Math.floor(diff/86400000)); set('cd-hours', Math.floor((diff%86400000)/3600000));
-  set('cd-mins', Math.floor((diff%3600000)/60000)); set('cd-secs', Math.floor((diff%60000)/1000));
+  set('cd-days',  Math.floor(diff/86400000));
+  set('cd-hours', Math.floor((diff%86400000)/3600000));
+  set('cd-mins',  Math.floor((diff%3600000)/60000));
+  set('cd-secs',  Math.floor((diff%60000)/1000));
 }
 
-// ── INFO ─────────────────────────────────────────
-// ✅ ROOM_ID 없어지면서 info는 category 기반으로 단순화
-async function loadInfo() {
-  const wrap = document.getElementById('info-section');
-  if (!CATEGORY_ID) { wrap.innerHTML = ''; return; }
-  // category에 info 필드가 추가되기 전까지는 빈 상태 유지
-  wrap.innerHTML = '';
-}
-
-// ── GALLERY ──────────────────────────────────────
-async function loadGallery(data) {
+// ── Gallery ──────────────────────────────────────
+async function loadGallery() {
   const grid = document.getElementById('gallery-grid');
-  grid.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
   try {
-    // ✅ category_id 직접 사용 (room_name 매칭 제거)
     let url = `/api/posts?house_id=${HOUSE_ID}`;
     if (CATEGORY_ID) url += `&category_id=${CATEGORY_ID}`;
 
@@ -319,213 +273,168 @@ async function loadGallery(data) {
 
     window._galleryUrls = posts.flatMap(p => p.media_urls || []);
     let urlOffset = 0;
+
     grid.innerHTML = posts.map(p => {
       const imgs = p.media_urls || [];
-      if (!imgs.length && !p.content) { urlOffset += imgs.length; return ''; }
       const show = imgs.slice(0, 5);
       const rest = imgs.length - 5;
-      const date = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' }) : '';
+      const date = p.created_at
+        ? new Date(p.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' })
+        : '';
       const base = urlOffset;
       urlOffset += imgs.length;
-      const cell = (url, i, showOverlay) => `
-        <div style="position:relative;aspect-ratio:1;overflow:hidden;cursor:zoom-in;" onclick="openLightbox('${url}', ${base + i})">
-          <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-          ${showOverlay ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:white;font-size:22px;font-weight:700;">+${rest + 1}</div>` : ''}
+
+      const cell = (imgUrl, i, showOverlay) => `
+        <div style="position:relative;aspect-ratio:1;overflow:hidden;cursor:zoom-in;"
+          onclick="openLightbox('${imgUrl}',${base+i})">
+          <img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
+          ${showOverlay ? `<div style="position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:white;font-size:22px;font-weight:700;">+${rest+1}</div>` : ''}
         </div>`;
+
       let imgHtml = '';
-      if (show.length === 1) {
-        imgHtml = `<div style="overflow:hidden;border-radius:12px 12px 0 0;cursor:zoom-in;" onclick="openLightbox('${show[0]}', ${base})">
-          <img src="${show[0]}" style="width:100%;max-height:360px;object-fit:cover;" /></div>`;
+      if (show.length === 0) {
+        imgHtml = '';
+      } else if (show.length === 1) {
+        imgHtml = `<div style="overflow:hidden;border-radius:12px 12px 0 0;cursor:zoom-in;" onclick="openLightbox('${show[0]}',${base})">
+          <img src="${show[0]}" style="width:100%;max-height:360px;object-fit:cover;" loading="lazy" /></div>`;
       } else if (show.length === 2 || show.length === 4) {
         const cols = show.length === 4 ? 2 : 2;
         imgHtml = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">
-          ${show.map((url, i) => cell(url, i, false)).join('')}</div>`;
+          ${show.map((u, i) => cell(u, i, false)).join('')}</div>`;
       } else if (show.length === 5) {
-        const top = show.slice(0, 2).map((url, i) => cell(url, i, false)).join('');
-        const bot = show.slice(2).map((url, i) => cell(url, i + 2, i === 2 && rest > 0)).join('');
+        const top = show.slice(0, 2).map((u, i) => cell(u, i, false)).join('');
+        const bot = show.slice(2).map((u, i) => cell(u, i+2, i===2 && rest>0)).join('');
         imgHtml = `<div style="border-radius:12px 12px 0 0;overflow:hidden;">
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;">${top}</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:2px;">${bot}</div>
         </div>`;
       } else {
         imgHtml = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:12px 12px 0 0;overflow:hidden;">
-          ${show.map((url, i) => cell(url, i, i === show.length - 1 && rest > 0)).join('')}</div>`;
+          ${show.map((u, i) => cell(u, i, i===show.length-1 && rest>0)).join('')}</div>`;
       }
-      const liked = localStorage.getItem('post_like_' + p.id) === '1';
-      const likeCount = parseInt(localStorage.getItem('post_like_count_' + p.id) || '0');
-      const commentCount = parseInt(localStorage.getItem('post_comment_count_' + p.id) || '0');
-      return `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);" id="post-card-${p.id}">
-        ${imgHtml}
-        ${p.content ? `<div style="padding:12px 16px;font-size:14px;line-height:1.7;color:var(--text);">${escHtml(p.content)}</div>` : ''}
-        <div style="padding:4px 16px 0;font-size:11px;color:var(--muted);">${date}</div>
-        <div class="post-actions">
-          <button class="post-act-btn${liked ? ' liked' : ''}" id="like-btn-${p.id}" onclick="togglePostLike('${p.id}')">🌸 관심 <span id="like-count-${p.id}">${likeCount}</span></button>
-          <button class="post-act-btn" onclick="togglePostComments('${p.id}')">💬 댓글 <span id="comment-count-${p.id}">${commentCount}</span></button>
-        </div>
-        <div class="post-comments" id="post-comments-${p.id}">
-          <div id="post-comment-list-${p.id}"></div>
-          <div class="post-comment-form">
-            <input class="post-comment-input" id="post-comment-input-${p.id}" placeholder="댓글을 남겨주세요…" maxlength="200" onkeydown="if(event.key==='Enter')submitPostComment('${p.id}')" />
-            <button class="post-comment-submit" onclick="submitPostComment('${p.id}')">등록</button>
+
+      return `
+        <div class="post-card" id="post-card-${p.id}">
+          ${imgHtml}
+          ${p.content ? `<div style="padding:12px 16px;font-size:14px;line-height:1.7;color:var(--text);">${escHtml(p.content)}</div>` : ''}
+          <div style="padding:4px 16px 0;font-size:11px;color:var(--muted);">${date}</div>
+          <div class="post-actions">
+            <button class="post-act-btn" id="like-btn-${p.id}" onclick="togglePostLike('${p.id}')">
+              🌸 관심 <span id="like-count-${p.id}">0</span>
+            </button>
+            <button class="post-act-btn" onclick="togglePostComments('${p.id}')">
+              💬 댓글 <span id="comment-count-${p.id}">0</span>
+            </button>
           </div>
-        </div>
-      </div>`;
+          <div class="post-comments" id="post-comments-${p.id}">
+            <div id="post-comment-list-${p.id}"></div>
+            <div class="post-comment-form">
+              <input class="post-comment-input" id="post-comment-input-${p.id}"
+                placeholder="댓글을 남겨주세요…" maxlength="200"
+                onkeydown="if(event.key==='Enter')submitPostComment('${p.id}')" />
+              <button class="post-comment-submit" onclick="submitPostComment('${p.id}')">등록</button>
+            </div>
+          </div>
+        </div>`;
     }).join('');
+
   } catch(e) {
     console.error(e);
     grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px 0;">사진을 불러올 수 없어요</div>';
   }
 }
 
-// ── 포스트 관심/댓글 ──────────────────────────────
+// ── 포스트 관심 ───────────────────────────────────
 function togglePostLike(postId) {
-  const liked = localStorage.getItem('post_like_' + postId) === '1';
-  const count = parseInt(localStorage.getItem('post_like_count_' + postId) || '0');
+  const liked    = localStorage.getItem('post_like_' + postId) === '1';
   const newLiked = !liked;
-  const newCount = newLiked ? count + 1 : Math.max(0, count - 1);
+  const countEl  = document.getElementById('like-count-' + postId);
+  const cur      = parseInt(countEl?.textContent || '0');
+  const newCount = newLiked ? cur + 1 : Math.max(0, cur - 1);
   localStorage.setItem('post_like_' + postId, newLiked ? '1' : '0');
-  localStorage.setItem('post_like_count_' + postId, newCount);
-  let library = JSON.parse(localStorage.getItem('library_posts') || '[]');
-  if (newLiked) { if (!library.includes(postId)) library.push(postId); }
-  else { library = library.filter(id => id !== postId); }
-  localStorage.setItem('library_posts', JSON.stringify(library));
   const btn = document.getElementById('like-btn-' + postId);
-  const countEl = document.getElementById('like-count-' + postId);
   if (btn) btn.classList.toggle('liked', newLiked);
   if (countEl) countEl.textContent = newCount;
   showToast(newLiked ? '🌸 관심을 남겼어요!' : '관심을 취소했어요');
 }
+
+// ── 포스트 댓글 (API) ─────────────────────────────
 function togglePostComments(postId) {
   const area = document.getElementById('post-comments-' + postId);
   if (!area) return;
   if (area.classList.toggle('open')) renderPostComments(postId);
 }
-function renderPostComments(postId) {
+
+async function renderPostComments(postId) {
   const list = document.getElementById('post-comment-list-' + postId);
   if (!list) return;
-  const comments = JSON.parse(localStorage.getItem('post_comments_' + postId) || '[]');
-  if (!comments.length) { list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0;">아직 댓글이 없어요</div>'; return; }
-  list.innerHTML = comments.map(c =>
-    '<div class="post-comment-item"><div class="post-comment-avatar">' + getEmojiAvatar(c.name) + '</div><div class="post-comment-body"><div class="post-comment-name">' + escHtml(c.name) + '</div><div class="post-comment-text">' + escHtml(c.text) + '</div></div></div>'
-  ).join('');
-}
-function submitPostComment(postId) {
-  const input = document.getElementById('post-comment-input-' + postId);
-  if (!input) return;
-  const text = input.value.trim();
-  if (!text) { showToast('댓글을 입력해주세요'); return; }
-  const name = localStorage.getItem(NICKNAME_KEY) || generateNickname();
-  const comments = JSON.parse(localStorage.getItem('post_comments_' + postId) || '[]');
-  comments.push({ name, text, ts: Date.now() });
-  localStorage.setItem('post_comments_' + postId, JSON.stringify(comments));
-  localStorage.setItem('post_comment_count_' + postId, comments.length);
-  input.value = '';
-  renderPostComments(postId);
-  const countEl = document.getElementById('comment-count-' + postId);
-  if (countEl) countEl.textContent = comments.length;
-  showToast('댓글을 남겼어요 💬');
+  list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0;">불러오는 중...</div>';
+  try {
+    const res  = await fetch(`/api/comment?house_id=${HOUSE_ID}&post_id=${postId}`);
+    const data = await res.json();
+    const comments = data.comments || [];
+    if (!comments.length) {
+      list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0;">아직 댓글이 없어요</div>';
+      return;
+    }
+    list.innerHTML = comments.map(c => `
+      <div class="post-comment-item">
+        <div class="post-comment-avatar">${getEmojiAvatar(c.author_name || '?')}</div>
+        <div class="post-comment-body">
+          <div class="post-comment-name">${escHtml(c.author_name || '익명')}</div>
+          <div class="post-comment-text">${escHtml(c.content || '')}</div>
+        </div>
+      </div>`).join('');
+    // 카운트 동기화
+    const countEl = document.getElementById('comment-count-' + postId);
+    if (countEl) countEl.textContent = comments.length;
+  } catch(e) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0;">불러오기 실패</div>';
+  }
 }
 
-// ── INTEREST ─────────────────────────────────────
+async function submitPostComment(postId) {
+  const input   = document.getElementById('post-comment-input-' + postId);
+  if (!input) return;
+  const content = input.value.trim();
+  if (!content) { showToast('댓글을 입력해주세요'); return; }
+  const author = getNickname();
+  input.disabled = true;
+  try {
+    const res = await fetch('/api/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, post_id: postId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      input.value = '';
+      await renderPostComments(postId);
+      showToast('댓글을 남겼어요 💬');
+    } else showToast(data.error || '댓글 등록 실패');
+  } catch(e) { showToast('댓글 등록 실패'); }
+  finally { input.disabled = false; input.focus(); }
+}
+
+// ── Interest ─────────────────────────────────────
 function updateInterestUI(active) {
   const btn = document.getElementById('interest-btn');
   btn.classList.toggle('active', active);
   btn.querySelector('.interest-text').textContent = active ? '응원 중이에요 ✓' : '응원해요';
 }
 function toggleInterest() {
-  const key = 'event_interest_' + SLUG + '_' + CATEGORY_ID;
+  const key    = 'event_interest_' + SLUG + '_' + CATEGORY_ID;
   const active = localStorage.getItem(key) !== '1';
   localStorage.setItem(key, active ? '1' : '0');
   updateInterestUI(active);
   showToast(active ? '💛 관심을 남겼어요!' : '관심을 취소했어요');
 }
 
-// ── GUESTBOOK ────────────────────────────────────
-async function loadComments() {
-  const list = document.getElementById('guestbook-list');
-  try {
-    const res  = await fetch('/api/house?slug=' + SLUG);
-    const data = await res.json();
-    // ✅ ROOM_ID 대신 CATEGORY_ID 기반 필터 (방명록은 house 전체 공유)
-    const comments = data.comments || [];
-    if (!comments.length) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">아직 방명록이 없어요. 첫 번째 메시지를 남겨주세요 💛</div>'; return; }
-    list.innerHTML = comments.map(c => {
-      const emoji = getEmojiAvatar(c.author_name || '?');
-      const date  = c.created_at ? new Date(c.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : '';
-      const photo = c.media_url ? '<div class="comment-photo"><img src="' + c.media_url + '" loading="lazy" onclick="openLightbox(\'' + c.media_url + '\')" /></div>' : '';
-      const text  = escHtml(c.content_original || c.content || '');
-      return '<div class="comment-card"><div class="comment-meta"><div class="comment-avatar">' + emoji + '</div><div class="comment-name">' + escHtml(c.author_name || '익명') + '</div><div class="comment-date">' + date + '</div><button class="tr-btn" onclick="translateComment(\'' + c.id + '\',\'' + text.replace(/'/g,"\\'") + '\',this)">🌐 번역</button></div><div class="comment-text">' + text + '</div>' + photo + '</div>';
-    }).join('');
-  } catch(e) { list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;">방명록을 불러올 수 없어요</div>'; }
-}
-
-async function submitComment() {
-  const name = localStorage.getItem(NICKNAME_KEY) || generateNickname();
-  const msg  = document.getElementById('input-msg').value.trim();
-  const photoFile = document.getElementById('input-photo').files[0];
-  const btn  = document.getElementById('submit-btn');
-  if (!msg) { showToast('메시지를 입력해주세요'); return; }
-  btn.disabled = true; btn.textContent = '저장 중…';
-  try {
-    let mediaUrl = null;
-    if (photoFile) {
-      const fd = new FormData(); fd.append('file', photoFile); fd.append('upload_preset', CLOUDINARY_PRESET);
-      const cr = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', { method: 'POST', body: fd });
-      mediaUrl = (await cr.json()).secure_url;
-    }
-    const res = await fetch('/api/comment', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug: SLUG, author_name: name, content: msg, lang: detectLang(msg), media_url: mediaUrl })
-    });
-    if (!res.ok) throw new Error();
-    document.getElementById('input-msg').value = '';
-    document.getElementById('input-photo').value = '';
-    document.getElementById('photo-preview').innerHTML = '';
-    showToast('💛 방명록에 남겼어요!');
-    await loadComments();
-  } catch(e) { showToast('저장에 실패했어요'); }
-  finally { btn.disabled = false; btn.textContent = '메시지 남기기'; }
-}
-
-function previewPhoto(input) {
-  const file = input.files[0]; if (!file) return;
-  const r = new FileReader(); r.onload = e => { document.getElementById('photo-preview').innerHTML = '<img src="' + e.target.result + '" style="max-height:120px;border-radius:8px;margin-bottom:8px;" />'; }; r.readAsDataURL(file);
-}
-
-// ── TRANSLATE ─────────────────────────────────────
-const translateCache = {};
-async function translateComment(id, text, btn) {
-  const existing = document.getElementById('tr-' + id);
-  if (existing) {
-    existing.style.display = existing.style.display === 'none' ? 'block' : 'none';
-    btn.textContent = existing.style.display === 'none' ? '🌐 번역' : '🌐 숨기기';
-    return;
-  }
-  if (translateCache[id]) { showTR(id, translateCache[id], btn); return; }
-  btn.textContent = '번역 중…'; btn.disabled = true;
-  try {
-    const isKo = /[ㄱ-ㅎ가-힣]/.test(text);
-    const r = await fetch('https://corering.vercel.app/api/corering?action=translate&text=' + encodeURIComponent(text) + '&target=' + (isKo ? 'VI' : 'KO'));
-    const d = await r.json();
-    const t = d.translations?.[0]?.text;
-    if (!t) throw new Error();
-    translateCache[id] = t;
-    showTR(id, t, btn);
-  } catch { btn.textContent = '🌐 번역'; btn.disabled = false; showToast('번역 실패'); }
-}
-function showTR(id, text, btn) {
-  const card = btn.closest('.comment-card');
-  const el = document.createElement('div');
-  el.id = 'tr-' + id; el.className = 'tr-result'; el.textContent = text;
-  card.appendChild(el);
-  btn.textContent = '🌐 숨기기'; btn.disabled = false;
-}
-
-// ── LIGHTBOX ──────────────────────────────────────
+// ── Lightbox ──────────────────────────────────────
 function openLightbox(url, idx) {
   const urls = window._galleryUrls || [url];
-  const i = typeof idx === 'number' ? idx : urls.indexOf(url);
-  const lb = document.getElementById('lightbox');
+  const i    = typeof idx === 'number' ? idx : urls.indexOf(url);
+  const lb   = document.getElementById('lightbox');
   lb._urls = urls; lb._idx = Math.max(0, i);
   _renderLightbox();
   lb.classList.add('open');
@@ -537,21 +446,23 @@ function _renderLightbox() {
   const i    = lb._idx || 0;
   document.getElementById('lightbox-img').src = urls[i] || '';
   const counter = document.getElementById('lightbox-counter');
-  counter.textContent = urls.length > 1 ? (i + 1) + ' / ' + urls.length : '';
+  counter.textContent = urls.length > 1 ? (i+1) + ' / ' + urls.length : '';
   document.querySelector('.lightbox-nav.prev').style.visibility = i > 0 ? 'visible' : 'hidden';
-  document.querySelector('.lightbox-nav.next').style.visibility = i < urls.length - 1 ? 'visible' : 'hidden';
+  document.querySelector('.lightbox-nav.next').style.visibility = i < urls.length-1 ? 'visible' : 'hidden';
 }
 function navLightbox(dir) {
   const lb   = document.getElementById('lightbox');
   const urls = lb._urls || [];
-  lb._idx = Math.max(0, Math.min(urls.length - 1, (lb._idx || 0) + dir));
+  lb._idx = Math.max(0, Math.min(urls.length-1, (lb._idx||0) + dir));
   _renderLightbox();
 }
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
   document.body.style.overflow = '';
 }
-document.getElementById('lightbox').addEventListener('click', function(e) { if (e.target === this) closeLightbox(); });
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
 document.addEventListener('keydown', e => {
   const lb = document.getElementById('lightbox');
   if (!lb.classList.contains('open')) return;
@@ -560,14 +471,26 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape')     closeLightbox();
 });
 
-// ── UTILS ─────────────────────────────────────────
-function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-function detectLang(text) { return /[ㄱ-ㅎ가-힣]/.test(text) ? 'ko' : 'vi'; }
-function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtDate(str) { if (!str) return ''; const d = new Date(str); return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일'; }
+// ── Utils ─────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+}
 function pad(n) { return String(Math.max(0,n)).padStart(2,'0'); }
-function copyText(text) { navigator.clipboard?.writeText(text).then(() => showToast('복사됐어요 📋')).catch(() => showToast('복사 실패')); }
-function getEmojiAvatar(name) { const e = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋']; let c = 0; for (let i = 0; i < name.length; i++) c += name.charCodeAt(i); return e[c % e.length]; }
+function getEmojiAvatar(name) {
+  const e = ['🌸','🍀','🌼','🌻','🎀','🍭','🌈','🎈','💛','🦋'];
+  let c = 0; for (let i = 0; i < name.length; i++) c += name.charCodeAt(i);
+  return e[c % e.length];
+}
 
 init();
 </script>
