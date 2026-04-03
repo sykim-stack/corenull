@@ -207,6 +207,7 @@
 <script>
 const SLUG        = new URLSearchParams(location.search).get('slug') || 'hajun';
 const CATEGORY_ID = new URLSearchParams(location.search).get('cat') || null;
+const ROOM_ID     = new URLSearchParams(location.search).get('room') || null;
 const OWNER_KEY   = new URLSearchParams(location.search).get('owner') || null;
 const NICKNAME_KEY = 'corenull_nickname_' + SLUG;
 let HOUSE_ID = null, EVENT_DATE = null;
