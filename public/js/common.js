@@ -165,6 +165,7 @@ export function renderPost(p, opts = {}) {
         onclick="openPostComment('${p.id}')">💬</button>
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
       ${showDel ? `<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
+      ${state.isOwner ? `<button class="share-btn" onclick="sharePost('${p.id}',this)" title="공유">🔗</button>` : ''}
     </div>` : `
     <div class="post-foot">
       <span class="post-time">${timeAgo(p.created_at)}</span>

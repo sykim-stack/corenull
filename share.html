@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>초대장</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown: #6b3f1f; --gold: #c8973a; --warm: #f7ede3;
+      --text: #3a2a1a; --muted: #a08060; --dark: #2a1a0a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Gowun Dodum', serif;
+      background: var(--warm);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      max-width: 480px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(107,63,31,.12);
+    }
+    .house-header {
+      background: linear-gradient(135deg, var(--brown), var(--gold));
+      padding: 20px;
+      display: flex; align-items: center; gap: 12px;
+      color: white;
+    }
+    .house-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .house-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .house-name { font-size: 16px; font-weight: 700; }
+    .room-badge {
+      font-size: 11px; opacity: .8; margin-top: 2px;
+    }
+    .post-body { padding: 20px; }
+    .post-content {
+      font-size: 15px; line-height: 1.7; color: var(--text);
+      margin-bottom: 14px;
+      display: -webkit-box; -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .post-image {
+      width: 100%; border-radius: 12px;
+      max-height: 240px; object-fit: cover;
+      margin-bottom: 14px;
+    }
+    .comments-preview {
+      border-top: 1px solid rgba(139,94,60,.1);
+      padding: 14px 20px;
+      background: rgba(247,238,227,.4);
+    }
+    .comments-label {
+      font-size: 11px; color: var(--muted); margin-bottom: 10px;
+    }
+    .comment-item {
+      display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;
+    }
+    .comment-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, #f4a, #fa8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; color: white;
+    }
+    .comment-bubble {
+      background: white; border-radius: 12px; padding: 6px 10px; flex: 1;
+    }
+    .comment-author { font-size: 11px; font-weight: 600; color: var(--dark); }
+    .comment-text { font-size: 12px; color: var(--text); margin-top: 1px; }
+    .cta-wrap { padding: 20px; }
+    .cta-btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, var(--brown), var(--gold));
+      color: white; border: none; border-radius: 14px;
+      padding: 16px; font-size: 16px; font-weight: 700;
+      font-family: 'Gowun Dodum', serif;
+      cursor: pointer; text-align: center;
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+    .cta-btn:hover { opacity: .9; }
+    .cta-sub { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; }
+    .error-wrap { text-align: center; padding: 60px 24px; color: var(--muted); }
+    .skeleton { background: linear-gradient(90deg, #f0e8df 25%, #e8ddd3 50%, #f0e8df 75%);
+      background-size: 200% 100%; animation: shimmer 1.2s infinite;
+      border-radius: 8px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .sk-line { height: 14px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <!-- 로딩 스켈레톤 -->
+    <div class="house-header">
+      <div class="house-avatar skeleton" style="width:48px;height:48px;"></div>
+      <div style="flex:1">
+        <div class="skeleton sk-line" style="width:120px;"></div>
+        <div class="skeleton sk-line" style="width:80px;margin-top:4px;"></div>
+      </div>
+    </div>
+    <div class="post-body">
+      <div class="skeleton sk-line"></div>
+      <div class="skeleton sk-line" style="width:80%;"></div>
+      <div class="skeleton sk-line" style="width:60%;"></div>
+    </div>
+  </div>
+
+  <script>
+    const code = new URLSearchParams(location.search).get('code');
+
+    async function load() {
+      if (!code) { showError('초대 코드가 없어요'); return; }
+
+      try {
+        const res = await fetch(`/api/share?code=${code}`);
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || '불러오기 실패'); return; }
+        render(data);
+      } catch(e) { showError('네트워크 오류'); }
+    }
+
+    function render({ post, house, room, comments }) {
+      const imgHtml = post.media_urls?.[0]
+        ? `<img class="post-image" src="${post.media_urls[0]}" alt="">`  : '';
+
+      const commentHtml = comments.length ? `
+        <div class="comments-preview">
+          <div class="comments-label">💬 댓글 미리보기</div>
+          ${comments.map(c => `
+            <div class="comment-item">
+              <div class="comment-avatar">${(c.author_name||'?').charAt(0)}</div>
+              <div class="comment-bubble">
+                <div class="comment-author">${esc(c.author_name)}</div>
+                <div class="comment-text">${esc(c.content_original)}</div>
+              </div>
+            </div>`).join('')}
+        </div>` : '';
+
+      const roomTarget = room
+        ? `/${house.slug}?room=${post.room_id}`
+        : `/${house.slug}`;
+
+      document.getElementById('card').innerHTML = `
+        <div class="house-header">
+          <div class="house-avatar">
+            ${house.profile_url
+              ? `<img src="${house.profile_url}" alt="">`
+              : '🏠'}
+          </div>
+          <div>
+            <div class="house-name">${esc(house.name)}</div>
+            ${room ? `<div class="room-badge">📌 ${esc(room.room_name)}</div>` : ''}
+          </div>
+        </div>
+        <div class="post-body">
+          ${imgHtml}
+          <div class="post-content">${esc(post.content || '')}</div>
+        </div>
+        ${commentHtml}
+        <div class="cta-wrap">
+          <a class="cta-btn" href="${roomTarget}">이 방 들어가기 →</a>
+          <div class="cta-sub">하준이네 공간에서 더 많은 이야기를 만나보세요</div>
+        </div>`;
+    }
+
+    function showError(msg) {
+      document.getElementById('card').innerHTML =
+        `<div class="error-wrap">😢<br><br>${msg}</div>`;
+    }
+
+    function esc(str) {
+      return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    load();
+  </script>
+</body>
+</html>

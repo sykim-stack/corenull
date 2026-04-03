@@ -441,6 +441,26 @@ function buildTabs(house, rooms, milestones, comments) {
   if (restoreId) switchTab(restoreId);
 }
 
+window.sharePost = async function(postId, btn) {
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  try {
+    const res = await fetch('/api/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId, house_id: state.houseId, owner_key: state.ownerKey })
+    });
+    const data = await res.json();
+    if (data.invite_code) {
+      const url = `${location.origin}/share.html?code=${data.invite_code}`;
+      await navigator.clipboard.writeText(url);
+      showToast('📋 공유 링크 복사됨!');
+    } else {
+      showToast(data.error || '공유 실패');
+    }
+  } catch(e) { showToast('공유 실패'); }
+  finally { btn.disabled = false; btn.textContent = '🔗'; }
+};
 // ── switchTab ────────────────────────────────────────────────────────────
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
