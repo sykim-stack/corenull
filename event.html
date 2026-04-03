@@ -132,7 +132,50 @@
   <div id="countdown-container"></div>
   <div class="scroll-hint">SCROLL</div>
 </section>
+<!-- ── Guest Upload ── -->
+<div class="divider"><div class="divider-line"></div><div class="divider-icon">📷</div><div class="divider-line"></div></div>
+<section class="section">
+  <div class="section-title">사진 올리기</div>
+  <div id="guest-upload-wrap" style="max-width:480px;margin:0 auto;">
 
+    <!-- 닉네임 -->
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--muted);letter-spacing:1px;display:block;margin-bottom:6px;">YOUR NAME</label>
+      <input id="guest-nickname" type="text" maxlength="20"
+        style="width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:14px;color:var(--text);background:var(--cream);outline:none;"
+        placeholder="닉네임을 입력해주세요" />
+    </div>
+
+    <!-- 사진 선택 -->
+    <input type="file" id="guest-file-input" accept="image/*" multiple style="display:none"
+      onchange="onGuestFileSelect(this)" />
+    <div id="guest-preview-wrap" style="display:none;margin-bottom:14px;">
+      <div id="guest-preview-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;"></div>
+    </div>
+
+    <button onclick="document.getElementById('guest-file-input').click()"
+      style="width:100%;border:1.5px dashed var(--gold-lt);background:transparent;border-radius:12px;padding:28px;font-family:'Gowun Dodum',serif;font-size:14px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all 0.2s;"
+      onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--brown)'"
+      onmouseout="this.style.borderColor='var(--gold-lt)';this.style.color='var(--muted)'"
+      id="guest-pick-btn">
+      <span style="font-size:28px;">📷</span>
+      <span>사진 선택하기</span>
+      <span style="font-size:11px;opacity:.7;">여러 장 동시 선택 가능</span>
+    </button>
+
+    <!-- 메모 -->
+    <textarea id="guest-content" maxlength="200" rows="2"
+      style="width:100%;margin-top:12px;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--text);background:var(--cream);outline:none;resize:none;"
+      placeholder="한 마디 남기기 (선택)"></textarea>
+
+    <!-- 업로드 버튼 -->
+    <button id="guest-upload-btn" onclick="submitGuestUpload()"
+      style="display:none;width:100%;margin-top:12px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;border-radius:12px;padding:14px;font-family:'Gowun Dodum',serif;font-size:15px;font-weight:700;color:white;cursor:pointer;">
+      올리기 ✨
+    </button>
+    <div id="guest-upload-status" style="text-align:center;font-size:13px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+</section>
 <!-- ── Gallery ── -->
 <div class="divider"><div class="divider-line"></div><div class="divider-icon">✿</div><div class="divider-line"></div></div>
 <section class="section">
@@ -179,7 +222,103 @@ function getNickname() {
   if (!nick) { nick = generateNickname(); localStorage.setItem(NICKNAME_KEY, nick); }
   return nick;
 }
+// ── Guest Upload ──────────────────────────────────
+const CLOUDINARY_URL    = 'https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload';
+const CLOUDINARY_PRESET = 'corenull';
+let guestFiles = [];
 
+// 닉네임 초기화
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(NICKNAME_KEY);
+  if (saved) document.getElementById('guest-nickname').value = saved;
+});
+
+function onGuestFileSelect(input) {
+  guestFiles = Array.from(input.files);
+  if (!guestFiles.length) return;
+
+  const previewWrap = document.getElementById('guest-preview-wrap');
+  const previewGrid = document.getElementById('guest-preview-grid');
+  previewWrap.style.display = 'block';
+
+  previewGrid.innerHTML = guestFiles.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div style="aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;">
+      <img src="${url}" style="width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.4);color:white;font-size:10px;padding:2px 6px;border-radius:10px;">${i+1}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('guest-pick-btn').innerHTML =
+    `<span style="font-size:20px;">✅</span><span>${guestFiles.length}장 선택됨 · 다시 선택하려면 클릭</span>`;
+  document.getElementById('guest-upload-btn').style.display = 'block';
+}
+
+async function submitGuestUpload() {
+  const nickname = document.getElementById('guest-nickname').value.trim();
+  if (!nickname) { showToast('닉네임을 입력해주세요'); document.getElementById('guest-nickname').focus(); return; }
+  if (!guestFiles.length) { showToast('사진을 선택해주세요'); return; }
+
+  localStorage.setItem(NICKNAME_KEY, nickname);
+
+  const btn    = document.getElementById('guest-upload-btn');
+  const status = document.getElementById('guest-upload-status');
+  btn.disabled = true;
+  btn.textContent = '업로드 중…';
+
+  try {
+    // 1. Cloudinary 업로드
+    const uploaded = [];
+    for (let i = 0; i < guestFiles.length; i++) {
+      status.textContent = `사진 업로드 중… (${i+1}/${guestFiles.length})`;
+      const fd = new FormData();
+      fd.append('file', guestFiles[i]);
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      const r   = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+      const d   = await r.json();
+      if (d.secure_url) uploaded.push(d.secure_url);
+    }
+
+    if (!uploaded.length) { showToast('업로드 실패'); return; }
+
+    // 2. posts 저장
+    status.textContent = '저장 중…';
+    const content = document.getElementById('guest-content').value.trim();
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action:      'guest_post',
+        house_id:    HOUSE_ID,
+        room_id:     ROOM_ID || null,
+        category_id: CATEGORY_ID || null,
+        media_urls:  uploaded,
+        author_name: nickname,
+        content:     content || null,
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('🎉 사진이 올라갔어요!');
+      status.textContent = '';
+      guestFiles = [];
+      document.getElementById('guest-preview-wrap').style.display = 'none';
+      document.getElementById('guest-upload-btn').style.display = 'none';
+      document.getElementById('guest-content').value = '';
+      document.getElementById('guest-pick-btn').innerHTML =
+        '<span style="font-size:28px;">📷</span><span>사진 선택하기</span><span style="font-size:11px;opacity:.7;">여러 장 동시 선택 가능</span>';
+      await loadGallery(); // 갤러리 새로고침
+    } else {
+      showToast(data.error || '저장 실패');
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('업로드 실패');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '올리기 ✨';
+  }
+}
 // ── INIT ─────────────────────────────────────────
 async function init() {
   try {

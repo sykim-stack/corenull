@@ -59,7 +59,39 @@ if (action === 'profile') {
   }
   return res.status(200).json({ success: true, profile_url: profileUrl });
 }
-  // ── action=media (기본값) : media 테이블 저장
+// ── action=guest_post : 게스트 사진 업로드 → posts 테이블
+  if (action === 'guest_post') {
+    const { media_urls, author_name, category_id } = req.body;
+    if (!house_id || !media_urls?.length)
+      return res.status(400).json({ error: 'house_id, media_urls 필수' });
+
+    // posts insert
+    const pRes = await fetch(`${SUPABASE_URL}/rest/v1/posts`, {
+      method: 'POST', headers: HEADERS,
+      body: JSON.stringify({
+        house_id,
+        room_id:    room_id || null,
+        media_urls,
+        content:    content || null,
+        author_name: author_name || '익명 게스트',
+        is_guest:   true,
+      })
+    });
+    const pData = await pRes.json();
+    const post  = Array.isArray(pData) ? pData[0] : pData;
+    if (!post?.id) return res.status(500).json({ error: '포스트 생성 실패', detail: pData });
+
+    // category 연결
+    if (category_id) {
+      await fetch(`${SUPABASE_URL}/rest/v1/post_categories`, {
+        method: 'POST', headers: HEADERS,
+        body: JSON.stringify([{ post_id: post.id, category_id }])
+      });
+    }
+
+    return res.status(200).json({ success: true, post });
+  }
+// ── action=media (기본값) : media 테이블 저장
   const mediaUrl = file_url || file_base64;
   if (!mediaUrl || !house_id) {
     return res.status(400).json({ error: 'file_url, house_id 필수' });
