@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     if (action === 'stories') {
       if (!house_id) return res.status(400).json({ error: 'house_id required' });
       const r = await fetch(
-        `${baseUrl}/rest/v1/posts?house_id=eq.${house_id}&type=eq.story&order=created_at.desc`,
+        `${baseUrl}/rest/v1/posts?house_id=eq.${house_id}&ai_generated=eq.true&order=created_at.desc`,
         { headers }
       );
       const data = await r.json();
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
       fetch(`${baseUrl}/rest/v1/milestones?house_id=eq.${house.id}&order=milestone_date.asc`, { headers }),
       fetch(`${baseUrl}/rest/v1/rooms?house_id=eq.${house.id}&is_hidden=eq.false&order=order_num.asc`, { headers }),
       fetch(`${baseUrl}/rest/v1/categories?house_id=eq.${house.id}&order=order_num.asc`, { headers }),
-      fetch(`${baseUrl}/rest/v1/posts?house_id=eq.${house.id}&type=neq.story&order=created_at.desc&limit=50`, { headers }),
+      fetch(`${baseUrl}/rest/v1/posts?house_id=eq.${house.id}&ai_generated=neq.true&order=created_at.desc&limit=50`, { headers }),
       fetch(`${baseUrl}/rest/v1/comments?house_id=eq.${house.id}&post_id=is.null&order=created_at.desc&limit=20`, { headers }),
     ]);
 
@@ -116,20 +116,16 @@ export default async function handler(req, res) {
         headers: { ...headers, Prefer: 'return=representation' },
         body: JSON.stringify({
           house_id,
-          type: 'story',
-          content: `## ${title}\n\n${content}`,
-          media_urls: [],
-          is_approved: true,
+          content     : `## ${title}\n\n${content}`,
+          media_urls  : [],
           ai_generated: true,
           is_public,
-          // category 연결은 post_categories로
         })
       });
       const data = await r.json();
       const post = Array.isArray(data) ? data[0] : data;
       if (!post?.id) return res.status(500).json({ error: '스토리 저장 실패' });
 
-      // category 연결
       if (category_id) {
         await fetch(`${baseUrl}/rest/v1/post_categories`, {
           method: 'POST',
