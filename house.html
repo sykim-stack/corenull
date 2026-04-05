@@ -273,6 +273,10 @@ window.lbPrev             = lbPrev;
 window.lbNext             = lbNext;
 window.lbGoTo             = lbGoTo;
 window.openWriteModal     = () => coreOpenWriteModal('write');
+window.openUploadModal = (roomId) => {
+  if (roomId) state.currentRoomId = roomId;
+  coreOpenWriteModal('photo');
+};
 window.handleWritePhoto   = handleWritePhoto;
 window.submitWrite        = () => coreSubmitWrite(reloadData);
 window.submitEdit         = submitEdit;
