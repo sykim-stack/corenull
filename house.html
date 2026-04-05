@@ -310,6 +310,7 @@ window.pvDeleteComment    = pvDeleteComment;
 window.generateStory = (catId) => {
   const cat = (state.categories || []).find(c => String(c.id) === String(catId));
   if (cat) libGenerateStory(cat);
+  else showToast('카테고리를 찾을 수 없어요');
 };
 
 // ── 데이터 로드 & 리로드 ──────────────────────────────────────────────────
