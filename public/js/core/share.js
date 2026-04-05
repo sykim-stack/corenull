@@ -175,13 +175,15 @@ function injectSheetStyles() {
     .ss-title     { font-size:16px;font-weight:700;color:#3a2a1a;margin-bottom:8px; }
     .ss-preview   { font-size:13px;color:#a08060;margin-bottom:16px;
                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-    .ss-btns      { display:flex;gap:10px; }
-    .ss-btn {
-      flex:1;padding:14px 8px;border:none;border-radius:14px;
-      font-size:13px;font-weight:600;cursor:pointer;
-      font-family:inherit;display:flex;flex-direction:column;
-      align-items:center;gap:6px;transition:opacity .15s;
-    }
+    // injectSheetStyles() 안에서 .ss-btns, .ss-btn 부분 교체
+.ss-btns      { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+.ss-btn {
+  padding:16px 8px;border:none;border-radius:14px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;
+  transition:opacity .15s;width:100%;aspect-ratio:1.8;
+}
     .ss-btn:hover { opacity:.85; }
     .ss-btn img   { width:28px;height:28px;border-radius:50%; }
     .ss-btn.kakao { background:#FEE500;color:#3A1D1D; }
