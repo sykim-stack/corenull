@@ -258,15 +258,6 @@ export async function renderLibrary(container) {
   </div>`;
 }
 
-// ── window 노출 ───────────────────────────────────────────────────────────
-window.generateStory = (catId) => {
-  const cat = (state.categories || []).find(c => String(c.id) === String(catId));
-  if (cat) generateStory(cat);
-  else window.showToast('카테고리를 찾을 수 없어요');
-};
-window.deleteStory = deleteStory;
-window.editStory   = editStory;
-
 // ── 유틸 ─────────────────────────────────────────────────────────────────
 function escH(str) {
   return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
