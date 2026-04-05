@@ -230,7 +230,23 @@ import { openWriteModal as coreOpenWriteModal, handleWritePhoto, submitWrite as 
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 import { uploadMany, uploadCoverImage, uploadCover, uploadProfile } from '/public/js/core/upload.js';
-import { shareKakao, shareZalo, copyLink } from '/public/js/core/share.js';
+// window 노출 블록에 추가
+import { sharePost as coreSharePost } from '/public/js/core/share.js';
+
+window.sharePost = (postId, btn) => {
+  const post = (state.allPosts || []).find(p => p.id === postId);
+  coreSharePost({
+    postId,
+    houseId  : state.houseId,
+    ownerKey : state.ownerKey || null,
+    houseName: state.houseData?.name || state.slug,
+    content  : post?.content || '',
+    coverUrl : post?.media_urls?.[0] || state.houseData?.cover_url || null,
+    slug     : state.slug,
+    onToast  : showToast,
+    btn
+  });
+};
 
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
 window.showToast          = showToast;
