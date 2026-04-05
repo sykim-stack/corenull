@@ -176,7 +176,7 @@ function injectSheetStyles() {
     .ss-preview   { font-size:13px;color:#a08060;margin-bottom:16px;
                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     // injectSheetStyles() 안에서 .ss-btns, .ss-btn 부분 교체
-.ss-btns      { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+.ss-btns      { display:grid;grid-template-columns:repeat(1,3fr);gap:10px; }
 .ss-btn {
   padding:16px 8px;border:none;border-radius:14px;
   font-size:13px;font-weight:600;cursor:pointer;
