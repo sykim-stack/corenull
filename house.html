@@ -230,6 +230,7 @@ import { openWriteModal as coreOpenWriteModal, handleWritePhoto, submitWrite as 
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 import { uploadMany, uploadCoverImage, uploadCover, uploadProfile } from '/public/js/core/upload.js';
+import { shareKakao, shareZalo, copyLink } from '/public/js/core/share.js';
 
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
 window.showToast          = showToast;
@@ -574,27 +575,16 @@ function pvNav(dir) {
 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
 function pvShare() {
-  if (!window.Kakao?.isInitialized()) { copyLink(location.href); return; }
-  
-  const postUrl = `${location.origin}${location.pathname}`;
-  const imgs = pvState.images;
+  const postUrl = location.href;
+  const imgs    = pvState.images;
   const content = document.getElementById('pvText')?.textContent || '';
   const houseName = state.houseData?.name || state.slug;
-  
-  Kakao.Share.sendDefault({
-    objectType: 'feed',
-    content: {
-      title: houseName + '의 기록',
-      description: content.slice(0, 100) || '소중한 순간을 기록했어요',
-      imageUrl: imgs.length 
-        ? imgs[0] 
-        : (state.houseData?.cover_url || 'https://corenull.vercel.app/icon-hajun-512.png'),
-      link: { mobileWebUrl: postUrl, webUrl: postUrl }
-    },
-    buttons: [{ 
-      title: '집 방문하기', 
-      link: { mobileWebUrl: postUrl, webUrl: postUrl } 
-    }]
+
+  shareKakao({
+    name       : houseName + '의 기록',
+    description: content.slice(0, 100) || '소중한 순간을 기록했어요',
+    cover_url  : imgs.length ? imgs[0] : (state.houseData?.cover_url || ''),
+    url        : postUrl
   });
 }
 function pvToggleReact()  {
