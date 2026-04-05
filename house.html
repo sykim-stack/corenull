@@ -571,25 +571,20 @@ function pvNav(dir) {
 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
 function pvShare() {
-  const postUrl = location.href;
-  const imgs    = pvState.images;
-  const content = document.getElementById('pvText')?.textContent || '';
-  const houseName = state.houseData?.name || state.slug;
-  const shareText = `${houseName}의 기록\n${content.slice(0, 80)}\n${postUrl}`;
-
-  // Web Share API (모바일에서 문자/카톡/잘로/인스타 등 모든 앱으로 공유)
-  if (navigator.share) {
-    navigator.share({
-      title: houseName + '의 기록',
-      text: content.slice(0, 100),
-      url: postUrl
-    });
-    return;
-  }
-
-  // Web Share API 없으면 링크 복사
-  copyLink(postUrl, showToast);
+  const post = (state.allPosts || []).find(p => p.id === pvState.postId);
+  coreSharePost({
+    postId   : pvState.postId,
+    houseId  : state.houseId,
+    ownerKey : state.ownerKey || null,
+    houseName: state.houseData?.name || state.slug,
+    content  : post?.content || '',
+    coverUrl : pvState.images?.[0] || state.houseData?.cover_url || null,
+    slug     : state.slug,
+    onToast  : showToast,
+    btn      : null
+  });
 }
+
 function pvToggleReact()  {
   if (!pvState.postId) return;
   toggleReaction(pvState.postId, document.getElementById('pvReactBtn'));

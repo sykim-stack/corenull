@@ -101,8 +101,8 @@ function openShareSheet({ shareUrl, houseName, content, coverUrl, onToast }) {
         <button class="ss-btn kakao"  id="ssBtnKakao">
           <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png">카카오톡
         </button>
-        <button class="ss-btn zalo"   id="ssBtnZalo">💬<br><br> Zalo</button>
-        <button class="ss-btn copy"   id="ssBtnCopy">🔗<br><br> 링크 복사</button>
+        <button class="ss-btn zalo"   id="ssBtnZalo">💬<br> Zalo</button>
+        <button class="ss-btn copy"   id="ssBtnCopy">🔗<br> 링크 복사</button>
       </div>
     </div>`;
 
