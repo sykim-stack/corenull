@@ -573,7 +573,7 @@ function pvNav(dir) {
 }
 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
-function function pvShare() {
+function pvShare() {
   if (!window.Kakao?.isInitialized()) { copyLink(location.href); return; }
   
   const postUrl = `${location.origin}${location.pathname}`;
