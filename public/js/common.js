@@ -177,6 +177,10 @@ export function renderPost(p, opts = {}) {
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
       ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
     </div>` : `
+    <div class="post-foot">
+      <span class="post-time">${timeAgo(p.created_at)}</span>
+      ${showDel ? `<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
+    </div>`;
 
   // 미디어만 클릭 가능하게 — 텍스트+액션은 클릭 전파 없음
   const mediaHtml = imgs.length
