@@ -12,35 +12,40 @@ async function loadStories() {
 }
 
 // ── 스토리 생성 (Gemini) ──────────────────────────────────────────────────
-async function generateStory(cat) {
+export async function generateStory(cat) {
   const posts = (state.allPosts || []).filter(p =>
     (p.category_ids || []).map(String).includes(String(cat.id))
   );
 
-  if (!posts.length) { window.showToast('이벤트 기록이 없어요'); return; }
+  if (!posts.length) { window.showToast('이 카테고리에 기록이 없어요'); return; }
 
   window.showToast('스토리 생성 중... ✨');
 
-  const res  = await fetch('/api/gemini', {
-    method : 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body   : JSON.stringify({
-      type   : 'story',
-      context: {
-        event_name: cat.name,
-        house_name: state.houseData?.name || state.slug,
-        posts: posts.map(p => ({
-          content    : p.content || '',
-          created_at : p.created_at,
-          media_count: (p.media_urls || []).length
-        }))
-      }
-    })
-  });
-  const data = await res.json();
-  if (!data.title) { window.showToast('생성 실패 😢'); return; }
+  try {
+    const posts_summary = posts.map((p, i) =>
+      `[${i+1}] ${p.created_at?.slice(0,10) || ''} - ${p.content || '(사진)'} ${(p.media_urls||[]).length > 0 ? `(사진 ${p.media_urls.length}장)` : ''}`
+    ).join('\n');
 
-  openStoryPreview({ cat, title: data.title, content: data.content });
+    const res  = await fetch('/api/gemini', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({
+        type   : 'story',
+        context: {
+          category_name: cat.name,
+          house_name   : state.houseData?.name || state.slug,
+          posts_summary,
+        }
+      })
+    });
+    const data = await res.json();
+    if (!data.story?.title) { window.showToast('생성 실패 😢'); return; }
+
+    openStoryPreview({ cat, title: data.story.title, content: data.story.content });
+  } catch(e) {
+    window.showToast('생성 실패 😢');
+    console.error(e);
+  }
 }
 
 // ── 스토리 미리보기 모달 ──────────────────────────────────────────────────
@@ -95,26 +100,21 @@ async function saveStory({ cat, storyId }) {
   btn.disabled = true; btn.textContent = '저장 중...';
 
   try {
-    const body = {
-      action     : storyId ? 'update_story' : 'create_story',
-      house_id   : state.houseId,
-      owner_key  : state.ownerKey,
-      category_id: cat?.id || null,
-      title, content, is_public,
-      is_approved: true
-    };
-    if (storyId) body.story_id = storyId;
-
     const res  = await fetch('/api/house', {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify(body)
+      body   : JSON.stringify({
+        action     : storyId ? 'update_story' : 'create_story',
+        house_id   : state.houseId,
+        owner_key  : state.ownerKey,
+        category_id: cat?.id || null,
+        title, content, is_public,
+      })
     });
     const data = await res.json();
     if (data.success) {
       window.showToast('서재에 저장됐어요 📚');
       closeStoryModal();
-      // 서재 탭 리로드
       const libTab = document.getElementById(`tab-${(state.rooms||[]).find(r=>r.room_type==='library')?.id}`);
       if (libTab) renderLibrary(libTab);
     } else {
@@ -146,21 +146,41 @@ async function deleteStory(storyId) {
   });
 }
 
+// ── 스토리 수정 ───────────────────────────────────────────────────────────
+async function editStory(storyId) {
+  try {
+    const res  = await fetch(`/api/house?action=stories&house_id=${state.houseId}`);
+    const data = await res.json();
+    const story = (data.stories || []).find(s => s.id === storyId);
+    if (!story) return;
+    // content에서 title/body 분리 (## 제목\n\n본문 포맷)
+    const lines   = (story.content || '').split('\n\n');
+    const title   = lines[0]?.replace(/^## /, '') || '';
+    const content = lines.slice(1).join('\n\n');
+    const cat = (state.categories || []).find(c => String(c.id) === String(story.category_ids?.[0]));
+    openStoryPreview({ cat, title, content, storyId });
+  } catch(e) { window.showToast('불러오기 실패'); }
+}
+
 // ── 메인 렌더 ─────────────────────────────────────────────────────────────
 export async function renderLibrary(container) {
-  const photos   = state.allMedia.filter(m => m.media_type === 'photo');
-  const videos   = state.allMedia.filter(m => m.media_type === 'video');
-  const lbUrls   = photos.map(m => m.file_url);
+  const photos    = state.allMedia.filter(m => m.media_type === 'photo');
+  const videos    = state.allMedia.filter(m => m.media_type === 'video');
+  const lbUrls    = photos.map(m => m.file_url);
   const eventCats = (state.categories || []).filter(c => c.is_event);
-  const stories  = await loadStories();
+  const stories   = await loadStories();
 
   // ── 스토리 섹션 ──
   const storiesHtml = stories.length
-    ? stories.map(s => `
-        <div class="story-card ${s.is_public ? 'public' : ''}">
+    ? stories.map(s => {
+        const lines   = (s.content || '').split('\n\n');
+        const title   = lines[0]?.replace(/^## /, '') || s.id;
+        const body    = lines.slice(1).join('\n\n');
+        return `
+        <div class="story-card">
           <div class="story-card-head">
             <div>
-              <div class="story-card-title">${escH(s.title)}</div>
+              <div class="story-card-title">${escH(title)}</div>
               <div class="story-card-meta">
                 ${s.is_public ? '<span class="story-badge public">공개</span>' : '<span class="story-badge private">비공개</span>'}
                 · ${fmtDate(s.created_at)}
@@ -172,9 +192,9 @@ export async function renderLibrary(container) {
                 <button class="story-action-btn" onclick="deleteStory('${s.id}')">🗑️</button>
               </div>` : ''}
           </div>
-          <div class="story-card-content">${escH(s.content).replace(/\n/g,'<br>')}</div>
-        </div>`).join('')
-    : `<div class="empty"><div class="ei">📖</div><p>아직 스토리가 없어요${state.isOwner ? '<br>이벤트 기록으로 스토리를 만들어보세요!' : ''}</p></div>`;
+          <div class="story-card-content">${escH(body).replace(/\n/g,'<br>')}</div>
+        </div>`}).join('')
+    : `<div class="empty"><div class="ei">📖</div><p>아직 스토리가 없어요${state.isOwner ? '<br>아래 버튼으로 AI 스토리를 만들어보세요!' : ''}</p></div>`;
 
   // 이벤트 → 스토리 생성 버튼
   const genBtns = state.isOwner && eventCats.length
@@ -200,7 +220,7 @@ export async function renderLibrary(container) {
   // ── 영상 ──
   const videoList = videos.length
     ? videos.map(v => {
-        const p = parseVideoUrl(v.file_url);
+        const p = window.parseVideoUrl?.(v.file_url);
         if (!p) return '';
         return `<div class="video-item">
           <iframe class="video-embed ${p.platform==='TikTok'?'vert':''}" src="${p.embedUrl}" allowfullscreen></iframe>
@@ -242,19 +262,10 @@ export async function renderLibrary(container) {
 window.generateStory = (catId) => {
   const cat = (state.categories || []).find(c => String(c.id) === String(catId));
   if (cat) generateStory(cat);
+  else window.showToast('카테고리를 찾을 수 없어요');
 };
 window.deleteStory = deleteStory;
-window.editStory   = async (storyId) => {
-  // 기존 스토리 불러와서 수정 모달 열기
-  try {
-    const res  = await fetch(`/api/house?action=stories&house_id=${state.houseId}`);
-    const data = await res.json();
-    const story = (data.stories || []).find(s => s.id === storyId);
-    if (!story) return;
-    const cat = (state.categories || []).find(c => String(c.id) === String(story.category_id));
-    openStoryPreview({ cat, title: story.title, content: story.content, storyId });
-  } catch(e) { window.showToast('불러오기 실패'); }
-};
+window.editStory   = editStory;
 
 // ── 유틸 ─────────────────────────────────────────────────────────────────
 function escH(str) {
@@ -283,22 +294,20 @@ function injectStoryStyles() {
     .sm-handle     { width:40px;height:4px;background:#e0d0c0;border-radius:2px;margin:0 auto 16px; }
     .sm-label      { font-size:12px;color:#a08060;margin-bottom:8px; }
     .sm-title      { width:100%;border:1px solid #e0d0c0;border-radius:10px;padding:10px 12px;
-                     font-size:16px;font-weight:600;font-family:inherit;margin-bottom:10px; }
+                     font-size:16px;font-weight:600;font-family:inherit;margin-bottom:10px;outline:none; }
     .sm-content    { width:100%;border:1px solid #e0d0c0;border-radius:10px;padding:10px 12px;
-                     font-size:14px;line-height:1.7;font-family:inherit;resize:vertical; }
+                     font-size:14px;line-height:1.7;font-family:inherit;resize:vertical;outline:none; }
     .sm-toggle     { margin:12px 0;font-size:13px;color:#6b3f1f; }
     .sm-btns       { display:flex;gap:8px;margin-top:16px; }
     .sm-btn        { flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;
                      font-weight:600;cursor:pointer;font-family:inherit; }
     .sm-btn.cancel { background:#f7ede3;color:#6b3f1f; }
     .sm-btn.save   { background:linear-gradient(135deg,#6b3f1f,#c8973a);color:white; }
-
     .story-gen-wrap { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px; }
     .story-gen-btn  { background:#f7ede3;border:1px solid #e0c090;border-radius:20px;
                       padding:8px 16px;font-size:13px;color:#6b3f1f;cursor:pointer;
                       font-family:inherit;transition:all .2s; }
     .story-gen-btn:hover { background:#c8973a;color:white;border-color:#c8973a; }
-
     .story-card     { background:white;border:1px solid rgba(139,94,60,.12);border-radius:16px;
                       padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(107,63,31,.06); }
     .story-card-head { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px; }
