@@ -34,6 +34,28 @@ export default async function handler(req, res) {
   - Mỗi lời chúc 1-2 câu, có emoji
   - Thể hiện tình yêu thương gia đình
   - Chỉ trả về JSON array (không có text khác): ["lời chúc 1", "lời chúc 2", "lời chúc 3"]`;
+  } else if (type === 'story') {
+  // context: { event_name, posts: [{content, created_at, media_count}], house_name }
+  const { event_name, posts = [], house_name = '우리 가족' } = context || {};
+  const postsSummary = posts.map((p, i) =>
+    `[${i+1}] ${p.created_at?.slice(0,10) || ''} - ${p.content || '사진'} ${p.media_count > 0 ? `(사진 ${p.media_count}장)` : ''}`
+  ).join('\n');
+
+  prompt = `당신은 가족 기록 작가입니다. 아래 이벤트 기록들을 바탕으로 따뜻한 스토리를 써주세요.
+
+집 이름: ${house_name}
+이벤트: ${event_name}
+기록 목록:
+${postsSummary}
+
+조건:
+- 한국어로 작성
+- 2~3단락, 각 단락 3~4문장
+- 날짜 흐름에 따라 자연스럽게 연결
+- 가족의 사랑과 추억이 느껴지게
+- 이모지 1~2개만 자연스럽게 포함
+- 반드시 아래 JSON 형식만 반환 (다른 텍스트 없이):
+{"title": "스토리 제목", "content": "스토리 본문"}`;
       } else {
         prompt = `당신은 아기 김하준(Mango) 100일을 축하하는 메시지 작성을 돕습니다.
   따뜻하고 짧은 축하 메시지 3가지를 제안해주세요.
@@ -68,23 +90,32 @@ export default async function handler(req, res) {
     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   
     try {
-      // 1단계: 코드블록 제거
-      let clean = raw.replace(/```json|```/gi, '').trim();
-      // 2단계: 배열 추출
-      const match = clean.match(/\[[\s\S]*?\]/);
-      if (match) {
-        const suggestions = JSON.parse(match[0]);
-        return res.status(200).json({ suggestions });
-      }
-      // 3단계: 줄 기반 fallback
-      const lines = raw.split('\n')
-        .map(l => l.replace(/^[\s\d\.\-\*\"]+|[\s\"\,]+$/g, '').trim())
-        .filter(l => l.length > 5);
-      if (lines.length >= 1) {
-        return res.status(200).json({ suggestions: lines.slice(0, 3) });
-      }
-      throw new Error('파싱 불가');
-    } catch(e) {
-      return res.status(500).json({ error: 'Gemini 응답 파싱 실패', raw });
+  let clean = raw.replace(/```json|```/gi, '').trim();
+
+  // story 타입: 객체 파싱
+  if (type === 'story') {
+    const match = clean.match(/\{[\s\S]*?\}/);
+    if (match) {
+      const result = JSON.parse(match[0]);
+      return res.status(200).json({ title: result.title, content: result.content });
     }
+    throw new Error('파싱 불가');
+  }
+
+  // 기존 배열 파싱 (caption, message)
+  const match = clean.match(/\[[\s\S]*?\]/);
+  if (match) {
+    const suggestions = JSON.parse(match[0]);
+    return res.status(200).json({ suggestions });
+  }
+  const lines = raw.split('\n')
+    .map(l => l.replace(/^[\s\d\.\-\*\"]+|[\s\"\,]+$/g, '').trim())
+    .filter(l => l.length > 5);
+  if (lines.length >= 1) {
+    return res.status(200).json({ suggestions: lines.slice(0, 3) });
+  }
+  throw new Error('파싱 불가');
+} catch(e) {
+  return res.status(500).json({ error: 'Gemini 응답 파싱 실패', raw });
+}
   }
