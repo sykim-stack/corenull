@@ -573,21 +573,28 @@ function pvNav(dir) {
 }
 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
-function pvShare() {
+function function pvShare() {
   if (!window.Kakao?.isInitialized()) { copyLink(location.href); return; }
-  const postUrl = pvState.postId
-    ? `${location.origin}${location.pathname}?post=${pvState.postId}`
-    : location.href;
+  
+  const postUrl = `${location.origin}${location.pathname}`;
   const imgs = pvState.images;
+  const content = document.getElementById('pvText')?.textContent || '';
+  const houseName = state.houseData?.name || state.slug;
+  
   Kakao.Share.sendDefault({
     objectType: 'feed',
     content: {
-      title: `${state.houseData?.name || state.slug}의 기록`,
-      description: document.getElementById('pvText')?.textContent || '',
-      imageUrl: imgs.length ? imgs[0] : (state.houseData?.cover_url || 'https://corenull.vercel.app/icon-hajun-512.png'),
+      title: houseName + '의 기록',
+      description: content.slice(0, 100) || '소중한 순간을 기록했어요',
+      imageUrl: imgs.length 
+        ? imgs[0] 
+        : (state.houseData?.cover_url || 'https://corenull.vercel.app/icon-hajun-512.png'),
       link: { mobileWebUrl: postUrl, webUrl: postUrl }
     },
-    buttons: [{ title: '포스트 보기', link: { mobileWebUrl: postUrl, webUrl: postUrl } }]
+    buttons: [{ 
+      title: '집 방문하기', 
+      link: { mobileWebUrl: postUrl, webUrl: postUrl } 
+    }]
   });
 }
 function pvToggleReact()  {
