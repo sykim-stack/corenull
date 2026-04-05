@@ -64,18 +64,17 @@ export async function sharePost(opts) {
       shareUrl = `${location.origin}/${slug}`;
     }
 
-    // Web Share API (모바일 OS 공유 시트)
-    if (navigator.share) {
-      await navigator.share({
-        title: `${houseName}의 기록`,
-        text : content?.slice(0, 80) || '',
-        url  : shareUrl
-      });
-      return;
-    }
-
-    // Web Share 없으면 공유 바텀시트 열기
-    openShareSheet({ shareUrl, houseName, content, coverUrl, onToast });
+    // PC는 바텀시트, 모바일만 Web Share
+const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+if (navigator.share && isMobile) {
+  await navigator.share({
+    title: `${houseName}의 기록`,
+    text : content?.slice(0, 80) || '',
+    url  : shareUrl
+  });
+  return;
+}
+openShareSheet({ shareUrl, houseName, content, coverUrl, onToast });
 
   } catch(e) {
     if (e.name !== 'AbortError') onToast?.('공유 실패');
