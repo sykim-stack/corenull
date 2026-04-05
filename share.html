@@ -147,9 +147,7 @@
             </div>`).join('')}
         </div>` : '';
 
-      // 변경 (cat 기반으로)
-const roomTarget = `/${house.slug}`;
-// → 집 홈으로만 보내면 충분 (탭 구조상 room_id 직접 링크 불필요)
+      const roomTarget = `/${house.slug}`;
 
       document.getElementById('card').innerHTML = `
         <div class="house-header">
