@@ -573,7 +573,23 @@ function pvNav(dir) {
 }
 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
-function pvShare()        { copyLink(location.href); }
+function pvShare() {
+  if (!window.Kakao?.isInitialized()) { copyLink(location.href); return; }
+  const postUrl = pvState.postId
+    ? `${location.origin}${location.pathname}?post=${pvState.postId}`
+    : location.href;
+  const imgs = pvState.images;
+  Kakao.Share.sendDefault({
+    objectType: 'feed',
+    content: {
+      title: `${state.houseData?.name || state.slug}의 기록`,
+      description: document.getElementById('pvText')?.textContent || '',
+      imageUrl: imgs.length ? imgs[0] : (state.houseData?.cover_url || 'https://corenull.vercel.app/icon-hajun-512.png'),
+      link: { mobileWebUrl: postUrl, webUrl: postUrl }
+    },
+    buttons: [{ title: '포스트 보기', link: { mobileWebUrl: postUrl, webUrl: postUrl } }]
+  });
+}
 function pvToggleReact()  {
   if (!pvState.postId) return;
   toggleReaction(pvState.postId, document.getElementById('pvReactBtn'));
