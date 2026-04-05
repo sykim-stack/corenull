@@ -158,19 +158,25 @@ export function renderPost(p, opts = {}) {
   const clickable = imgs.length > 0;
 
   const actionBar = (showActions && p.id) ? `
-    <div class="post-actions">
+    <div class="post-actions" style="display:flex;align-items:center;gap:8px;padding:0 16px 14px;">
       <button class="reaction-btn" data-reaction-id="${p.id}"
-        onclick="toggleReaction('${p.id}',this)">🤍</button>
+        onclick="event.stopPropagation();toggleReaction('${p.id}',this)"
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        🤍
+      </button>
       <button class="comment-btn" data-comment-id="${p.id}" data-count="0"
-        onclick="openPostComment('${p.id}')">💬</button>
+        onclick="event.stopPropagation();openPostComment('${p.id}')"
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        💬
+      </button>
+      <button class="share-post-btn" data-post-id="${p.id}"
+        onclick="event.stopPropagation();sharePost('${p.id}',this)"
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        🔗
+      </button>
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
-      ${showDel ? `<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
-      ${state.isOwner ? `<button class="share-btn" onclick="sharePost('${p.id}',this)" title="공유">🔗</button>` : ''}
+      ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
     </div>` : `
-    <div class="post-foot">
-      <span class="post-time">${timeAgo(p.created_at)}</span>
-      ${showDel ? `<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
-    </div>`;
 
   // 미디어만 클릭 가능하게 — 텍스트+액션은 클릭 전파 없음
   const mediaHtml = imgs.length
