@@ -67,15 +67,20 @@ ${posts_summary || '소중한 순간들이 담겨 있습니다.'}
   }
 
   const apiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+        generationConfig: {
+  temperature: 0.8,
+  maxOutputTokens: 2048,
+  thinkingConfig: { thinkingBudget: 0 }  // thinking 비활성화 → 훨씬 빠름
+}
       })
     }
+    
   );
 
   const data = await apiRes.json();
