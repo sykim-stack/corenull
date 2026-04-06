@@ -74,18 +74,6 @@ export default async function handler(req, res) {
 
     const [room] = await rRes.json();
 
-    // 분류 자동 생성
-    const cCheck = await db(`categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(room_name)}&select=id`, 'GET');
-    const cCheckArr = await cCheck.json();
-    if (!cCheckArr?.length) {
-      await db('categories', 'POST', {
-        house_id,
-        name: room_name,
-        color: '#C9A84C',
-        order_num: 1,
-      });
-    }
-
     return res.status(200).json({ success: true, room });
   }
 
@@ -127,35 +115,69 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true });
   }
 
-  // ── DELETE: 방 삭제 ───────────────────────────────
-  if (req.method === 'DELETE') {
-    const { room_id, house_id, owner_key } = req.body;
-    if (!room_id || !house_id || !owner_key)
-      return res.status(400).json({ error: '필수값 누락' });
+// ── DELETE: 방 삭제 ───────────────────────────────────────────────
+if (req.method === 'DELETE') {
+  const { room_id, house_id, owner_key } = req.body;
+  if (!room_id || !house_id || !owner_key)
+    return res.status(400).json({ error: '필수값 누락' });
 
-    const hRes = await db(`houses?id=eq.${house_id}&select=owner_key`, 'GET');
-    if (!hRes.ok) return res.status(500).json({ error: 'house 조회 실패' });
+  const hRes = await db(`houses?id=eq.${house_id}&select=owner_key`, 'GET');
+  if (!hRes.ok) return res.status(500).json({ error: 'house 조회 실패' });
 
-    const houses = await hRes.json();
-    const house = houses?.[0];
-    if (!house || house.owner_key !== owner_key)
-      return res.status(403).json({ error: '권한 없음' });
+  const houses = await hRes.json();
+  const house = houses?.[0];
+  if (!house || house.owner_key !== owner_key)
+    return res.status(403).json({ error: '권한 없음' });
 
-    const rInfo = await db(`rooms?id=eq.${room_id}&select=room_name`, 'GET');
-    const rInfoArr = await rInfo.json();
+  await db(`media?room_id=eq.${room_id}`, 'PATCH', { room_id: null });
 
-    await db(`media?room_id=eq.${room_id}`, 'PATCH', { room_id: null });
+  const rRes = await db(`rooms?id=eq.${room_id}&house_id=eq.${house_id}`, 'DELETE');
+  if (!rRes.ok) {
+    const err = await rRes.json();
+    return res.status(500).json({ error: err.message || '삭제 실패' });
+  }
 
-    if (rInfoArr?.[0]?.room_name) {
-      await db(`categories?house_id=eq.${house_id}&name=eq.${encodeURIComponent(rInfoArr[0].room_name)}`, 'DELETE');
-    }
+  return res.status(200).json({ success: true });
+}
 
-    const rRes = await db(`rooms?id=eq.${room_id}&house_id=eq.${house_id}`, 'DELETE');
-    if (!rRes.ok) {
-      const err = await rRes.json();
-      return res.status(500).json({ error: err.message || '삭제 실패' });
-    }
+// ── POST: 이벤트 방 생성 ──────────────────────────────────────────
+if (req.method === 'POST') {
+  const { house_id, owner_key, room_name, event_date } = req.body;
+  if (!house_id || !owner_key || !room_name)
+    return res.status(400).json({ error: '필수값 누락' });
 
+  const hRes = await db(`houses?id=eq.${house_id}&select=owner_key`, 'GET');
+  if (!hRes.ok) {
+    const detail = await hRes.text();
+    return res.status(500).json({ error: 'house 조회 실패', detail });
+  }
+
+  const houses = await hRes.json();
+  const house = houses?.[0];
+  if (!house || house.owner_key !== owner_key)
+    return res.status(403).json({ error: '권한 없음' });
+
+  const oRes = await db(`rooms?house_id=eq.${house_id}&select=order_num&order=order_num.desc&limit=1`, 'GET');
+  const lastArr = await oRes.json();
+  const order_num = (lastArr?.[0]?.order_num || 0) + 1;
+
+  const rRes = await db('rooms', 'POST', {
+    house_id,
+    room_name,
+    room_type: 'room',
+    event_date: event_date || null,
+    order_num,
+    is_hidden: false,
+  });
+
+  if (!rRes.ok) {
+    const detail = await rRes.json();
+    return res.status(500).json({ error: '방 생성 실패', detail });
+  }
+
+  const [room] = await rRes.json();
+  return res.status(200).json({ success: true, room });
+}
     return res.status(200).json({ success: true });
   }
 
