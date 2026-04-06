@@ -138,8 +138,7 @@ if (req.method === 'DELETE') {
   }
 
   return res.status(200).json({ success: true });
-}
-
+  
 // ── POST: 이벤트 방 생성 ──────────────────────────────────────────
 if (req.method === 'POST') {
   const { house_id, owner_key, room_name, event_date } = req.body;
