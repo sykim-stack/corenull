@@ -255,7 +255,10 @@ window.submitCatInlineForm = submitCatInlineForm;
 window.openEventPage  = (catId) => {
   window.open(`/event?slug=${state.slug}&cat=${catId}`, '_blank');
 };
-
+// ── 전역 노출 섹션 (보강 버전) ──
+window.submitCatEdit = submitCatEdit; // 이 줄이 없으면 모달 내 '저장' 버튼이 작동 안 합니다.
+window.confirmDeleteCat = confirmDeleteCat; // 이 줄이 없으면 삭제 버튼이 작동 안 합니다.
+window.pvLoadComments = pvLoadComments;
 window.showToast          = showToast;
 window.openConfirm        = openConfirm;
 window.closeConfirm       = closeConfirm;
@@ -318,7 +321,11 @@ window.generateStory = (catId) => {
   const cat = (state.categories || []).find(c => String(c.id) === String(catId));
   if (cat) libGenerateStory(cat);
 };
-
+// ── HTML의 onclick에서 호출할 수 있도록 전역(window)에 등록 ──
+window.openCatEditPopup = openCatEditPopup;
+window.saveCatEdit = saveCatEdit;
+window.confirmDelCat = confirmDelCat;
+window.filterCat = filterCat; // 필터 기능도 여기서 쓰인다면 등록 필요
 // ── 데이터 로드 & 리로드 ──────────────────────────────────────────────────
 async function reloadData() {
   try {
