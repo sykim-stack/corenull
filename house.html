@@ -247,7 +247,12 @@ window.sharePost = (postId, btn) => {
     btn
   });
 };
-
+window.openCatEdit    = openCatEdit;
+window.openCatInlineForm = openCatInlineForm;
+window.submitCatInlineForm = submitCatInlineForm;
+window.openEventPage  = (catId) => {
+  window.open(`/event?slug=${state.slug}&cat=${catId}`, '_blank');
+};
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
 window.showToast          = showToast;
 window.openConfirm        = openConfirm;

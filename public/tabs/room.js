@@ -2,7 +2,7 @@
 import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
 
 // ── 방 렌더 ───────────────────────────────────────────────────────────────
-export function export function renderRoom(container, room) {
+export function renderRoom(container, room) {
   const posts = state.allPosts.filter(p => p.room_id === room.id);
   const cats = state.categories || [];
   
