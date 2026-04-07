@@ -21,13 +21,13 @@ const catHtml = cats.length ? `
   </div>` : '';
 
   container.innerHTML = `
-  <div class="section">
-    <div class="sec-head" style="margin-bottom:16px;">
-      <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
-    </div>
-    ${catHtml}
-    <div id="roomPostList-${room.id}"></div>
-  </div>`;
+    <div class="section">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+      </div>
+      ${catHtml}
+      <div id="roomPostList-${room.id}"></div>
+    </div>`;
 
   renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
