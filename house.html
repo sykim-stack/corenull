@@ -1,3 +1,459 @@
+
+브라이언풀
+/
+1775536866321_image.png
+오늘 정리할꺼. 분류/이벤트 수정 삭제 없음. 방에 글쓰기 버튼 있음(삭제)
+관심 버튼 완성
+서재 스토리 삭제  버튼 없음. - 이건 서제 만들때 하자.
+
+오후 1:45
+현재 상태 파악하고 작업 범위 확인할게요.
+
+
+Failed to fetch: https://raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/house.html
+Failed to fetch: https://raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/house.html
+네트워크가 막혀있어서 직접 못 가져오네요. 코드 붙여주시거나 GitHub에서 관련 파일들 공유해주시면 바로 시작할게요.
+
+오늘 작업 목록 정리:
+
+삭제
+
+분류/이벤트 수정·삭제 UI 제거
+방 탭 글쓰기 버튼 제거
+완성
+
+관심 버튼 (400 에러 해결)
+보류
+
+서재 스토리 삭제 버튼 (서재 만들 때)
+관심 버튼 400 에러부터 보려면 api/posts.js랑 관심 버튼 관련 프론트 코드 (room.js 또는 living.js) 붙여주세요. 어디서부터 시작할까요?
+
+https://raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/house.html
+관심 버튼은 디비 저장되는거 까지 확인 했어.
+
+오후 1:47
+네트워크 제한 때문에 GitHub raw URL 접근이 안 되네요. house.html 파일 내용을 직접 붙여주시겠어요?
+
+오늘 작업 범위 재확인:
+
+삭제
+
+분류/이벤트 수정·삭제 UI
+방 탭 글쓰기 버튼
+관심 버튼 → DB 저장 확인됐으니 UI 동작만 점검
+
+어떤 파일부터 볼까요? 우선순위대로:
+
+house.html
+public/tabs/room.js
+public/tabs/living.js
+
+<!DOCTYPE html> <html lang="ko"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>집 · CoreNull</title> <link rel="preconnect" href="https://fonts.googleapis.com"> <link href="https://fonts.googleapis.com/css2?family=Noto+Ser
+
+pasted
+
+오후 1:48
+room.js랑 living.js도 볼게요.
+
+
+Failed to fetch: https://raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/public/tabs/room.js
+Failed to fetch: https://raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/public/tabs/room.js
+
+가져오기 실패 https://raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/public/tabs/room.js
+완료
+역시 네트워크 막혀있네요. room.js, living.js, library.js 붙여주시면 바로 시작할게요.
+
+오늘 작업 목록 재확인 (house.html 분석 완료):
+
+삭제
+
+분류/이벤트 수정·삭제 UI → renderEvent() 안에 있을 버튼들
+방 탭 글쓰기 버튼 → room.js 안 renderRoom() 에 있을 + 글쓰기 버튼
+관심 버튼 → toggleReaction() 은 room.js에서 import, pvToggleReact() 는 house.html에 있음. DB 저장 확인됐으니 UI 반영(하트 상태 토글) 점검
+
+서재 스토리 삭제 → 보류
+
+room.js 먼저 붙여주세요!
+
+
+// public/tabs/room.js import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js'; // ── 방 렌더 ─────────────────────────────────────────────────────────────── export function renderRoom(container, room) { const posts = state.allPosts.filte
+
+pasted
+
+
+// public/tabs/living.js import { state } from '../js/common.js'; import { loadLobbyComments } from '../js/api.js'; export async function renderLobby(container, house, milestones, comments, rooms) { // 백일 배너 let bannerHtml = ''; if (house.hundred_date) { const diff = Math.ceil((ne
+
+pasted
+
+raw.githubusercontent.com/sykim-stack/corenull/refs/heads/main/public/tabs/room.js
+
+오후 1:50
+코드 다 봤어요. 작업 시작할게요.
+
+오늘 수정 목록:
+
+room.js — 방 탭 글쓰기 버튼 제거
+house.html — 이벤트 탭 수정·삭제 UI 없음 확인 (이미 없음 ✅)
+관심 버튼 — loadReactions에서 data-reaction-id 셀렉터 vs renderPost에서 쓰는 속성명 일치 여부 확인 필요 → common.js 봐야 함
+우선 확실한 것부터:
+
+room.js — 글쓰기 버튼 제거
+
+
+Room.js 작업용 복사
+Room.js 작업용 복사
+수정 내용 알려드릴게요. room.js에서 이 한 줄만 지우면 돼요:
+
+room.js renderRoom() 안에서:
+
+js
+// 삭제
+${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+→ 전체 sec-head 블록은 타이틀만 남기면 돼요:
+
+js
+container.innerHTML = `
+  <div class="section">
+    <div class="sec-head" style="margin-bottom:16px;">
+      <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+    </div>
+    ${catHtml}
+    <div id="roomPostList-${room.id}"></div>
+  </div>`;
+다음으로 관심 버튼 UI 상태 확인이 필요해요. common.js의 renderPost() 함수에서 관심 버튼에 어떤 data-* 속성을 붙이는지 봐야 해요.
+
+room.js의 loadReactions()은 [data-reaction-id="${id}"]로 버튼을 찾는데, renderPost()가 실제로 data-reaction-id를 쓰는지 확인이 필요해요.
+
+common.js 붙여주시거나 renderPost 함수 부분만 붙여주세요!
+
+
+// public/js/common.js // ── 전역 State ──────────────────────────────────────────────────────────────── export const state = { slug: location.pathname.replace(/^\//, '') || 'hajun', ownerKey: new URLSearchParams(location.search).get('owner'), isOwner: false, houseId: nul
+
+pasted
+
+오후 1:52
+다 파악됐어요. 작업 시작할게요.
+
+확인된 사항:
+
+관심 버튼: renderPost에서 data-reaction-id="${p.id}" ✅, loadReactions에서 [data-reaction-id="${id}"] ✅ → 이미 맞음
+pvToggleReact()가 toggleReaction(postId, btn) 호출하는데 pvReactBtn의 data-reaction-id가 없어서 로드 후 상태 반영이 안 됨 → 수정 필요
+방 글쓰기 버튼 → room.js 수정
+이벤트 탭 수정/삭제 → house.html renderEvent() 확인 → 이미 없음 ✅
+수정 2개:
+
+1. room.js — 글쓰기 버튼 제거
+
+renderRoom() 안에서:
+
+js
+// 이거 통째로 제거
+${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+sec-head가 이렇게 되면 돼요:
+
+js
+<div class="sec-head" style="margin-bottom:16px;">
+  <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+</div>
+2. house.html — pvToggleReact 상태 동기화
+
+openPostModal() 안에서 pvReactBtn 초기 상태를 세팅해야 해요. 지금은 항상 🤍 관심으로 초기화됨.
+
+js
+// openPostModal() 안에 이 블록 추가 (pvComments 초기화 바로 위)
+const reactBtn = document.getElementById('pvReactBtn');
+reactBtn.innerHTML = '🤍 관심';
+reactBtn.style.background = 'none';
+reactBtn.style.borderColor = '';
+reactBtn.dataset.count = '0';
+if (pvState.postId) {
+  fetch(`/api/comment?action=react&target_id=${pvState.postId}&target_type=post`,
+    { headers: { 'x-device-id': DEVICE_ID } })
+    .then(r => r.json())
+    .then(data => {
+      reactBtn.dataset.count = data.count || 0;
+      if (data.reacted) {
+        reactBtn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
+        reactBtn.style.background = 'rgba(255,100,100,.1)';
+        reactBtn.style.borderColor = 'rgba(255,100,100,.3)';
+      } else {
+        reactBtn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍 관심';
+      }
+    }).catch(() => {});
+}
+그리고 pvToggleReact()에서 카드 버튼 상태도 같이 업데이트:
+
+js
+function pvToggleReact() {
+  if (!pvState.postId) return;
+  const btn = document.getElementById('pvReactBtn');
+  toggleReaction(pvState.postId, btn);
+  // 카드의 reaction 버튼도 동기화
+  setTimeout(() => {
+    const cardBtn = document.querySelector(`[data-reaction-id="${pvState.postId}"]`);
+    if (cardBtn) {
+      cardBtn.dataset.count = btn.dataset.count;
+      const count = parseInt(btn.dataset.count || '0');
+      if (btn.innerHTML.startsWith('❤️')) {
+        cardBtn.innerHTML = `❤️ ${count > 0 ? count : ''}`;
+        cardBtn.style.background = 'rgba(255,100,100,.1)';
+        cardBtn.style.borderColor = 'rgba(255,100,100,.3)';
+      } else {
+        cardBtn.innerHTML = count > 0 ? `🤍 ${count}` : '🤍';
+        cardBtn.style.background = 'none';
+        cardBtn.style.borderColor = 'rgba(139,94,60,.15)';
+      }
+    }
+  }, 300);
+}
+room.js는 한 줄 삭제, house.html은 두 블록 추가/교체예요. 적용해보고 결과 알려주세요!
+
+house.html — 이벤트 탭 수정·삭제 UI 없음 확인 (이미 없음 ✅) 근데 이건 있어야 하는거 아니야? 완료가 아니라.
+
+오후 2:04
+맞아요, 제가 잘못 읽었어요.
+
+오늘 작업 목록 재정리:
+
+삭제 (오늘)
+
+방 탭 글쓰기 버튼 → room.js
+분류/이벤트 수정·삭제 → 이건 원래 있어야 하는데 아직 없음
+추가 필요
+
+이벤트 탭 수정·삭제 UI → house.html renderEvent()
+분류 수정·삭제 UI → 어디에 있어요? 카테고리 관리 화면이 별도로 있나요, 아니면 방/이벤트 탭 안에 인라인으로 있어야 하나요?
+오늘 범위에 포함할지, 다음 세션으로 뺄지 알려주세요.
+
+1775538420319_image.png
+✅ 결론 (한 줄 요약)
+이벤트는 “빠르게 생성 → 별도로 관리 → 시간 흐름에 따라 타임라인에 편입” 구조로 간다. → CoreNull은 “공간 + 시간” 이중 구조로 설계해야 한다.
+🧠 전체 구조 요약 (Phase 0 기준)
+1️⃣ 핵심 개념 구조
+✔️ 공간 구조 (Room)
+* 이벤트 = 방(Room)
+* 삭제/이동 없음
+* 기억의 “장소” 역할
+✔️ 시간 구조 (Library / 서재)
+* 서재 = 스토리 타임라인
+* 이벤트 + 일반 글 혼합
+* 시간 흐름 기반
+👉 핵심 공간은 유지 / 시간은 흐른다
+2️⃣ 이벤트 설계 (확정안)
+✔️ 생성 방식
+* 글쓰기에서 빠르게 생성
+* 최소 입력:
+   * 이름
+   * 날짜
+👉 3초 생성
+✔️ 관리 방식
+* 이벤트 페이지에서 ✏️ 수정 버튼 제공 (필수)
+수정 가능:
+* 이름
+* 날짜
+* 설명
+👉 생성과 관리 분리
+✔️ 상태 개념 (중요)
+
+진행중 이벤트
+→ 이벤트 페이지 노출
+
+종료된 이벤트
+→ 그대로 유지
+→ 서재 타임라인에 자동 포함
+👉 이동 ❌ / 상태 변화 ⭕
+3️⃣ 서재(타임라인) 전략
+✔️ 방향
+👉 “단순 기록 ❌” 👉 “스토리 타임라인 ⭕”
+✔️ 구성
+
+날짜 기준 정렬
+
+[이벤트] 강조
+[일반 글] 보조
+✔️ UX 핵심
+* 이벤트 클릭 → 해당 이벤트 방 이동
+* 글 클릭 → 원래 위치 유지
+👉 연결 유지
+4️⃣ 전체 사용자 흐름 (User Journey)
+🟢 작성
+
+글쓰기
+→ 이벤트 선택 or 생성
+→ 글 등록
+🟡 관리
+
+이벤트 페이지
+→ 이벤트 클릭
+→ 수정
+🔵 소비 (핵심 경험)
+
+서재
+→ 시간 흐름으로 감상
+→ 이벤트/글 이동
+5️⃣ 비즈니스 관점 정리
+🎯 JTBD
+* “아이의 시간을 의미 있게 남기고 싶다”
+* “나중에 다시 보고 싶다”
+💥 차별화 포인트
+* 인스타 = 피드
+* 블로그 = 글
+* CoreNull = 👉 시간 + 감정 + 공간
+6️⃣ 구현 우선순위
+기능우선순위난이도이벤트 생성 (글쓰기)Phase 0낮음이벤트 수정Phase 0낮음이벤트 상태 처리Phase 0낮음서재 타임라인Phase 0중간필터 (이벤트/일상)Phase 1낮음
+7️⃣ 리스크 & 대응
+⚠️ 이벤트 남발
+→ 최근 이벤트 우선 노출
+⚠️ 타임라인 빈약
+→ milestone 기본 생성 (출생/백일)
+⚠️ 개념 혼란 (방 vs 분류)
+→ 이벤트는 “방”으로 고정
+8️⃣ 핵심 철학 정리
+👉 “이벤트는 사라지지 않는다, 시간 속에서 확장된다”
+👉 “서재는 기록이 아니라 이야기다”
+💡 Idea Pool (보류)
+* D+N 자동 강조 (백일, 돌)
+* 감정 요약 (CoreRing)
+* 기간별 스토리 묶음 (0~100일)
+❗ Critical Question
+👉 “타임라인에서 ‘모든 기록’을 보여줄 것인가, 아니면 ‘의미 있는 순간만 보여줄 것인가?”
+이 선택이 👉 데이터 구조 / UX / 감성 완성도를 전부 결정한다.
+
+우리가 기획한 이벤트 페이지에 보카내용 접목해서 정리 진행 하자
+
+더 보기
+오후 2:47
+보카 내용 + 현재 구현 상태 합쳐서 정리할게요.
+
+
+명령 2개 실행함, 파일 조회함, 파일 생성됨
+명령 2개 실행함, 파일 조회함, 파일 생성됨
+보카 내용 + 현재 구현 상태 합쳐서 정리했어요.
+
+문서 구성:
+
+핵심 결론 (공간+시간 이중 구조)
+공간(Room) / 시간(Library) 구조 개요
+이벤트 설계 확정안 — 생성/관리/상태 테이블
+서재 타임라인 전략 + Critical Question
+사용자 흐름 (작성→관리→소비)
+구현 우선순위 (완료/미완 상태 포함)
+현재 Phase 0 구현 상태
+리스크 & 대응
+Idea Pool (Phase 1 보류)
+다음 코딩 작업으로 넘어갈까요? 오늘 남은 것:
+
+room.js 글쓰기 버튼 제거
+house.html 관심 버튼 pvToggleReact 동기화
+renderEvent() 수정 버튼 추가
+Corenull 이벤트설계기준서 20260407
+문서 · DOCX 
+코딩하자
+
+오후 2:55
+어느 파일부터 시작할까요? 수정 내용은 이미 다 파악됐으니 바로 갈게요.
+
+순서 제안:
+
+room.js — 글쓰기 버튼 한 줄 삭제
+house.html — pvToggleReact 동기화
+house.html — renderEvent() 수정 버튼 추가
+room.js부터 할게요. 현재 renderRoom() sec-head 부분:
+
+js
+// 현재
+<div class="sec-head" style="margin-bottom:16px;">
+  <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+  ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+</div>
+
+// 수정
+<div class="sec-head" style="margin-bottom:16px;">
+  <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+</div>
+이거 적용하고, house.html 수정 2개는 같이 보내드릴게요. 파일 붙여주시면 풀소스로 드릴게요 — room.js 전체랑 house.html 전체 다시 주세요.
+
+아, room.js는 위에 이미 있으니까 house.html만 다시 주시면 돼요 (위에 있는 버전 그대로 쓸게요).
+
+
+<!DOCTYPE html> <html lang="ko"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>집 · CoreNull</title> <link rel="preconnect" href="https://fonts.googleapis.com"> <link href="https://fonts.googleapis.com/css2?family=Noto+Ser
+
+pasted
+
+오후 2:58
+버그 하나 발견했어요. renderEvent() 안에 room.room_name 참조가 있는데 이건 잘못 들어간 코드예요. 같이 수정할게요.
+
+수정 3개:
+
+renderEvent() — 잘못된 room.room_name 제거 + 이벤트 수정 모달 추가 (owner만)
+openPostModal() — 들여쓰기 정리
+room.js — 글쓰기 버튼 제거
+두 파일 풀소스로 드릴게요.
+
+
+2개의 파일 생성됨, 명령 실행함, 파일 읽음
+2개의 파일 생성됨, 명령 실행함, 파일 읽음
+두 파일 완료예요. 변경 내용 요약:
+
+house.html
+
+renderEvent() — room.room_name 버그 제거, POSTS / 글 헤더로 교체
+renderEvent() — owner일 때 ✏️ 수정 버튼 추가
+openEventEditModal() / submitEventEdit() 함수 추가 (categories PATCH)
+이벤트 수정 모달 HTML 추가
+openPostModal() — 관심 버튼 상태 초기화 + API 로드
+pvToggleReact() — 카드 버튼 동기화
+room.js
+
+글쓰기 버튼 한 줄 제거
+api/categories.js에 PATCH가 이미 있는지 확인 필요해요. 없으면 추가해야 submitEventEdit()가 동작해요. 확인해볼까요?
+
+House
+코드 · HTML 
+Room
+JS 
+share-modal.js:1 Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')
+    at share-modal.js:1:135
+(anonymous) @ share-modal.js:1
+setTimeout
+(anonymous) @ share-modal.js:1Understand this error
+hajun?owner=hajun2025owner:334 ReferenceError: room is not defined
+    at renderEvent (hajun?owner=hajun2025owner:514:72)
+    at hajun?owner=hajun2025owner:459:7
+    at Array.forEach (<anonymous>)
+    at buildTabs (hajun?owner=hajun2025owner:428:11)
+    at init (hajun?owner=hajun2025owner:330:5) 에러뜨네?
+
+오후 3:07
+두 가지 에러예요.
+
+1. room is not defined — renderEvent() 안에 아직 room.room_name 참조가 남아있어요. 제가 만든 파일엔 없는데, 지금 배포된 파일이 이전 버전이에요. house.html 제대로 올라갔는지 확인해주세요.
+
+2. share-modal.js 에러 — 이건 별개 파일이에요. share-modal.js가 뭔가요? CoreNull 레포에 있는 파일인가요? getElementById가 null 반환하는 거라 HTML에 해당 요소가 없는 거예요.
+
+일단 1번부터 — 지금 배포된 house.html의 renderEvent() 부분만 확인해주세요. 514라인에 room.room_name이 있으면 제 파일로 교체가 안 된 거예요.
+
+share-modal.js 아이건 무시
+
+오후 3:08
+그럼 room is not defined 에러만 잡으면 돼요.
+
+제가 만든 house.html 파일로 교체가 안 된 것 같아요. 배포된 파일 514라인 근처 renderEvent() 보면 아직 room.room_name 참조가 있을 거예요.
+
+다운받은 house.html 그대로 → public/house.html (또는 루트) 덮어쓰고 Vercel 재배포하면 돼요.
+
+혹시 파일 경로가 어디예요? 루트에 house.html인가요?
+
+
+
+
+
+
+
+Claude는 AI이며 실수할 수 있습니다. 응답을 다시 한번 확인해 주세요.
+House · HTML
+복사
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -12,7 +468,7 @@
   <script>Kakao.init('deff4cdd41db40e09d6a4ca2a3c9f628');</script>
 </head>
 <body>
-
+ 
 <!-- ── Top Nav ──────────────────────────────────────────────────────────── -->
 <nav class="top-nav" id="topNav">
   <div class="top-nav-inner">
@@ -21,7 +477,7 @@
     <div class="top-actions" id="topActions"></div>
   </div>
 </nav>
-
+ 
 <!-- ── Cover Banner ─────────────────────────────────────────────────────── -->
 <div class="cover-wrap" id="coverWrap">
   <div class="cover-img" id="coverImg"></div>
@@ -29,7 +485,7 @@
   <input type="file" id="coverInput"   accept="image/*" style="display:none" onchange="uploadCover(this)">
   <input type="file" id="profileInput" accept="image/*" style="display:none" onchange="uploadProfile(this)">
 </div>
-
+ 
 <!-- ── Profile Area ─────────────────────────────────────────────────────── -->
 <div class="profile-area">
   <div class="profile-inner">
@@ -55,45 +511,45 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ── Tab Contents ─────────────────────────────────────────────────────── -->
 <div id="tabContents"></div>
-
+ 
 <!-- ── Footer ───────────────────────────────────────────────────────────── -->
 <div class="footer">
   <div class="footer-ei" id="footerEi">🏠</div>
   <div class="footer-name" id="footerName">CoreNull</div>
   <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
 </div>
-
+ 
 <!-- ── FAB (1개) ─────────────────────────────────────────────────────────── -->
 <button class="fab" id="fab" style="display:none" onclick="openWriteModal()">✏️</button>
-
+ 
 <!-- ── 글쓰기 모달 ──────────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="composeModal" onclick="closeModal('composeModal',event)">
   <div class="modal-box" style="border-radius:20px;">
     <div class="modal-title">작성하기 ✏️</div>
-
+ 
     <textarea class="modal-input" id="composeContent"
       placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
-
+ 
     <!-- 사진 미리보기 -->
     <div id="composePrevWrap" style="display:none;margin-bottom:10px;">
       <div class="prev-grid" id="composePrevCells"></div>
     </div>
-
+ 
     <!-- 업로드 진행 -->
     <div class="prog-wrap" id="composeProgWrap">
       <div class="prog-bar"><div class="prog-fill" id="composeProgFill"></div></div>
       <div class="prog-text" id="composeProgText"></div>
     </div>
-
+ 
     <!-- 분류 선택 -->
     <div style="margin:10px 0 4px;">
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">분류 선택</div>
       <div id="composeCatWrap"></div>
     </div>
-
+ 
     <!-- 하단 액션 -->
     <div style="display:flex;gap:8px;margin-top:10px;">
       <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;"
@@ -104,7 +560,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ── 이벤트 수정 모달 ──────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="eventEditModal" onclick="closeModal('eventEditModal',event)">
   <div class="modal-box" style="border-radius:20px;">
@@ -116,7 +572,7 @@
     <button class="modal-submit" onclick="submitEventEdit()">저장</button>
   </div>
 </div>
-
+ 
 <!-- ── 사진 설명 수정 모달 ───────────────────────────────────────────────── -->
 <div class="modal-overlay" id="editModal" onclick="closeModal('editModal',event)">
   <div class="modal-box" style="border-radius:20px;">
@@ -127,7 +583,7 @@
     <button class="modal-submit" onclick="submitEdit()">저장</button>
   </div>
 </div>
-
+ 
 <!-- ── 영상 추가 모달 ────────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="videoModal" onclick="closeModal('videoModal',event)">
   <div class="modal-box">
@@ -137,7 +593,7 @@
     <button class="modal-submit" onclick="submitVideo()">추가</button>
   </div>
 </div>
-
+ 
 <!-- ── 라이트박스 ────────────────────────────────────────────────────────── -->
 <div class="lightbox" id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
@@ -149,7 +605,7 @@
   </div>
   <div class="lb-thumbs" id="lbThumbs"></div>
 </div>
-
+ 
 <!-- ── Confirm ───────────────────────────────────────────────────────────── -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -161,7 +617,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ── Onboarding ────────────────────────────────────────────────────────── -->
 <div class="onboard-overlay" id="onboardOverlay">
   <div class="onboard-box">
@@ -186,7 +642,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ── Post Viewer Modal ─────────────────────────────────────────────────── -->
 <div class="pv-overlay" id="postModal" onclick="closePvModal(event)">
   <div class="pv-box">
@@ -222,7 +678,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ── Module Script ─────────────────────────────────────────────────────── -->
 <script type="module">
 import {
@@ -232,7 +688,7 @@ import {
   renderPost, renderPostList, renderStoryImgs,
   escHtml,
 } from '/public/js/common.js';
-
+ 
 import { loadHouseData, submitPost, deletePost as apiDeletePost } from '/public/js/api.js';
 import { renderLobby }   from '/public/tabs/living.js';
 import { renderRoom, filterCat, toggleReaction, openPostComment, submitPostComment, deletePostComment, loadReactions } from '/public/tabs/room.js';
@@ -243,7 +699,7 @@ import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment a
 import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 import { uploadMany, uploadCoverImage, uploadCover, uploadProfile } from '/public/js/core/upload.js';
 import { sharePost as coreSharePost } from '/public/js/core/share.js';
-
+ 
 window.sharePost = (postId, btn) => {
   const post = (state.allPosts || []).find(p => p.id === postId);
   coreSharePost({
@@ -258,14 +714,7 @@ window.sharePost = (postId, btn) => {
     btn
   });
 };
-
-window.openCatEdit    = openCatEdit;
-window.openCatInlineForm = openCatInlineForm;
-window.submitCatInlineForm = submitCatInlineForm;
-window.openEventPage  = (catId) => {
-window.open(`/event?slug=${state.slug}&cat=${catId}`, '_blank');
-};
-
+ 
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
 window.showToast          = showToast;
 window.openConfirm        = openConfirm;
@@ -331,7 +780,7 @@ window.generateStory = (catId) => {
   const cat = (state.categories || []).find(c => String(c.id) === String(catId));
   if (cat) libGenerateStory(cat);
 };
-
+ 
 // ── 데이터 로드 & 리로드 ──────────────────────────────────────────────────
 async function reloadData() {
   try {
@@ -340,7 +789,7 @@ async function reloadData() {
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
   } catch (e) { console.error('reloadData 실패', e); }
 }
-
+ 
 // ── Init ─────────────────────────────────────────────────────────────────
 async function init() {
   try {
@@ -355,23 +804,23 @@ async function init() {
     showToast('데이터를 불러오지 못했어요');
   }
 }
-
+ 
 // ── applyHero ────────────────────────────────────────────────────────────
 function applyHero(house) {
   const cat  = CAT_META[house.category] || CAT_META['daily'];
   const name = house.name || state.slug;
   document.title = `${name} · CoreNull`;
-
+ 
   document.getElementById('heroName').textContent   = name;
   document.getElementById('heroSub').textContent    = house.description || '';
   document.getElementById('footerName').textContent = name;
   document.getElementById('footerEi').textContent   = cat.emoji;
-
+ 
   const coverImg  = document.getElementById('coverImg');
   const coverWrap = document.getElementById('coverWrap');
   const existing  = coverWrap.querySelector('.cover-empty');
   if (existing) existing.remove();
-
+ 
   if (house.cover_url) {
     coverImg.style.backgroundImage = `url(${house.cover_url})`;
   } else {
@@ -379,7 +828,7 @@ function applyHero(house) {
       `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`
     );
   }
-
+ 
   const existingEditBtn = coverWrap.querySelector('.cover-edit-btn');
   if (!existingEditBtn && state.isOwner) {
     const editBtn = document.createElement('button');
@@ -388,7 +837,7 @@ function applyHero(house) {
     editBtn.onclick     = () => document.getElementById('coverInput').click();
     coverWrap.appendChild(editBtn);
   }
-
+ 
   const photo = document.getElementById('profilePhoto');
   if (house.profile_url) {
     photo.innerHTML = `<img src="${house.profile_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
@@ -400,7 +849,7 @@ function applyHero(house) {
     photo.onclick = () => document.getElementById('profileInput').click();
   }
 }
-
+ 
 // ── initDday ─────────────────────────────────────────────────────────────
 function initDday(house) {
   if (!house.birth_date && !house.start_date) return;
@@ -419,24 +868,29 @@ function initDday(house) {
     `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`
   ).join('');
 }
-
+ 
 // ── buildTabs ────────────────────────────────────────────────────────────
 function buildTabs(house, rooms, milestones, comments) {
   const topTabs     = document.getElementById('topTabs');
   const tabContents = document.getElementById('tabContents');
-
+ 
   const activeTabId = document.querySelector('.top-tab-btn.active')?.dataset?.tab || null;
-
+ 
   topTabs.innerHTML = ''; tabContents.innerHTML = '';
-
+ 
   const spaceRooms = [
     ...rooms.filter(r => r.room_type === 'living'),
     ...rooms.filter(r => r.room_type === 'room'),
     ...rooms.filter(r => r.room_type === 'library'),
   ];
-
-  const allTabs = spaceRooms.map(r => ({ kind: 'room', data: r }));
-
+ 
+  const eventCats = (state.categories || []).filter(c => c.is_event);
+ 
+  const allTabs = [
+    ...spaceRooms.map(r => ({ kind: 'room',  data: r })),
+    ...eventCats.map(c  => ({ kind: 'event', data: c })),
+  ];
+ 
   allTabs.forEach((tab) => {
     if (tab.kind === 'room') {
       const room  = tab.data;
@@ -455,112 +909,28 @@ function buildTabs(house, rooms, milestones, comments) {
       if (room.room_type === 'living')  renderLobby(div, house, milestones, comments, spaceRooms);
       if (room.room_type === 'room')    renderRoom(div, room);
       if (room.room_type === 'library') renderLibrary(div);
+    } else {
+      const cat   = tab.data;
+      const tabId = `tab-ev-${cat.id}`;
+      const btn   = document.createElement('button');
+      btn.className   = 'top-tab-btn';
+      btn.innerHTML   = `<span class="ti">🎂</span>${cat.name}`;
+      btn.dataset.tab = tabId;
+      btn.onclick     = () => switchTab(tabId);
+      topTabs.appendChild(btn);
+      const div = document.createElement('div');
+      div.className = 'tab-content';
+      div.id = tabId;
+      tabContents.appendChild(div);
+      renderEvent(div, cat);
     }
   });
-
+ 
   const restoreId = activeTabId && document.getElementById(activeTabId) ? activeTabId
     : document.querySelector('.top-tab-btn')?.dataset?.tab;
   if (restoreId) switchTab(restoreId);
 }
-// ── 분류 인라인 추가 (방 탭) ──────────────────────────────────
-function openCatInlineForm(mode) {
-  const wrap = document.getElementById('catInlineFormWrap');
-  wrap.dataset.mode = mode;
-  wrap.style.display = 'block';
-  document.getElementById('catInlineName2')?.focus();
-}
-
-async function submitCatInlineForm() {
-  const input   = document.getElementById('catInlineName2');
-  const name    = input?.value.trim();
-  const isEvent = document.getElementById('catInlineFormWrap')?.dataset.mode === 'event';
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-  const res  = await fetch('/api/categories', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-    body: JSON.stringify({ house_id: state.houseId, name, is_event: isEvent, color: isEvent ? '#C4784B' : '#8FBFAB' })
-  });
-  const data = await res.json();
-  if (data.id) {
-    showToast(`${isEvent ? '이벤트' : '분류'} 추가됐어요 ✅`);
-    document.getElementById('catInlineFormWrap').style.display = 'none';
-    if (input) input.value = '';
-    await reloadData();
-  } else showToast(data.error || '추가 실패');
-}
-
-// ── 분류/이벤트 수정 모달 ──────────────────────────────────────
-function openCatEdit(catId, catName, isEvent, eventDate = '') {
-  // 기존 모달 제거
-  document.getElementById('__catEditModal')?.remove();
-
-  const modal = document.createElement('div');
-  modal.id = '__catEditModal';
-  modal.className = 'modal-overlay open';
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-
-  const isNew = !catId;
-  const titleTxt = isNew ? (isEvent ? '이벤트 추가' : '분류 추가') : (isEvent ? '이벤트 수정' : '분류 수정');
-
-  modal.innerHTML = `
-    <div class="modal-box" style="border-radius:20px;">
-      <div class="modal-handle"></div>
-      <div class="modal-title">${titleTxt}</div>
-      <input class="modal-input" id="ceNameInput" value="${catName}" placeholder="${isEvent ? '이벤트 이름' : '분류 이름'}" maxlength="20">
-      ${isEvent ? `<input class="modal-input" id="ceDateInput" type="date" value="${eventDate}" style="margin-top:4px;">` : ''}
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="modal-submit" style="margin-top:0;" onclick="submitCatEdit('${catId||''}',${isEvent},${isNew})">
-          ${isNew ? '추가' : '저장'}
-        </button>
-        ${!isNew ? `<button onclick="confirmDeleteCat('${catId}','${catName}',${isEvent})"
-          style="background:#E05555;color:white;border:none;border-radius:14px;padding:15px 20px;font-family:'Gowun Dodum',serif;font-size:14px;cursor:pointer;">삭제</button>` : ''}
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  setTimeout(() => document.getElementById('ceNameInput')?.focus(), 50);
-}
-
-async function submitCatEdit(catId, isEvent, isNew) {
-  const name  = document.getElementById('ceNameInput')?.value.trim();
-  const date  = document.getElementById('ceDateInput')?.value || null;
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-
-  if (isNew) {
-    const res  = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-      body: JSON.stringify({ house_id: state.houseId, name, is_event: isEvent,
-        event_date: isEvent ? date : null, color: isEvent ? '#C4784B' : '#8FBFAB' })
-    });
-    const data = await res.json();
-    if (data.id) { showToast('추가됐어요 ✅'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
-    else showToast(data.error || '추가 실패');
-  } else {
-    // PATCH — api/categories에 PATCH 추가 필요 (아래 5단계)
-    const res  = await fetch('/api/categories', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-      body: JSON.stringify({ category_id: catId, house_id: state.houseId,
-        name, event_date: isEvent ? date : null })
-    });
-    const data = await res.json();
-    if (data.success) { showToast('수정됐어요 ✅'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
-    else showToast(data.error || '수정 실패');
-  }
-}
-
-function confirmDeleteCat(catId, catName, isEvent) {
-  openConfirm(`'${catName}'을 삭제할까요?`, '연결된 글의 분류도 해제돼요.', async () => {
-    const res  = await fetch('/api/categories', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category_id: catId, house_id: state.houseId })
-    });
-    const data = await res.json();
-    if (data.success) { showToast('삭제됐어요'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
-    else showToast(data.error || '삭제 실패');
-  });
-}
+ 
 // ── switchTab ────────────────────────────────────────────────────────────
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -570,12 +940,12 @@ function switchTab(tabId) {
   if (btn) btn.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
+ 
 function switchToRoomType(type) {
   const r = state.rooms.find(r => r.room_type === type);
   if (r) switchTab(`tab-${r.id}`);
 }
-
+ 
 // ── renderEvent ──────────────────────────────────────────────────────────
 function renderEvent(container, cat) {
   const diff = cat.event_date
@@ -585,15 +955,15 @@ function renderEvent(container, cat) {
     : diff > 0   ? `D-${diff}`
     : diff === 0 ? 'D-DAY 🎉'
     : '완료 🎂';
-
+ 
   const eventPosts = (state.allPosts || []).filter(p =>
     (p.category_ids || []).map(String).includes(String(cat.id))
   );
-
+ 
   const postsHtml = eventPosts.length
     ? eventPosts.map((p, i) => renderPost(p, { delay: i, showTags: false })).join('')
     : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
-
+ 
   container.innerHTML = `
     <div class="section">
       <div class="ev-header">
@@ -612,14 +982,14 @@ function renderEvent(container, cat) {
       </div>
       <div class="post-list">${postsHtml}</div>
     </div>`;
-
+ 
   // reaction/comment 카운트 로드
   const postIds = eventPosts.map(p => p.id).filter(Boolean);
   if (postIds.length) {
     loadReactions(postIds);
   }
 }
-
+ 
 // ── 이벤트 수정 모달 ─────────────────────────────────────────────────────
 function openEventEditModal(catId, name, date, desc) {
   document.getElementById('eventEditCatId').value = catId;
@@ -628,7 +998,7 @@ function openEventEditModal(catId, name, date, desc) {
   document.getElementById('eventEditDesc').value  = desc;
   document.getElementById('eventEditModal').classList.add('open');
 }
-
+ 
 async function submitEventEdit() {
   const catId = document.getElementById('eventEditCatId').value;
   const name  = document.getElementById('eventEditName').value.trim();
@@ -651,15 +1021,15 @@ async function submitEventEdit() {
     }
   } catch (e) { showToast('수정 실패'); }
 }
-
+ 
 // ── Post Viewer ───────────────────────────────────────────────────────────
 let pvState = { postId: null, images: [], idx: 0 };
-
+ 
 function openPostModal(item) {
   if (typeof item === 'string') item = JSON.parse(item);
   const urls = item.urls || [];
   pvState = { postId: item.postId || null, images: urls, idx: 0 };
-
+ 
   const media = document.getElementById('pvMedia');
   if (urls.length) {
     media.innerHTML = `
@@ -673,20 +1043,20 @@ function openPostModal(item) {
     media.style.display = 'none';
     document.querySelector('.pv-panel').style.width = '100%';
   }
-
+ 
   document.getElementById('pvAuthorName').textContent = state.houseData?.name || state.slug;
   document.getElementById('pvAv').textContent =
     (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
   document.getElementById('pvDate').textContent = item.date
     ? new Date(item.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-
+ 
   document.getElementById('pvText').textContent = item.content || '';
   const tags = (item.category_ids || []).map(cid => {
     const c = state.categories.find(x => String(x.id) === String(cid));
     return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : '';
   }).join('');
   document.getElementById('pvTags').innerHTML = tags;
-
+ 
   // 관심 버튼 초기화 후 상태 로드
   const reactBtn = document.getElementById('pvReactBtn');
   reactBtn.innerHTML = '🤍 관심';
@@ -708,30 +1078,30 @@ function openPostModal(item) {
         }
       }).catch(() => {});
   }
-
+ 
   document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오는 중...</div>';
   if (pvState.postId) pvLoadComments();
-
+ 
   document.getElementById('postModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-
+ 
 function closePvModal(e) {
   if (e && e.target !== document.getElementById('postModal')) return;
   document.getElementById('postModal').classList.remove('open');
   document.querySelector('.pv-panel').style.width = '';
   document.body.style.overflow = '';
 }
-
+ 
 function pvNav(dir) {
   pvState.idx = Math.max(0, Math.min(pvState.images.length - 1, pvState.idx + dir));
   document.getElementById('pvMainImg').src = pvState.images[pvState.idx];
   const counter = document.getElementById('pvCounter');
   if (counter) counter.textContent = `${pvState.idx + 1} / ${pvState.images.length}`;
 }
-
+ 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
-
+ 
 function pvShare() {
   const post = (state.allPosts || []).find(p => p.id === pvState.postId);
   coreSharePost({
@@ -746,7 +1116,7 @@ function pvShare() {
     btn      : null
   });
 }
-
+ 
 function pvToggleReact() {
   if (!pvState.postId) return;
   const btn = document.getElementById('pvReactBtn');
@@ -768,7 +1138,7 @@ function pvToggleReact() {
     }
   }, 300);
 }
-
+ 
 async function pvLoadComments() {
   const el = document.getElementById('pvComments');
   try {
@@ -792,7 +1162,7 @@ async function pvLoadComments() {
       </div>`).join('');
   } catch(e) { el.innerHTML = '<div class="pv-comments-empty">불러오기 실패</div>'; }
 }
-
+ 
 async function pvSubmitComment() {
   const input   = document.getElementById('pvCommentInput');
   const content = input?.value.trim();
@@ -816,7 +1186,7 @@ async function pvSubmitComment() {
   } catch(e) { showToast('댓글 등록 실패'); }
   finally { input.disabled = false; input.focus(); }
 }
-
+ 
 async function pvDeleteComment(commentId) {
   try {
     const res  = await fetch('/api/comment', {
@@ -828,7 +1198,7 @@ async function pvDeleteComment(commentId) {
     else showToast(data.error||'삭제 실패');
   } catch(e) { showToast('삭제 실패'); }
 }
-
+ 
 // ── Lightbox ─────────────────────────────────────────────────────────────
 function openLightbox(images, startIdx = 0) {
   state.lbImages = images; state.lbIndex = startIdx;
@@ -853,7 +1223,7 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
   document.body.style.overflow = '';
 }
-
+ 
 // ── 사진 설명 수정 ────────────────────────────────────────────────────────
 function openEditModal(mediaId, content) {
   document.getElementById('editMediaId').value = mediaId;
@@ -874,7 +1244,7 @@ async function submitEdit() {
     await reloadData();
   } else showToast(data.error || '수정 실패');
 }
-
+ 
 // ── 영상 추가 ─────────────────────────────────────────────────────────────
 async function submitVideo() {
   const url = document.getElementById('videoUrlInput').value.trim();
@@ -890,7 +1260,7 @@ async function submitVideo() {
     await reloadData();
   } else showToast(data.error || '추가 실패');
 }
-
+ 
 // ── 미디어 삭제 ───────────────────────────────────────────────────────────
 function confirmDelMedia(mediaId) {
   openConfirm('삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
@@ -903,7 +1273,7 @@ function confirmDelMedia(mediaId) {
     else showToast(data.error || '삭제 실패');
   });
 }
-
+ 
 // ── 포스트 삭제 ───────────────────────────────────────────────────────────
 async function deletePost(postId) {
   openConfirm('글을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
@@ -912,7 +1282,7 @@ async function deletePost(postId) {
     else showToast(data.error || '삭제 실패');
   });
 }
-
+ 
 // ── Visit 추적 ────────────────────────────────────────────────────────────
 function trackVisit(houseId) {
   const ref        = new URLSearchParams(location.search).get('ref') || 'direct';
@@ -923,7 +1293,7 @@ function trackVisit(houseId) {
     body: JSON.stringify({ house_id: houseId, room_id: null, ref, invited_by })
   }).catch(() => {});
 }
-
+ 
 // ── Video URL 파서 ────────────────────────────────────────────────────────
 function parseVideoUrl(url) {
   if (!url) return null;
@@ -935,9 +1305,10 @@ function parseVideoUrl(url) {
   if (fb) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}` };
   return null;
 }
-
+ 
 // ── Start ─────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
 </html>
+ 
