@@ -554,7 +554,27 @@ function openPostModal(item) {
     return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : '';
   }).join('');
   document.getElementById('pvTags').innerHTML = tags;
-
+// openPostModal() 안에 이 블록 추가 (pvComments 초기화 바로 위)
+const reactBtn = document.getElementById('pvReactBtn');
+reactBtn.innerHTML = '🤍 관심';
+reactBtn.style.background = 'none';
+reactBtn.style.borderColor = '';
+reactBtn.dataset.count = '0';
+if (pvState.postId) {
+  fetch(`/api/comment?action=react&target_id=${pvState.postId}&target_type=post`,
+    { headers: { 'x-device-id': DEVICE_ID } })
+    .then(r => r.json())
+    .then(data => {
+      reactBtn.dataset.count = data.count || 0;
+      if (data.reacted) {
+        reactBtn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
+        reactBtn.style.background = 'rgba(255,100,100,.1)';
+        reactBtn.style.borderColor = 'rgba(255,100,100,.3)';
+      } else {
+        reactBtn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍 관심';
+      }
+    }).catch(() => {});
+}
   document.getElementById('pvComments').innerHTML =
     '<div class="pv-comments-empty">불러오는 중...</div>';
   if (pvState.postId) pvLoadComments();
@@ -593,9 +613,27 @@ function pvShare() {
   });
 }
 
-function pvToggleReact()  {
+function pvToggleReact() {
   if (!pvState.postId) return;
-  toggleReaction(pvState.postId, document.getElementById('pvReactBtn'));
+  const btn = document.getElementById('pvReactBtn');
+  toggleReaction(pvState.postId, btn);
+  // 카드의 reaction 버튼도 동기화
+  setTimeout(() => {
+    const cardBtn = document.querySelector(`[data-reaction-id="${pvState.postId}"]`);
+    if (cardBtn) {
+      cardBtn.dataset.count = btn.dataset.count;
+      const count = parseInt(btn.dataset.count || '0');
+      if (btn.innerHTML.startsWith('❤️')) {
+        cardBtn.innerHTML = `❤️ ${count > 0 ? count : ''}`;
+        cardBtn.style.background = 'rgba(255,100,100,.1)';
+        cardBtn.style.borderColor = 'rgba(255,100,100,.3)';
+      } else {
+        cardBtn.innerHTML = count > 0 ? `🤍 ${count}` : '🤍';
+        cardBtn.style.background = 'none';
+        cardBtn.style.borderColor = 'rgba(139,94,60,.15)';
+      }
+    }
+  }, 300);
 }
 
 async function pvLoadComments() {
