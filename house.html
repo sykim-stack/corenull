@@ -323,6 +323,11 @@ window.generateStory = (catId) => {
 async function reloadData() {
   try {
     const data = await loadHouseData();
+    // 아래 줄을 추가하여 state를 동기화해야 합니다.
+    state.houseData = data.house; 
+    state.rooms = data.rooms || [];
+    state.categories = data.categories || []; 
+
     applyHero(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
   } catch (e) { console.error('reloadData 실패', e); }
