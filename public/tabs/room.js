@@ -9,32 +9,59 @@ export function renderRoom(container, room) {
   const normal = cats.filter(c => !c.is_event);
   const events = cats.filter(c =>  c.is_event);
 
-  const makeChip = c => {
-    const editBtn = state.isOwner
-      ? `<button class="cat-chip-edit" onclick="event.stopPropagation();openCatEdit('${c.id}','${c.name}',${c.is_event})" title="수정">⚙</button>`
-      : '';
-    return `<span class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-      style="--cat-color:${c.color||'var(--mint)'};">${c.name}${editBtn}</span>`;
-  };
+  const makeChip = c => `
+    <span style="display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">
+      <button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+        style="--cat-color:${c.color||'var(--mint)'};">${escHtml(c.name)}</button>
+      ${state.isOwner ? `<button
+        onclick="openCatEditPopup('${c.id}','${escHtml(c.name)}',this)"
+        title="수정/삭제"
+        style="background:none;border:none;font-size:10px;color:var(--muted);
+               cursor:pointer;padding:2px 3px;border-radius:6px;line-height:1;
+               transition:color .15s;"
+        onmouseover="this.style.color='var(--brown)'"
+        onmouseout="this.style.color='var(--muted)'">⚙</button>` : ''}
+    </span>`;
 
-  const addBtn = state.isOwner
-    ? `<button class="cat-add-btn" onclick="openCatInlineForm('normal')">+ 분류</button>`
-    : '';
-
-  const catHtml = `
-    <div class="cat-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center;">
+  const catHtml = cats.length ? `
+    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${events.length ? '8px' : '16px'};align-items:center;">
       <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
       ${normal.map(makeChip).join('')}
-      ${addBtn}
+      ${state.isOwner ? `<button class="cat-new" onclick="openCatModal()">+ 분류</button>` : ''}
     </div>
-    <div id="catInlineFormWrap" style="display:none;margin-bottom:12px;">
-      <div style="display:flex;gap:6px;align-items:center;">
-        <input id="catInlineName2" placeholder="분류 이름" maxlength="10"
-          style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid var(--border,#ddd);font-size:13px;font-family:inherit;">
-        <button onclick="submitCatInlineForm()" style="padding:6px 12px;border-radius:8px;border:none;background:var(--brown);color:white;cursor:pointer;font-size:12px;">추가</button>
-        <button onclick="document.getElementById('catInlineFormWrap').style.display='none'" style="padding:6px 10px;border-radius:8px;border:none;background:var(--warm);cursor:pointer;font-size:12px;">✕</button>
-      </div>
-    </div>`;
+    ${events.length ? `
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;margin-bottom:4px;">
+      ${events.map(c => {
+        const diff = c.event_date
+          ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000)
+          : null;
+        const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료';
+        return `<span style="display:inline-flex;align-items:flex-start;gap:2px;flex-shrink:0;">
+          <button
+            onclick="filterCat('${c.id}',this)"
+            data-cat="${c.id}"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;
+                   background:linear-gradient(135deg,#FEF3DC,#FDE8D8);
+                   border:1px solid rgba(201,168,76,.3);border-radius:14px;
+                   padding:10px 16px;cursor:pointer;
+                   font-family:'Gowun Dodum',serif;transition:all .2s;"
+            onmouseover="this.style.transform='translateY(-2px)'"
+            onmouseout="this.style.transform='none'">
+            <span style="font-size:11px;font-weight:600;color:var(--dark);">🎂 ${escHtml(c.name)}</span>
+            ${badge ? `<span style="font-size:10px;color:var(--gold);font-weight:600;">${badge}</span>` : ''}
+          </button>
+          ${state.isOwner ? `<button
+            onclick="openCatEditPopup('${c.id}','${escHtml(c.name)}',this)"
+            title="수정/삭제"
+            style="background:none;border:none;font-size:10px;color:var(--muted);
+                   cursor:pointer;padding:2px 3px;border-radius:6px;line-height:1;
+                   margin-top:4px;transition:color .15s;"
+            onmouseover="this.style.color='var(--brown)'"
+            onmouseout="this.style.color='var(--muted)'">⚙</button>` : ''}
+        </span>`;
+      }).join('')}
+    </div>
+    <div style="height:1px;background:rgba(139,94,60,.08);margin-bottom:16px;"></div>` : ''}` : '';
 
   // 이벤트 섹션
   const eventSection = events.length ? `
@@ -284,4 +311,95 @@ export async function deletePostComment(commentId, postId) {
     if (data.success) await loadPostComments(postId);
     else showToast(data.error || '삭제 실패');
   } catch (e) { showToast('삭제 실패'); }
+}
+
+// ── 분류 수정/삭제 팝업 ───────────────────────────────────────────────────
+export function openCatEditPopup(catId, catName, triggerEl) {
+  const exist = document.getElementById('catEditPopup');
+  if (exist) { exist.remove(); if (exist.dataset.catId === catId) return; }
+
+  const popup = document.createElement('div');
+  popup.id = 'catEditPopup';
+  popup.dataset.catId = catId;
+  popup.style.cssText = `
+    position:fixed;background:white;border:1px solid rgba(139,94,60,.2);
+    border-radius:12px;padding:12px;z-index:300;
+    box-shadow:0 8px 24px rgba(44,26,14,.15);min-width:180px;`;
+  popup.innerHTML = `
+    <input id="catEditInput" value="${catName}"
+      style="width:100%;background:var(--warm);border:none;border-radius:8px;
+             padding:8px 10px;font-family:'Gowun Dodum',serif;font-size:13px;
+             color:var(--dark);outline:none;margin-bottom:8px;">
+    <div style="display:flex;gap:6px;">
+      <button onclick="saveCatEdit('${catId}')"
+        style="flex:1;background:var(--brown);color:white;border:none;border-radius:8px;
+               padding:8px;font-family:'Gowun Dodum',serif;font-size:12px;cursor:pointer;">저장</button>
+      <button onclick="confirmDelCat('${catId}','${catName}')"
+        style="background:#fff0f0;border:1px solid #fcc;border-radius:8px;padding:8px 10px;
+               font-size:12px;cursor:pointer;color:#e55;">삭제</button>
+      <button onclick="document.getElementById('catEditPopup')?.remove()"
+        style="background:var(--warm);border:none;border-radius:8px;padding:8px 10px;
+               font-size:12px;cursor:pointer;">✕</button>
+    </div>`;
+
+  const rect = triggerEl.getBoundingClientRect();
+  popup.style.top  = (rect.bottom + 6) + 'px';
+  popup.style.left = Math.min(rect.left, window.innerWidth - 196) + 'px';
+  document.body.appendChild(popup);
+  document.getElementById('catEditInput').focus();
+
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!popup.contains(e.target) && e.target !== triggerEl) {
+        popup.remove();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 0);
+}
+
+export async function saveCatEdit(catId) {
+  const name = document.getElementById('catEditInput')?.value.trim();
+  if (!name) { showToast('이름을 입력해주세요'); return; }
+  try {
+    const res  = await fetch('/api/categories', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category_id: catId,
+        house_id: state.houseId,
+        owner_key: state.ownerKey,
+        name
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('수정됐어요 ✅');
+      document.getElementById('catEditPopup')?.remove();
+      location.reload();
+    } else showToast(data.error || '수정 실패');
+  } catch(e) { showToast('오류가 발생했어요'); }
+}
+
+export function confirmDelCat(catId, catName) {
+  document.getElementById('catEditPopup')?.remove();
+  if (!confirm(`'${catName}' 분류를 삭제할까요?\n이 분류로 작성된 글의 태그가 제거돼요.`)) return;
+  deleteCat(catId);
+}
+
+export async function deleteCat(catId) {
+  try {
+    const res  = await fetch('/api/categories', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category_id: catId,
+        house_id: state.houseId,
+        owner_key: state.ownerKey
+      })
+    });
+    const data = await res.json();
+    if (data.success) { showToast('삭제됐어요'); location.reload(); }
+    else showToast(data.error || '삭제 실패');
+  } catch(e) { showToast('오류가 발생했어요'); }
 }
