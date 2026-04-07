@@ -259,6 +259,13 @@ window.sharePost = (postId, btn) => {
   });
 };
 
+window.openCatEdit    = openCatEdit;
+window.openCatInlineForm = openCatInlineForm;
+window.submitCatInlineForm = submitCatInlineForm;
+window.openEventPage  = (catId) => {
+window.open(`/event?slug=${state.slug}&cat=${catId}`, '_blank');
+};
+
 // ── 전역 노출 ──────────────────────────────────────────────────────────────
 window.showToast          = showToast;
 window.openConfirm        = openConfirm;
@@ -428,12 +435,7 @@ function buildTabs(house, rooms, milestones, comments) {
     ...rooms.filter(r => r.room_type === 'library'),
   ];
 
-  const eventCats = (state.categories || []).filter(c => c.is_event);
-
-  const allTabs = [
-    ...spaceRooms.map(r => ({ kind: 'room',  data: r })),
-    ...eventCats.map(c  => ({ kind: 'event', data: c })),
-  ];
+  const allTabs = spaceRooms.map(r => ({ kind: 'room', data: r }));
 
   allTabs.forEach((tab) => {
     if (tab.kind === 'room') {
@@ -453,20 +455,6 @@ function buildTabs(house, rooms, milestones, comments) {
       if (room.room_type === 'living')  renderLobby(div, house, milestones, comments, spaceRooms);
       if (room.room_type === 'room')    renderRoom(div, room);
       if (room.room_type === 'library') renderLibrary(div);
-    } else {
-      const cat   = tab.data;
-      const tabId = `tab-ev-${cat.id}`;
-      const btn   = document.createElement('button');
-      btn.className   = 'top-tab-btn';
-      btn.innerHTML   = `<span class="ti">🎂</span>${cat.name}`;
-      btn.dataset.tab = tabId;
-      btn.onclick     = () => switchTab(tabId);
-      topTabs.appendChild(btn);
-      const div = document.createElement('div');
-      div.className = 'tab-content';
-      div.id = tabId;
-      tabContents.appendChild(div);
-      renderEvent(div, cat);
     }
   });
 
@@ -474,7 +462,105 @@ function buildTabs(house, rooms, milestones, comments) {
     : document.querySelector('.top-tab-btn')?.dataset?.tab;
   if (restoreId) switchTab(restoreId);
 }
+// ── 분류 인라인 추가 (방 탭) ──────────────────────────────────
+function openCatInlineForm(mode) {
+  const wrap = document.getElementById('catInlineFormWrap');
+  wrap.dataset.mode = mode;
+  wrap.style.display = 'block';
+  document.getElementById('catInlineName2')?.focus();
+}
 
+async function submitCatInlineForm() {
+  const input   = document.getElementById('catInlineName2');
+  const name    = input?.value.trim();
+  const isEvent = document.getElementById('catInlineFormWrap')?.dataset.mode === 'event';
+  if (!name) { showToast('이름을 입력해주세요'); return; }
+  const res  = await fetch('/api/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
+    body: JSON.stringify({ house_id: state.houseId, name, is_event: isEvent, color: isEvent ? '#C4784B' : '#8FBFAB' })
+  });
+  const data = await res.json();
+  if (data.id) {
+    showToast(`${isEvent ? '이벤트' : '분류'} 추가됐어요 ✅`);
+    document.getElementById('catInlineFormWrap').style.display = 'none';
+    if (input) input.value = '';
+    await reloadData();
+  } else showToast(data.error || '추가 실패');
+}
+
+// ── 분류/이벤트 수정 모달 ──────────────────────────────────────
+function openCatEdit(catId, catName, isEvent, eventDate = '') {
+  // 기존 모달 제거
+  document.getElementById('__catEditModal')?.remove();
+
+  const modal = document.createElement('div');
+  modal.id = '__catEditModal';
+  modal.className = 'modal-overlay open';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+  const isNew = !catId;
+  const titleTxt = isNew ? (isEvent ? '이벤트 추가' : '분류 추가') : (isEvent ? '이벤트 수정' : '분류 수정');
+
+  modal.innerHTML = `
+    <div class="modal-box" style="border-radius:20px;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">${titleTxt}</div>
+      <input class="modal-input" id="ceNameInput" value="${catName}" placeholder="${isEvent ? '이벤트 이름' : '분류 이름'}" maxlength="20">
+      ${isEvent ? `<input class="modal-input" id="ceDateInput" type="date" value="${eventDate}" style="margin-top:4px;">` : ''}
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="modal-submit" style="margin-top:0;" onclick="submitCatEdit('${catId||''}',${isEvent},${isNew})">
+          ${isNew ? '추가' : '저장'}
+        </button>
+        ${!isNew ? `<button onclick="confirmDeleteCat('${catId}','${catName}',${isEvent})"
+          style="background:#E05555;color:white;border:none;border-radius:14px;padding:15px 20px;font-family:'Gowun Dodum',serif;font-size:14px;cursor:pointer;">삭제</button>` : ''}
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('ceNameInput')?.focus(), 50);
+}
+
+async function submitCatEdit(catId, isEvent, isNew) {
+  const name  = document.getElementById('ceNameInput')?.value.trim();
+  const date  = document.getElementById('ceDateInput')?.value || null;
+  if (!name) { showToast('이름을 입력해주세요'); return; }
+
+  if (isNew) {
+    const res  = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
+      body: JSON.stringify({ house_id: state.houseId, name, is_event: isEvent,
+        event_date: isEvent ? date : null, color: isEvent ? '#C4784B' : '#8FBFAB' })
+    });
+    const data = await res.json();
+    if (data.id) { showToast('추가됐어요 ✅'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
+    else showToast(data.error || '추가 실패');
+  } else {
+    // PATCH — api/categories에 PATCH 추가 필요 (아래 5단계)
+    const res  = await fetch('/api/categories', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
+      body: JSON.stringify({ category_id: catId, house_id: state.houseId,
+        name, event_date: isEvent ? date : null })
+    });
+    const data = await res.json();
+    if (data.success) { showToast('수정됐어요 ✅'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
+    else showToast(data.error || '수정 실패');
+  }
+}
+
+function confirmDeleteCat(catId, catName, isEvent) {
+  openConfirm(`'${catName}'을 삭제할까요?`, '연결된 글의 분류도 해제돼요.', async () => {
+    const res  = await fetch('/api/categories', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category_id: catId, house_id: state.houseId })
+    });
+    const data = await res.json();
+    if (data.success) { showToast('삭제됐어요'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
+    else showToast(data.error || '삭제 실패');
+  });
+}
 // ── switchTab ────────────────────────────────────────────────────────────
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));

@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') return res.status(200).end();
   
@@ -57,7 +57,21 @@ if (req.method === 'POST') {
     return res.status(500).json({ error: 'parse error', raw: text, status: r.status });
   }
 }
-  
+// PATCH — 분류 수정
+if (req.method === 'PATCH') {
+  const { category_id, house_id, name, event_date } = req.body;
+  if (!category_id || !house_id || !name)
+    return res.status(400).json({ error: 'category_id, house_id, name required' });
+  const updateBody = { name: name.trim() };
+  if (event_date !== undefined) updateBody.event_date = event_date || null;
+  const r = await fetch(
+    `${baseUrl}/rest/v1/categories?id=eq.${category_id}&house_id=eq.${house_id}`,
+    { method: 'PATCH', headers, body: JSON.stringify(updateBody) }
+  );
+  if (!r.ok) return res.status(500).json({ error: '수정 실패', status: r.status });
+  return res.status(200).json({ success: true });
+}  
+
     // DELETE
     if (req.method === 'DELETE') {
       const { category_id, house_id } = req.body;
