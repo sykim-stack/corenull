@@ -511,10 +511,7 @@ function renderEvent(container, cat) {
                  text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
       </div>
       <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">POSTS</div><div class="sec-title">글</div></div>
-        ${state.isOwner
-          ? `<button class="more-btn" onclick="openWriteModal()">+ 글쓰기</button>`
-          : ''}
+        <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
       </div>
       <div class="post-list">${postsHtml}</div>
     </div>`;
