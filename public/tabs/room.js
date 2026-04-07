@@ -4,69 +4,45 @@ import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHt
 // ── 방 렌더 ───────────────────────────────────────────────────────────────
 export function renderRoom(container, room) {
   const posts = state.allPosts.filter(p => p.room_id === room.id);
-  const cats  = state.categories || [];
-
+  const cats = state.categories || [];
+  
   const normal = cats.filter(c => !c.is_event);
-  const events = cats.filter(c =>  c.is_event);
+const events = cats.filter(c =>  c.is_event);
 
-  const makeChip = c =>
-    `<button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-      style="--cat-color:${c.color||'var(--mint)'};">${c.name}</button>`;
+const makeChip = c =>
+  `<button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+    style="--cat-color:${c.color||'var(--mint)'};">${c.name}</button>`;
 
-  const catHtml = cats.length ? `
-    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${events.length ? '8px' : '16px'};align-items:center;">
-      <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
-      ${normal.map(makeChip).join('')}
-      ${state.isOwner ? `<button class="cat-new" onclick="openCatModal()">+ 분류</button>` : ''}
-    </div>
-    ${events.length ? `
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;margin-bottom:4px;">
-      ${events.map(c => {
-        const diff = c.event_date
-          ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000)
-          : null;
-        const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료';
-        return `<button
-          onclick="filterCat('${c.id}',this)"
-          data-cat="${c.id}"
-          style="display:flex;flex-direction:column;align-items:center;gap:4px;
-                 background:linear-gradient(135deg,#FEF3DC,#FDE8D8);
-                 border:1px solid rgba(201,168,76,.3);border-radius:14px;
-                 padding:10px 16px;cursor:pointer;flex-shrink:0;
-                 font-family:'Gowun Dodum',serif;transition:all .2s;"
-          onmouseover="this.style.transform='translateY(-2px)'"
-          onmouseout="this.style.transform='none'">
-          <span style="font-size:11px;font-weight:600;color:var(--dark);">🎂 ${escHtml(c.name)}</span>
-          ${badge ? `<span style="font-size:10px;color:var(--gold);font-weight:600;">${badge}</span>` : ''}
-        </button>`;
-      }).join('')}
-    </div>
-    <div style="height:1px;background:rgba(139,94,60,.08);margin-bottom:16px;"></div>` : ''}` : '';
+const catHtml = cats.length ? `
+  <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+    <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
+    ${normal.map(makeChip).join('')}
+    ${events.length ? `<span style="color:var(--muted);font-size:11px;margin:0 2px;">|</span>${events.map(makeChip).join('')}` : ''}
+  </div>` : '';
 
   container.innerHTML = `
-    <div class="section">
-      <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
-      </div>
-      ${catHtml}
-      <div id="roomPostList-${room.id}"></div>
-    </div>`;
+  <div class="section">
+    <div class="sec-head" style="margin-bottom:16px;">
+      <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+    </div>
+    ${catHtml}
+    <div id="roomPostList-${room.id}"></div>
+  </div>`;
 
   renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
-  if (postIds.length) loadCommentCounts(postIds);
+  if (postIds.length) loadCommentCounts(postIds);  // 추가
 }
-
 // ── 댓글 카운트 로드 (집주인만) ───────────────────────────────────────────
 export async function loadCommentCounts(postIds) {
   if (!postIds?.length || !state.isOwner) return;
   await Promise.all(postIds.map(async (id) => {
     try {
-      const res   = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
-      const data  = await res.json();
+      const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
+      const data = await res.json();
       const count = (data.comments || []).length;
-      const btn   = document.querySelector(`[data-comment-id="${id}"]`);
+      const btn = document.querySelector(`[data-comment-id="${id}"]`);
       if (!btn || count === 0) return;
       btn.dataset.count = count;
       btn.innerHTML = `💬 ${count}`;
@@ -89,7 +65,7 @@ export function filterCat(catId, btn) {
   renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
-  if (postIds.length) loadCommentCounts(postIds);
+  if (postIds.length) loadCommentCounts(postIds);  // 추가
 }
 
 // ── Reaction 토글 ─────────────────────────────────────────────────────────
@@ -97,23 +73,23 @@ export async function toggleReaction(postId, btn) {
   if (!state.houseId) return;
   btn.disabled = true;
   try {
-    const res  = await fetch('/api/comment?action=react', {
+    const res = await fetch('/api/comment?action=react', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
       body: JSON.stringify({ house_id: state.houseId, target_id: postId, target_type: 'post', emoji: '❤️' })
     });
-    const data  = await res.json();
+    const data = await res.json();
     const count = parseInt(btn.dataset.count || '0');
     if (data.reacted) {
       btn.dataset.count = count + 1;
       btn.innerHTML = `❤️ ${count + 1}`;
-      btn.style.background  = 'rgba(255,100,100,.1)';
+      btn.style.background = 'rgba(255,100,100,.1)';
       btn.style.borderColor = 'rgba(255,100,100,.3)';
     } else {
       const newCount = Math.max(0, count - 1);
       btn.dataset.count = newCount;
       btn.innerHTML = newCount > 0 ? `🤍 ${newCount}` : '🤍';
-      btn.style.background  = 'none';
+      btn.style.background = 'none';
       btn.style.borderColor = 'rgba(139,94,60,.15)';
     }
   } catch (e) { console.error('reaction 실패', e); }
@@ -125,15 +101,15 @@ export async function loadReactions(postIds) {
   if (!postIds?.length) return;
   await Promise.all(postIds.map(async (id) => {
     try {
-      const res  = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`,
+      const res = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`,
         { headers: { 'x-device-id': DEVICE_ID } });
       const data = await res.json();
-      const btn  = document.querySelector(`[data-reaction-id="${id}"]`);
+      const btn = document.querySelector(`[data-reaction-id="${id}"]`);
       if (!btn) return;
       btn.dataset.count = data.count || 0;
       if (data.reacted) {
         btn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
-        btn.style.background  = 'rgba(255,100,100,.1)';
+        btn.style.background = 'rgba(255,100,100,.1)';
         btn.style.borderColor = 'rgba(255,100,100,.3)';
       } else {
         btn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍';
@@ -142,15 +118,19 @@ export async function loadReactions(postIds) {
   }));
 }
 
-// ── 포스트 댓글 열기 (인라인) ─────────────────────────────────────────────
+// ── 포스트 댓글 열기 (인스타 방식 인라인) ────────────────────────────────
 export async function openPostComment(postId) {
   const existing = document.getElementById(`comments-${postId}`);
+
+  // 이미 열려있으면 닫기
   if (existing) { existing.remove(); return; }
 
-  const btn  = document.querySelector(`[data-comment-id="${postId}"]`);
+  // 포스트 카드 찾기
+  const btn = document.querySelector(`[data-comment-id="${postId}"]`);
   const card = btn?.closest('.post-item');
   if (!card) return;
 
+  // 댓글 영역 생성
   const wrap = document.createElement('div');
   wrap.id = `comments-${postId}`;
   wrap.style.cssText = 'border-top:1px solid rgba(139,94,60,.1);padding:12px 16px;background:rgba(247,238,227,.4);';
@@ -164,6 +144,7 @@ export async function openPostComment(postId) {
     </div>`;
   card.appendChild(wrap);
 
+  // 댓글 로드
   await loadPostComments(postId);
 }
 
@@ -171,14 +152,17 @@ export async function openPostComment(postId) {
 async function loadPostComments(postId) {
   const el = document.getElementById(`clist-${postId}`);
   if (!el) return;
+
   try {
-    const res      = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
-    const data     = await res.json();
+    const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
+    const data = await res.json();
     const comments = data.comments || [];
+
     if (!comments.length) {
       el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0;">첫 댓글을 남겨보세요 💬</div>`;
       return;
     }
+
     el.innerHTML = comments.map(c => `
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;">
         <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
@@ -197,7 +181,7 @@ async function loadPostComments(postId) {
 
 // ── 댓글 작성 ─────────────────────────────────────────────────────────────
 export async function submitPostComment(postId) {
-  const input   = document.getElementById(`cinput-${postId}`);
+  const input = document.getElementById(`cinput-${postId}`);
   const content = input?.value.trim();
   if (!content) return;
 
@@ -206,7 +190,7 @@ export async function submitPostComment(postId) {
   input.disabled = true;
 
   try {
-    const res  = await fetch('/api/comment', {
+    const res = await fetch('/api/comment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: postId })
@@ -214,6 +198,7 @@ export async function submitPostComment(postId) {
     const data = await res.json();
     if (data.success) {
       await loadPostComments(postId);
+      // 댓글 카운트 업데이트
       const countBtn = document.querySelector(`[data-comment-id="${postId}"]`);
       if (countBtn) {
         const cur = parseInt(countBtn.dataset.count || '0') + 1;
@@ -228,7 +213,7 @@ export async function submitPostComment(postId) {
 // ── 댓글 삭제 ─────────────────────────────────────────────────────────────
 export async function deletePostComment(commentId, postId) {
   try {
-    const res  = await fetch('/api/comment', {
+    const res = await fetch('/api/comment', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
@@ -238,4 +223,3 @@ export async function deletePostComment(commentId, postId) {
     else showToast(data.error || '삭제 실패');
   } catch (e) { showToast('삭제 실패'); }
 }
-
