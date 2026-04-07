@@ -14,11 +14,34 @@ export function renderRoom(container, room) {
       style="--cat-color:${c.color||'var(--mint)'};">${c.name}</button>`;
 
   const catHtml = cats.length ? `
-    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${events.length ? '8px' : '16px'};align-items:center;">
       <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
       ${normal.map(makeChip).join('')}
-      ${events.length ? `<span style="color:var(--muted);font-size:11px;margin:0 2px;">|</span>${events.map(makeChip).join('')}` : ''}
-    </div>` : '';
+      ${state.isOwner ? `<button class="cat-new" onclick="openCatModal()">+ 분류</button>` : ''}
+    </div>
+    ${events.length ? `
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;margin-bottom:4px;">
+      ${events.map(c => {
+        const diff = c.event_date
+          ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000)
+          : null;
+        const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료';
+        return `<button
+          onclick="filterCat('${c.id}',this)"
+          data-cat="${c.id}"
+          style="display:flex;flex-direction:column;align-items:center;gap:4px;
+                 background:linear-gradient(135deg,#FEF3DC,#FDE8D8);
+                 border:1px solid rgba(201,168,76,.3);border-radius:14px;
+                 padding:10px 16px;cursor:pointer;flex-shrink:0;
+                 font-family:'Gowun Dodum',serif;transition:all .2s;"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='none'">
+          <span style="font-size:11px;font-weight:600;color:var(--dark);">🎂 ${escHtml(c.name)}</span>
+          ${badge ? `<span style="font-size:10px;color:var(--gold);font-weight:600;">${badge}</span>` : ''}
+        </button>`;
+      }).join('')}
+    </div>
+    <div style="height:1px;background:rgba(139,94,60,.08);margin-bottom:16px;"></div>` : ''}` : '';
 
   container.innerHTML = `
     <div class="section">
