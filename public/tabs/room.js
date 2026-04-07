@@ -24,6 +24,7 @@ const catHtml = cats.length ? `
     <div class="section">
       <div class="sec-head" style="margin-bottom:16px;">
         <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
+        ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
       </div>
       ${catHtml}
       <div id="roomPostList-${room.id}"></div>
