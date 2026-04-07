@@ -418,12 +418,7 @@ function buildTabs(house, rooms, milestones, comments) {
     ...rooms.filter(r => r.room_type === 'library'),
   ];
 
-  const eventCats = (state.categories || []).filter(c => c.is_event);
-
-  const allTabs = [
-    ...spaceRooms.map(r => ({ kind: 'room',  data: r })),
-    ...eventCats.map(c  => ({ kind: 'event', data: c })),
-  ];
+  const allTabs = spaceRooms.map(r => ({ kind: 'room', data: r }));
 
   allTabs.forEach((tab, idx) => {
     if (tab.kind === 'room') {
