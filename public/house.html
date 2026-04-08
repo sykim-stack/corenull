@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>집 · CoreNull</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/layout.css">
+  <link rel="stylesheet" href="/public/css/house.css">
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
+  <script>Kakao.init('7dc617c2e0468c4f094e9fad63d2430a');</script>
+</head>
+<body>
+
+  <!-- ── HERO ──────────────────────────────────────────────────────────── -->
+  <div class="hero" id="hero">
+    <div class="hero-circles"><span></span><span></span><span></span></div>
+    <div class="hero-badge" id="heroBadge">🏠 CoreNull</div>
+    <div class="photo-frame" id="heroFrame">
+      <div class="photo-frame-placeholder" id="heroPlaceholder">🏠</div>
+      <div class="photo-upload-hint">사진 변경</div>
+    </div>
+    <input type="file" id="coverInput" accept="image/*" style="display:none">
+    <div class="hero-name" id="heroName">---</div>
+    <div class="hero-sub" id="heroSub">불러오는 중...</div>
+    <div class="dday-wrap" id="ddayWrap"></div>
+    <div id="shareWrap" class="share-wrap"></div>
+    <div class="scroll-hint"><span>↓</span><span>SCROLL</span></div>
+  </div>
+
+  <!-- ── TAB NAV ───────────────────────────────────────────────────────── -->
+  <nav class="tab-nav">
+    <div class="tab-inner" id="tabInner"></div>
+  </nav>
+
+  <!-- ── TAB CONTENTS ──────────────────────────────────────────────────── -->
+  <div id="tabContents"></div>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-ei" id="footerEi">🏠</div>
+    <div class="footer-name" id="footerName">CoreNull</div>
+    <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
+  </footer>
+
+  <!-- ── FAB (글쓰기 버튼) ──────────────────────────────────────────────── -->
+  <button class="fab" id="fab">✏️</button>
+
+  <!-- ── 글쓰기 모달 ────────────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="writeModal">
+    <div class="modal-box" style="border-radius:20px;">
+      <div class="modal-title">글쓰기 ✏️</div>
+      <textarea class="modal-input" id="writeContent" placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
+      <div id="writePrevWrap" style="display:none;">
+        <div class="prev-grid" id="writePrevCells"></div>
+      </div>
+      <div class="cat-sel-wrap" id="writeCatWrap"></div>
+      <div class="prog-wrap" id="writeProgWrap">
+        <div class="prog-bar"><div class="prog-fill" id="writeProgFill"></div></div>
+        <div class="prog-text" id="writeProgText"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="icon-btn" id="writePhotoBtn">📷</button>
+        <input type="file" id="writePhotoInput" accept="image/*" multiple style="display:none">
+        <button class="modal-submit" style="margin-top:0;" id="writeSubmitBtn">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 사진 업로드 모달 ───────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal-box">
+      <div class="modal-handle"></div>
+      <div class="modal-title">사진 업로드 📷</div>
+      <div class="drop-zone" id="dropZone">
+        <div style="font-size:36px;margin-bottom:8px;">🖼️</div>
+        <div style="font-size:13px;">사진을 선택하세요</div>
+      </div>
+      <input type="file" id="uploadInput" accept="image/*" multiple style="display:none">
+      <div id="uploadPrevWrap" style="display:none;">
+        <div class="prev-grid" id="uploadPrevCells"></div>
+      </div>
+      <textarea class="modal-input" id="uploadContent" placeholder="사진 설명 (선택)" style="height:60px;"></textarea>
+      <input type="date" class="modal-input" id="uploadDate">
+      <div class="prog-wrap" id="uploadProgWrap">
+        <div class="prog-bar"><div class="prog-fill" id="uploadProgFill"></div></div>
+        <div class="prog-text" id="uploadProgText"></div>
+      </div>
+      <button class="modal-submit" id="uploadSubmitBtn">올리기</button>
+    </div>
+  </div>
+
+  <!-- ── Lightbox ───────────────────────────────────────────────────────── -->
+  <div class="lightbox" id="lightbox">
+    <button class="lb-close" id="lbClose">✕</button>
+    <span class="lb-counter" id="lbCounter"></span>
+    <div class="lb-wrap">
+      <div class="lb-track" id="lbTrack"></div>
+      <button class="lb-btn prev" id="lbPrev">‹</button>
+      <button class="lb-btn next" id="lbNext">›</button>
+    </div>
+    <div class="lb-thumbs" id="lbThumbs"></div>
+  </div>
+
+  <!-- ── 확인 다이얼로그 ────────────────────────────────────────────────── -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div class="confirm-title" id="confirmTitle">삭제할까요?</div>
+      <div class="confirm-sub" id="confirmSub">삭제하면 되돌릴 수 없어요.</div>
+      <div class="confirm-btns">
+        <button class="confirm-cancel" id="confirmCancel">취소</button>
+        <button class="confirm-ok" id="confirmOk">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast ─────────────────────────────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── 포스트 상세 모달 ───────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="postModal">
+    <div class="modal-box" style="border-radius:20px;padding:0;">
+      <button class="post-modal-close" id="postModalClose">✕</button>
+      <div id="postModalImgs"></div>
+      <div class="post-modal-body">
+        <div class="post-modal-tags" id="postModalTags"></div>
+        <div class="post-modal-content" id="postModalContent"></div>
+        <div class="post-modal-date" id="postModalDate"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 스크립트 ───────────────────────────────────────────────────────── -->
+  <script src="/public/js/Message.js"></script>
+  <script src="/public/js/PostCard.js"></script>
+  <script src="/public/js/View.js"></script>
+  <script src="/public/js/house-init.js"></script>
+
+</body>
+</html>
