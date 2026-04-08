@@ -8,6 +8,7 @@
  * - 유틸 (toast, confirm, lightbox)
  * - 비즈니스 로직 없음
  */
+
 import { Message } from './Message.js';
 import { View } from './View.js';
 import { PostCard } from './PostCard.js';
