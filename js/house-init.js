@@ -12,6 +12,21 @@
 import { Message } from './Message.js';
 import { View } from './View.js';
 import { PostCard } from './PostCard.js';
+
+// API 호출할 때
+const t = Date.now();
+const res = await fetch(`/api/house?slug=${SLUG}`);
+Debug.api(`/api/house`, res.status, Date.now()-t);
+
+// 상태 바뀔 때
+Debug.state({ slug: SLUG, house_id: data.id, tab: 'room', posts: posts.length, owner: !!OWNER_KEY });
+
+// 이벤트
+Debug.log('tab change → room');
+
+// 오류
+Debug.error('View.js 로드 실패');
+
 // ─── 기본 설정 ────────────────────────────────────────────────────────────
 const SLUG      = location.pathname.replace(/^\//, '') || 'hajun';
 const OWNER_KEY = new URLSearchParams(location.search).get('owner');
