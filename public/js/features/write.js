@@ -131,7 +131,7 @@ export function openWriteModal(mode = 'write') {
 }
 
 /* ── 수정 모달 열기 ── */
-export function openEditModal(post) {
+export function openPostEditModal(post) {
   _editPostId = post.id;
   _resetModal();
 
@@ -165,7 +165,7 @@ export function openEditModal(post) {
 }
 
 // window 노출 (인라인 onclick용)
-window.openEditModal = openEditModal;
+window.openPostEditModal = openPostEditModal;
 
 // house.html의 submitWrite() 인자 없는 호출 대응
 // → window._reloadData 를 house.html에서 등록해두면 자동 호출

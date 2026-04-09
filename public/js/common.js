@@ -183,7 +183,7 @@ window.apiFetch  = apiFetch;
 window.editPostById = function(postId) {
   const post = (state.allPosts || []).find(p => p.id === postId);
   if (!post) { showToast('글을 찾을 수 없어요', 'error'); return; }
-  if (typeof window.openEditModal === 'function') window.openEditModal(post);
+  if (typeof window.openPostEditModal === 'function') window.openPostEditModal(post);
   else showToast('수정 기능을 불러오는 중이에요', 'warn');
 };
 
