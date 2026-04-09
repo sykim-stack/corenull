@@ -484,7 +484,7 @@
 /* 모바일: 세로 스택 */
 @media(max-width:760px) {
   .pv-box    { flex-direction:column; }
-  .pv-media  { height:55vw; max-height:55vw; flex:none; }
+  .pv-media  { height:85vw; max-height:85vw; flex:none; }
   .pv-panel  { width:100%; flex:1; overflow:hidden; }
 }
 
