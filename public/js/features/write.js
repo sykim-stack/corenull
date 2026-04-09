@@ -269,17 +269,3 @@ if (content) {
 
 const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId, emotion_tag });
 }
-export async function submitPost({ content, mediaUrls, categoryIds, roomId, emotion_tag }) {
-  return apiFetch('/api/posts', {
-    method: 'POST',
-    body: {
-      house_id:     state.houseId,
-      owner_key:    state.ownerKey,
-      room_id:      roomId,
-      content,
-      media_urls:   mediaUrls,
-      category_ids: categoryIds,
-      emotion_tag,
-    }
-  });
-}
