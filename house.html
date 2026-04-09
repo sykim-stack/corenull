@@ -397,18 +397,27 @@ function buildTabs(house, rooms, milestones, comments) {
   ];
 
   // 이벤트: categories.is_event 기준
-  const eventCats = (state.categories || []).filter(c => c.is_event);
+  spaceRooms.forEach((room, idx) => {
+  const id   = `tab-${room.id}`;
+  const meta = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
+  const label = meta.label || room.room_name;
 
-  const allTabs = [
-    ...spaceRooms.map(r => ({ kind: 'room',  data: r })),
-    ...eventCats.map(c  => ({ kind: 'event', data: c })),
-  ];
+  const btn = document.createElement('button');
+  btn.className   = 'top-tab-btn';
+  btn.innerHTML   = `<span class="ti">${meta.icon}</span>${label}`;
+  btn.dataset.tab = id;
+  btn.onclick     = () => switchTab(id);
+  topTabs.appendChild(btn);
 
-  allTabs.forEach((tab, idx) => {
-    const isEvent = tab.kind === 'event';
-    const id      = isEvent ? `tab-ev-${tab.data.id}` : `tab-${tab.data.id}`;
-    const meta    = isEvent ? { icon: '🎂', label: tab.data.name } : (ROOM_META[tab.data.room_type] || { icon: '🚪', label: tab.data.room_name });
-    const label   = meta.label || tab.data.room_name || tab.data.name;
+  const div = document.createElement('div');
+  div.className = 'tab-content';
+  div.id = id;
+  tabContents.appendChild(div);
+
+  if (room.room_type === 'living')       renderLobby(div, house, milestones, comments, spaceRooms);
+  else if (room.room_type === 'library') renderLibrary(div);
+  else                                   renderRoom(div, room, buildRoomOpts(room));
+});
 
     const btn = document.createElement('button');
     btn.className   = 'top-tab-btn';
