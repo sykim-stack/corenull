@@ -187,6 +187,27 @@ window.editPostById = function(postId) {
   else showToast('수정 기능을 불러오는 중이에요', 'warn');
 };
 
+// ── sharePost — Phase 0: post_id 복사 / Phase 1: room_id 활성화 예정 ──────
+window.sharePost = function(postId) {
+  const post   = (state.allPosts || []).find(p => p.id === postId);
+  const roomId = post?.room_id || null;
+
+  // Phase 0: ?post=ID 만 사용
+  // Phase 1: roomId 있으면 ?room=ROOM_ID&post=POST_ID 로 전환
+  const params = new URLSearchParams({ post: postId });
+  // if (roomId) params.set('room', roomId); // ← Phase 1에서 주석 해제
+
+  const url = `${location.origin}/${state.slug}?${params.toString()}`;
+
+  if (navigator.share) {
+    navigator.share({ title: document.title, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('링크 복사됐어요 🔗', 'success'))
+      .catch(() => showToast('복사 실패 — 직접 복사해주세요', 'error'));
+  }
+};
+
 // ── Confirm Dialog ────────────────────────────────────────────────────────────
 export function openConfirm(title, sub, onOk) {
   document.getElementById('confirmTitle').textContent = title;
