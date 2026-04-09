@@ -1,6 +1,6 @@
 // ============================================================
 // CoreNull | api/gemini.js
-// Gemini 2.5 Flash - 문구 자동생성 (사진설명 / 메시지 제안 / 스토리 / 감정)
+// Gemini 2.5 Flash - 문구 자동생성 (사진설명 / 메시지 제안 / 스토리)
 // ============================================================
 
 export default async function handler(req, res) {
@@ -15,7 +15,6 @@ export default async function handler(req, res) {
 
   let prompt = '';
   let isStory = false;
-  let isEmotion = false;
 
   if (type === 'caption') {
     prompt = `당신은 갓 태어난 아기 김하준(Mango)의 100일 기념 앨범 작성자입니다.
@@ -63,17 +62,8 @@ ${posts_summary || '소중한 순간들이 담겨 있습니다.'}
 - 반드시 JSON 객체만 반환 (다른 텍스트 없이):
 {"title": "스토리 제목", "content": "본문 내용 (\\n으로 문단 구분)"}`;
 
-  } else if (type === 'emotion') {
-    isEmotion = true;
-    prompt = `아래 텍스트의 감정을 분석해서 가장 잘 맞는 태그 1개만 반환해주세요.
-텍스트: "${context?.content || ''}"
-선택지: 행복 / 사랑 / 웃김 / 뭉클 / 설렘 / 일상 / 신남 / 그리움
-조건:
-- 반드시 선택지 중 1개만 반환
-- 반드시 JSON 객체만 반환 (다른 텍스트 없이): {"emotion": "행복"}`;
-
   } else {
-    return res.status(400).json({ error: 'type은 caption / message / story / emotion' });
+    return res.status(400).json({ error: 'type은 caption / message / story' });
   }
 
   const apiRes = await fetch(
@@ -84,12 +74,13 @@ ${posts_summary || '소중한 순간들이 담겨 있습니다.'}
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 2048,
-          thinkingConfig: { thinkingBudget: 0 }
-        }
+  temperature: 0.8,
+  maxOutputTokens: 2048,
+  thinkingConfig: { thinkingBudget: 0 }  // thinking 비활성화 → 훨씬 빠름
+}
       })
     }
+    
   );
 
   const data = await apiRes.json();
@@ -100,15 +91,7 @@ ${posts_summary || '소중한 순간들이 담겨 있습니다.'}
   try {
     let clean = raw.replace(/```json|```/gi, '').trim();
 
-    if (isEmotion) {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) {
-        const result = JSON.parse(match[0]);
-        if (result.emotion) return res.status(200).json({ emotion: result.emotion });
-      }
-      throw new Error('emotion 파싱 불가');
-    }
-
+    // ── story: 객체 파싱 ──
     if (isStory) {
       const match = clean.match(/\{[\s\S]*\}/);
       if (match) {
@@ -120,11 +103,13 @@ ${posts_summary || '소중한 순간들이 담겨 있습니다.'}
       throw new Error('story 파싱 불가');
     }
 
+    // ── caption / message: 배열 파싱 ──
     const match = clean.match(/\[[\s\S]*?\]/);
     if (match) {
       const suggestions = JSON.parse(match[0]);
       return res.status(200).json({ suggestions });
     }
+    // fallback
     const lines = raw.split('\n')
       .map(l => l.replace(/^[\s\d\.\-\*\"]+|[\s\"\,]+$/g, '').trim())
       .filter(l => l.length > 5);
