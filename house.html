@@ -285,11 +285,10 @@ window.pvDeleteComment   = pvDeleteComment;
 window.parseVideoUrl     = parseVideoUrl;
 
 // ── buildRoomOpts ────────────────────────────────────────────────────────
-function buildRoomOpts(room, cat) {
+function buildRoomOpts(room) {
   return {
-    mode: room.room_type === 'event' ? 'event' : 'normal',
-    event: { date: room.event_date || cat?.event_date || null },
-    filter: { categoryId: cat?.id || null },
+    mode: 'normal',
+    filter: { categoryId: null },
     meta: { roomId: room.id, source: 'house' }
   };
 }
@@ -425,9 +424,9 @@ function buildTabs(house, rooms, milestones, comments) {
 
     if (!isEvent) {
       const room = tab.data;
-      if (room.room_type === 'living')  renderLobby(div, house, milestones, comments, spaceRooms);
-      if (room.room_type === 'room')    renderRoom(div, room, buildRoomOpts(room, null));
-      if (room.room_type === 'library') renderLibrary(div);
+if (room.room_type === 'living')       renderLobby(div, house, milestones, comments, spaceRooms);
+else if (room.room_type === 'library') renderLibrary(div);
+else                                   renderRoom(div, room, buildRoomOpts(room));
     } else {
       // 이벤트 탭 → room.js renderRoom (mode: event)
       const cat    = tab.data;
