@@ -38,20 +38,19 @@ export async function submitComment({ content, mediaUrl = null }) {
   return await res.json();
 }
 
-export async function submitPost({ content, mediaUrls = [], categoryIds = [], roomId = null }) {
-  const res = await fetch('/api/posts', {
+export async function submitPost({ content, mediaUrls, categoryIds, roomId, emotion_tag }) {
+  return apiFetch('/api/posts', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      house_id: state.houseId,
-      owner_key: state.ownerKey,
-      room_id: roomId,
+    body: {
+      house_id:     state.houseId,
+      owner_key:    state.ownerKey,
+      room_id:      roomId,
       content,
-      media_urls: mediaUrls,
+      media_urls:   mediaUrls,
       category_ids: categoryIds,
-    })
+      emotion_tag,
+    }
   });
-  return await res.json();
 }
 
 export async function deletePost(postId) {

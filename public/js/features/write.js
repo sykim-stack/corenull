@@ -115,7 +115,6 @@ export function openWriteModal(mode = 'write') {
   _resetModal();
   _renderComposeCats();
 
-  // 모달 타이틀/버튼 초기화
   const modal = document.getElementById('composeModal');
   const titleEl = modal?.querySelector('.modal-title');
   if (titleEl) titleEl.textContent = '작성하기 ✏️';
@@ -135,13 +134,9 @@ export function openPostEditModal(post) {
   _editPostId = post.id;
   _resetModal();
 
-  // 기존 내용 채우기
   document.getElementById('composeContent').value = post.content || '';
-
-  // 기존 카테고리 선택 상태로 렌더
   _renderComposeCats(post.category_ids || []);
 
-  // 기존 이미지 미리보기
   if (post.media_urls?.length) {
     const cells = document.getElementById('composePrevCells');
     cells.innerHTML = post.media_urls.map(url =>
@@ -153,7 +148,6 @@ export function openPostEditModal(post) {
     document.getElementById('composePrevWrap').style.display = 'block';
   }
 
-  // 모달 타이틀/버튼 수정으로
   const modal = document.getElementById('composeModal');
   const titleEl = modal?.querySelector('.modal-title');
   if (titleEl) titleEl.textContent = '수정하기 ✏️';
@@ -164,11 +158,8 @@ export function openPostEditModal(post) {
   setTimeout(() => document.getElementById('composeContent').focus(), 120);
 }
 
-// window 노출 (인라인 onclick용)
 window.openPostEditModal = openPostEditModal;
 
-// house.html의 submitWrite() 인자 없는 호출 대응
-// → window._reloadData 를 house.html에서 등록해두면 자동 호출
 export function getReloadFn() {
   return typeof window._reloadData === 'function' ? window._reloadData : null;
 }
@@ -236,7 +227,6 @@ export async function submitWrite(reloadData) {
       }
     });
     if (data) {
-      // state.allPosts 즉시 반영
       const idx = state.allPosts.findIndex(p => p.id === _editPostId);
       if (idx !== -1) {
         state.allPosts[idx] = {
@@ -253,19 +243,29 @@ export async function submitWrite(reloadData) {
     return;
   }
 
-  // ── 새 글 모드 ──
-let emotion_tag = null;
-if (content) {
-  try {
-    const emoRes = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'emotion', context: { content } })
-    });
-    const emoData = await emoRes.json();
-    emotion_tag = emoData.emotion || null;
-  } catch(e) { /* 실패해도 등록은 계속 */ }
-}
+  // ── 새 글 모드 (감정 분석 포함) ──
+  let emotion_tag = null;
+  if (content) {
+    try {
+      const emoRes = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'emotion', context: { content } })
+      });
+      const emoData = await emoRes.json();
+      emotion_tag = emoData.emotion || null;
+    } catch(e) {
+      console.warn('감정 분석 실패, 계속 진행', e);
+      // 실패해도 등록은 계속
+    }
+  }
 
-const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId, emotion_tag });
+  const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId, emotion_tag });
+  if (data?.id || data?.success) {
+    showToast('등록됐어요 ✅', 'success');
+    document.getElementById('composeModal').classList.remove('open');
+    if (typeof reload === 'function') await reload();
+  } else {
+    showToast(data?.error || '등록 실패', 'error');
+  }
 }
