@@ -588,3 +588,7 @@
   transition: opacity .15s;
 }
 .cat-chip:hover .cat-chip-edit { opacity: 1; }
+.cat-chip.event-chip {
+  border: 1.5px dashed var(--cat-color, var(--gold));
+  background: transparent;
+}

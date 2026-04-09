@@ -29,7 +29,9 @@ function _getFilteredPosts(opts, overrideCatId) {
 export function renderRoom(container, room, opts = {}) {
   state._currentRoomOpts = opts;
 
-  const cats   = (state.categories || []).filter(c => !c.is_event);
+  const allCats   = (state.categories || []);
+  const normalCats = allCats.filter(c => !c.is_event);
+  const eventCats  = allCats.filter(c => c.is_event);
   const filter = opts.filter || {};
 
   const makeChip = c =>
@@ -37,10 +39,17 @@ export function renderRoom(container, room, opts = {}) {
       data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
       style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</button>`;
 
-  const catHtml = cats.length ? `
+  const makeEventChip = c =>
+    `<button class="cat-chip event-chip"
+      data-cat="${c.id}"
+      onclick="location.href='event.html?cat=${c.id}'"
+      style="--cat-color:${c.color || 'var(--gold)'};">🎉 ${c.name}</button>`;
+
+  const catHtml = (normalCats.length || eventCats.length) ? `
     <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
       <button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
-      ${cats.map(makeChip).join('')}
+      ${normalCats.map(makeChip).join('')}
+      ${eventCats.map(makeEventChip).join('')}
     </div>` : '';
 
   container.innerHTML = `
