@@ -241,6 +241,7 @@ function fmtDate(str) {
 }
 
 // ── window 노출 (인라인 onclick용) ────────────────────────────────────────
+window.state            = state;
 window.filterCat        = filterCat;
 window.toggleReaction   = toggleReaction;
 window.openPostComment  = openPostComment;

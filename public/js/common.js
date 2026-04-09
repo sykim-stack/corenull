@@ -178,6 +178,7 @@ export async function apiFetch(url, options = {}) {
 // ── window 노출 (인라인 onclick 호환) ─────────────────────────────────────────
 window.showToast = showToast;
 window.apiFetch  = apiFetch;
+window.state     = state;
 
 // ── editPostById — state.allPosts에서 찾아서 openEditModal 호출 ──────────
 window.editPostById = function(postId) {
