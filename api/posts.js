@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     let result = posts;
     if (posts.length > 0) {
       const postIds = posts.map(p => p.id).join(',');
-const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${postIds})&select=post_id,category_id`, { headers });
+      const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${postIds})&select=post_id,category_id`, { headers });
       const pc = await pcRes.json();
       result = posts.map(p => ({
         ...p,
@@ -53,7 +53,7 @@ const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${post
 
   // POST
   if (req.method === 'POST') {
-    const { house_id, room_id, content, media_urls, category_ids, owner_key } = req.body;
+    const { house_id, room_id, content, media_urls, category_ids, owner_key, emotion_tag } = req.body;
     if (!house_id) return res.status(400).json({ error: 'house_id required' });
 
     if (owner_key) {
@@ -64,10 +64,11 @@ const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${post
 
     const body = {
       house_id,
-      content: content ? content.trim() : null,
+      content:    content ? content.trim() : null,
       media_urls: Array.isArray(media_urls) ? media_urls : [],
     };
-    if (room_id) body.room_id = room_id;
+    if (room_id)     body.room_id     = room_id;
+    if (emotion_tag) body.emotion_tag = emotion_tag;
 
     const pRes = await fetch(`${baseUrl}/rest/v1/posts`, {
       method: 'POST', headers, body: JSON.stringify(body)
@@ -90,7 +91,7 @@ const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${post
 
   // PUT
   if (req.method === 'PUT') {
-    const { post_id, house_id, content, media_urls, category_ids, owner_key } = req.body;
+    const { post_id, house_id, content, media_urls, category_ids, owner_key, emotion_tag } = req.body;
     if (!post_id || !house_id) return res.status(400).json({ error: 'post_id, house_id required' });
 
     const hRes = await fetch(`${baseUrl}/rest/v1/houses?id=eq.${house_id}&owner_key=eq.${owner_key}&limit=1`, { headers });
@@ -98,8 +99,9 @@ const pcRes = await fetch(`${baseUrl}/rest/v1/post_categories?post_id=in.(${post
     if (!h[0]) return res.status(403).json({ error: '권한 없음' });
 
     const updateBody = { updated_at: new Date().toISOString() };
-    if (content)    updateBody.content    = content.trim();
-    if (media_urls) updateBody.media_urls = media_urls;
+    if (content)     updateBody.content     = content.trim();
+    if (media_urls)  updateBody.media_urls  = media_urls;
+    if (emotion_tag) updateBody.emotion_tag = emotion_tag;
 
     await fetch(`${baseUrl}/rest/v1/posts?id=eq.${post_id}&house_id=eq.${house_id}`, {
       method: 'PATCH', headers, body: JSON.stringify(updateBody)

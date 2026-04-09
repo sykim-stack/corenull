@@ -254,12 +254,32 @@ export async function submitWrite(reloadData) {
   }
 
   // ── 새 글 모드 ──
-  const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId });
-  if (data?.id || data?.success) {
-    showToast('등록됐어요 ✅', 'success');
-    document.getElementById('composeModal').classList.remove('open');
-    if (typeof reload === 'function') await reload();
-  } else {
-    showToast(data?.error || '등록 실패', 'error');
-  }
+let emotion_tag = null;
+if (content) {
+  try {
+    const emoRes = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'emotion', context: { content } })
+    });
+    const emoData = await emoRes.json();
+    emotion_tag = emoData.emotion || null;
+  } catch(e) { /* 실패해도 등록은 계속 */ }
+}
+
+const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId, emotion_tag });
+}
+export async function submitPost({ content, mediaUrls, categoryIds, roomId, emotion_tag }) {
+  return apiFetch('/api/posts', {
+    method: 'POST',
+    body: {
+      house_id:     state.houseId,
+      owner_key:    state.ownerKey,
+      room_id:      roomId,
+      content,
+      media_urls:   mediaUrls,
+      category_ids: categoryIds,
+      emotion_tag,
+    }
+  });
 }
