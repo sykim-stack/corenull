@@ -300,7 +300,6 @@ async function reloadData() {
     applyHero(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
   } catch (e) { console.error('reloadData 실패', e); }
-  window._reloadData = loadData; // 실제 데이터 리로드 함수명으로
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────
@@ -311,6 +310,7 @@ async function init() {
     initDday(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
     trackVisit(data.house.id);
+    window._reloadData = reloadData;
     if (state.isOwner) document.getElementById('fab').style.display = 'flex';
   } catch (e) {
     console.error(e);
@@ -329,7 +329,6 @@ function applyHero(house) {
   document.getElementById('footerName').textContent = name;
   document.getElementById('footerEi').textContent   = cat.emoji;
 
-  // 커버
   const coverImg  = document.getElementById('coverImg');
   const coverWrap = document.getElementById('coverWrap');
   coverWrap.querySelector('.cover-empty')?.remove();
@@ -349,7 +348,6 @@ function applyHero(house) {
     coverWrap.appendChild(btn);
   }
 
-  // 프로필
   const photo = document.getElementById('profilePhoto');
   if (house.profile_url) {
     photo.innerHTML = `<img src="${house.profile_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
@@ -387,37 +385,20 @@ function buildTabs(house, rooms, milestones, comments) {
   const topTabs     = document.getElementById('topTabs');
   const tabContents = document.getElementById('tabContents');
   const activeTabId = document.querySelector('.top-tab-btn.active')?.dataset?.tab || null;
-  topTabs.innerHTML = '';
+  topTabs.innerHTML    = '';
   tabContents.innerHTML = '';
 
+  // living → room → library 순서만, 이벤트 탭 제거 (Phase 2에서 재도입)
   const spaceRooms = [
     ...rooms.filter(r => r.room_type === 'living'),
     ...rooms.filter(r => r.room_type === 'room'),
     ...rooms.filter(r => r.room_type === 'library'),
   ];
 
-  // 이벤트: categories.is_event 기준
-  spaceRooms.forEach((room, idx) => {
-  const id   = `tab-${room.id}`;
-  const meta = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
-  const label = meta.label || room.room_name;
-
-  const btn = document.createElement('button');
-  btn.className   = 'top-tab-btn';
-  btn.innerHTML   = `<span class="ti">${meta.icon}</span>${label}`;
-  btn.dataset.tab = id;
-  btn.onclick     = () => switchTab(id);
-  topTabs.appendChild(btn);
-
-  const div = document.createElement('div');
-  div.className = 'tab-content';
-  div.id = id;
-  tabContents.appendChild(div);
-
-  if (room.room_type === 'living')       renderLobby(div, house, milestones, comments, spaceRooms);
-  else if (room.room_type === 'library') renderLibrary(div);
-  else                                   renderRoom(div, room, buildRoomOpts(room));
-});
+  spaceRooms.forEach((room) => {
+    const id    = `tab-${room.id}`;
+    const meta  = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
+    const label = meta.label || room.room_name;
 
     const btn = document.createElement('button');
     btn.className   = 'top-tab-btn';
@@ -431,17 +412,9 @@ function buildTabs(house, rooms, milestones, comments) {
     div.id = id;
     tabContents.appendChild(div);
 
-    if (!isEvent) {
-      const room = tab.data;
-if (room.room_type === 'living')       renderLobby(div, house, milestones, comments, spaceRooms);
-else if (room.room_type === 'library') renderLibrary(div);
-else                                   renderRoom(div, room, buildRoomOpts(room));
-    } else {
-      // 이벤트 탭 → room.js renderRoom (mode: event)
-      const cat    = tab.data;
-      const evRoom = { id: cat.id, room_name: cat.name, room_type: 'event', event_date: cat.event_date };
-      renderRoom(div, evRoom, buildRoomOpts(evRoom, cat));
-    }
+    if (room.room_type === 'living')       renderLobby(div, house, milestones, comments, spaceRooms);
+    else if (room.room_type === 'library') renderLibrary(div);
+    else                                   renderRoom(div, room, buildRoomOpts(room));
   });
 
   // 탭 복원
