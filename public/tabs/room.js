@@ -239,3 +239,11 @@ function fmtDate(str) {
   const d = new Date(str);
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
+
+// ── window 노출 (인라인 onclick용) ────────────────────────────────────────
+window.filterCat        = filterCat;
+window.toggleReaction   = toggleReaction;
+window.openPostComment  = openPostComment;
+window.submitPostComment = submitPostComment;
+window.deletePostComment = deletePostComment;
+window.openShareModal   = openShareModal;
