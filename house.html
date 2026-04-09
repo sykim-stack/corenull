@@ -301,6 +301,7 @@ async function reloadData() {
     applyHero(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
   } catch (e) { console.error('reloadData 실패', e); }
+  window._reloadData = loadData; // 실제 데이터 리로드 함수명으로
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────

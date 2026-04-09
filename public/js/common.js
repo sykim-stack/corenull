@@ -265,7 +265,12 @@ export function renderPost(p, opts = {}) {
         🔗
       </button>
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
-      ${showDel ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
+      ${showDel ? `
+        <button class="post-edit" onclick="event.stopPropagation();openEditModal(${JSON.stringify({id:p.id,content:p.content,media_urls:p.media_urls||[],category_ids:p.category_ids||[]})})"
+          style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:4px;">✏️</button>
+        <button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')"
+          style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:4px;">🗑️</button>
+      ` : ''}
     </div>` : `
     <div class="post-foot">
       <span class="post-time">${timeAgo(p.created_at)}</span>

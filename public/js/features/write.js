@@ -1,10 +1,13 @@
 // ── public/js/features/write.js ───────────────────────────────────────────
-import { state, showToast, resizeImg } from '/public/js/common.js';
+import { state, showToast, apiFetch, resizeImg } from '/public/js/common.js';
 import { submitPost } from '/public/js/api.js';
 import { uploadMany } from '/public/js/core/upload.js';
 
-/* ── 분류 렌더 (일반 | 이벤트 구분) ── */
-function _renderComposeCats() {
+// ── 편집 중인 post_id (null이면 새 글) ───────────────────────────────────
+let _editPostId = null;
+
+/* ── 분류 렌더 ── */
+function _renderComposeCats(selectedIds = []) {
   const wrap = document.getElementById('composeCatWrap');
   if (!wrap) return;
 
@@ -12,7 +15,7 @@ function _renderComposeCats() {
   const events = (state.categories || []).filter(c =>  c.is_event);
 
   const makeChip = c =>
-    `<span class="cat-sel" data-id="${c.id}"
+    `<span class="cat-sel${selectedIds.map(String).includes(String(c.id)) ? ' on' : ''}" data-id="${c.id}"
        onclick="this.classList.toggle('on')"
        style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</span>`;
 
@@ -68,10 +71,7 @@ window._submitAddCat = async () => {
 
   const res = await fetch('/api/categories', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Profile': 'corenull'
-    },
+    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
     body: JSON.stringify({
       house_id:   state.houseId,
       name,
@@ -84,7 +84,6 @@ window._submitAddCat = async () => {
 
   const data = await res.json();
   if (data.id || data.success) {
-    // state.categories 갱신
     if (!state.categories) state.categories = [];
     state.categories.push({
       id:       data.id || data.data?.id,
@@ -101,22 +100,77 @@ window._submitAddCat = async () => {
   }
 };
 
-/* ── 모달 열기 ── */
-export function openWriteModal(mode = 'write') {
+/* ── 모달 초기화 공통 ── */
+function _resetModal() {
   state.writeFiles = [];
   document.getElementById('composeContent').value          = '';
   document.getElementById('composePrevWrap').style.display = 'none';
   document.getElementById('composePrevCells').innerHTML    = '';
   document.getElementById('composeProgWrap').style.display = 'none';
-  
-  _renderComposeCats();
-  document.getElementById('composeModal').classList.add('open');
+}
 
+/* ── 새 글쓰기 모달 열기 ── */
+export function openWriteModal(mode = 'write') {
+  _editPostId = null;
+  _resetModal();
+  _renderComposeCats();
+
+  // 모달 타이틀/버튼 초기화
+  const modal = document.getElementById('composeModal');
+  const titleEl = modal?.querySelector('.modal-title');
+  if (titleEl) titleEl.textContent = '작성하기 ✏️';
+  const submitEl = modal?.querySelector('.modal-submit');
+  if (submitEl) submitEl.textContent = '등록';
+
+  document.getElementById('composeModal').classList.add('open');
   if (mode === 'write') {
     setTimeout(() => document.getElementById('composeContent').focus(), 120);
   } else {
     setTimeout(() => document.getElementById('composePhotoInput').click(), 120);
   }
+}
+
+/* ── 수정 모달 열기 ── */
+export function openEditModal(post) {
+  _editPostId = post.id;
+  _resetModal();
+
+  // 기존 내용 채우기
+  document.getElementById('composeContent').value = post.content || '';
+
+  // 기존 카테고리 선택 상태로 렌더
+  _renderComposeCats(post.category_ids || []);
+
+  // 기존 이미지 미리보기
+  if (post.media_urls?.length) {
+    const cells = document.getElementById('composePrevCells');
+    cells.innerHTML = post.media_urls.map(url =>
+      `<div class="prev-cell" data-existing="${url}">
+        <img src="${url}">
+        <button class="prev-rm" onclick="this.parentElement.remove()">✕</button>
+      </div>`
+    ).join('');
+    document.getElementById('composePrevWrap').style.display = 'block';
+  }
+
+  // 모달 타이틀/버튼 수정으로
+  const modal = document.getElementById('composeModal');
+  const titleEl = modal?.querySelector('.modal-title');
+  if (titleEl) titleEl.textContent = '수정하기 ✏️';
+  const submitEl = modal?.querySelector('.modal-submit');
+  if (submitEl) submitEl.textContent = '수정 완료';
+
+  document.getElementById('composeModal').classList.add('open');
+  setTimeout(() => document.getElementById('composeContent').focus(), 120);
+}
+
+// window 노출 (인라인 onclick용)
+window.openEditModal = openEditModal;
+
+// house.html의 submitWrite() 인자 없는 호출 대응
+// → window._reloadData 를 house.html에서 등록해두면 자동 호출
+export function getReloadFn() {
+  return typeof window._reloadData === 'function' ? window._reloadData : null;
 }
 
 export function openUploadModal(roomId) {
@@ -140,10 +194,9 @@ export async function handleWritePhoto(input) {
   input.value = '';
 }
 
-/* ── 제출 ── */
+/* ── 제출 (새 글 / 수정 공통) ── */
 export async function submitWrite(reloadData) {
-  console.log('submitWrite 호출됨, reloadData:', typeof reloadData); // ← 추가
-  console.log('data.success 후 reloadData 실행 전');
+  const reload = typeof reloadData === 'function' ? reloadData : window._reloadData;
   const content = document.getElementById('composeContent').value.trim();
   const catIds  = [...document.querySelectorAll('#composeCatWrap .cat-sel.on')].map(el => el.dataset.id);
   const roomId  = state.currentRoomId || state.rooms?.find(r => r.room_type === 'room')?.id;
@@ -152,22 +205,61 @@ export async function submitWrite(reloadData) {
     showToast('내용이나 사진을 추가해주세요'); return;
   }
 
-  let mediaUrls = [];
+  // 기존 이미지 URL (삭제 안 된 것만)
+  const existingUrls = [...document.querySelectorAll('#composePrevCells .prev-cell[data-existing]')]
+    .map(el => el.dataset.existing);
+
+  // 새 파일 업로드
+  let newUrls = [];
   if (state.writeFiles?.length) {
     document.getElementById('composeProgWrap').style.display = 'block';
-    mediaUrls = await uploadMany(state.writeFiles, ({ current, total, percent }) => {
+    newUrls = await uploadMany(state.writeFiles, ({ current, total, percent }) => {
       document.getElementById('composeProgFill').style.width = `${percent}%`;
       document.getElementById('composeProgText').textContent = `${current}/${total} 업로드 중...`;
     });
     document.getElementById('composeProgText').textContent = '완료!';
   }
 
+  const mediaUrls = [...existingUrls, ...newUrls];
+
+  // ── 수정 모드 ──
+  if (_editPostId) {
+    const data = await apiFetch('/api/posts', {
+      method: 'PUT',
+      body: {
+        post_id:      _editPostId,
+        house_id:     state.houseId,
+        owner_key:    state.ownerKey,
+        content,
+        media_urls:   mediaUrls,
+        category_ids: catIds,
+      }
+    });
+    if (data) {
+      // state.allPosts 즉시 반영
+      const idx = state.allPosts.findIndex(p => p.id === _editPostId);
+      if (idx !== -1) {
+        state.allPosts[idx] = {
+          ...state.allPosts[idx],
+          content,
+          media_urls:   mediaUrls,
+          category_ids: catIds,
+        };
+      }
+      showToast('수정됐어요 ✅', 'success');
+      document.getElementById('composeModal').classList.remove('open');
+      if (typeof reload === 'function') await reload();
+    }
+    return;
+  }
+
+  // ── 새 글 모드 ──
   const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId });
-if (data.id || data.success) {
-    showToast('등록됐어요 ✅');
+  if (data?.id || data?.success) {
+    showToast('등록됐어요 ✅', 'success');
     document.getElementById('composeModal').classList.remove('open');
-    if (typeof reloadData === 'function') await reloadData();
+    if (typeof reload === 'function') await reload();
   } else {
-    showToast(data.error || '등록 실패');
+    showToast(data?.error || '등록 실패', 'error');
   }
 }
