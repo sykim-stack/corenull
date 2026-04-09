@@ -1,142 +1,13 @@
 // public/tabs/room.js
 import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
 
-// ── 방 렌더 ───────────────────────────────────────────────────────────────
-export function renderRoom(container, room) {
-  const posts = state.allPosts.filter(p => p.room_id === room.id);
-  const cats = state.categories || [];
-  
-  const normal = cats.filter(c => !c.is_event);
-  const events = cats.filter(c =>  c.is_event);
-
-  const makeChip = c => `
-    <span style="display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">
-      <button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-        style="--cat-color:${c.color||'var(--mint)'};">${escHtml(c.name)}</button>
-      ${state.isOwner ? `<button
-        onclick="openCatEditPopup('${c.id}','${escHtml(c.name)}',this)"
-        title="수정/삭제"
-        style="background:none;border:none;font-size:10px;color:var(--muted);
-               cursor:pointer;padding:2px 3px;border-radius:6px;line-height:1;
-               transition:color .15s;"
-        onmouseover="this.style.color='var(--brown)'"
-        onmouseout="this.style.color='var(--muted)'">⚙</button>` : ''}
-    </span>`;
-
-  const catHtml = cats.length ? `
-    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${events.length ? '8px' : '16px'};align-items:center;">
-      <button class="cat-chip active" data-cat="all" onclick="filterCat('all',this)">전체</button>
-      ${normal.map(makeChip).join('')}
-      ${state.isOwner ? `<button class="cat-new" onclick="openCatModal()">+ 분류</button>` : ''}
-    </div>
-    ${events.length ? `
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none;margin-bottom:4px;">
-      ${events.map(c => {
-        const diff = c.event_date
-          ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000)
-          : null;
-        const badge = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료';
-        return `<span style="display:inline-flex;align-items:flex-start;gap:2px;flex-shrink:0;">
-          <button
-            onclick="filterCat('${c.id}',this)"
-            data-cat="${c.id}"
-            style="display:flex;flex-direction:column;align-items:center;gap:4px;
-                   background:linear-gradient(135deg,#FEF3DC,#FDE8D8);
-                   border:1px solid rgba(201,168,76,.3);border-radius:14px;
-                   padding:10px 16px;cursor:pointer;
-                   font-family:'Gowun Dodum',serif;transition:all .2s;"
-            onmouseover="this.style.transform='translateY(-2px)'"
-            onmouseout="this.style.transform='none'">
-            <span style="font-size:11px;font-weight:600;color:var(--dark);">🎂 ${escHtml(c.name)}</span>
-            ${badge ? `<span style="font-size:10px;color:var(--gold);font-weight:600;">${badge}</span>` : ''}
-          </button>
-          ${state.isOwner ? `<button
-            onclick="openCatEditPopup('${c.id}','${escHtml(c.name)}',this)"
-            title="수정/삭제"
-            style="background:none;border:none;font-size:10px;color:var(--muted);
-                   cursor:pointer;padding:2px 3px;border-radius:6px;line-height:1;
-                   margin-top:4px;transition:color .15s;"
-            onmouseover="this.style.color='var(--brown)'"
-            onmouseout="this.style.color='var(--muted)'">⚙</button>` : ''}
-        </span>`;
-      }).join('')}
-    </div>
-    <div style="height:1px;background:rgba(139,94,60,.08);margin-bottom:16px;"></div>` : ''}` : '';
-
-  // 이벤트 섹션
-  const eventSection = events.length ? `
-    <div style="margin-top:28px;margin-bottom:12px;">
-      <div class="sec-label">EVENTS</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;" id="eventCardList">
-      ${events.map(c => {
-        const diff = c.event_date
-          ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000)
-          : null;
-        const dday = diff === null ? '' : diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
-        const editBtn = state.isOwner
-          ? `<button onclick="openCatEdit('${c.id}','${c.name}',true,'${c.event_date||''}')"
-              style="background:none;border:1px solid rgba(196,120,75,.3);border-radius:12px;padding:4px 10px;font-size:11px;color:var(--room-event);cursor:pointer;">⚙ 수정</button>`
-          : '';
-        return `
-          <div style="background:white;border:1px solid rgba(196,120,75,.15);border-radius:14px;
-            padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;"
-            onclick="openEventPage('${c.id}')">
-            <div style="font-size:22px;">🎂</div>
-            <div style="flex:1;">
-              <div style="font-size:14px;font-weight:600;color:var(--dark);">${c.name}</div>
-              ${c.event_date ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${fmtDate(c.event_date)}</div>` : ''}
-            </div>
-            ${dday ? `<div style="background:var(--room-event);color:white;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;">${dday}</div>` : ''}
-            ${editBtn}
-          </div>`;
-      }).join('')}
-      ${state.isOwner ? `
-        <button onclick="openCatEdit(null,'',true,'')"
-          style="background:none;border:1.5px dashed rgba(196,120,75,.3);border-radius:14px;
-          padding:12px;font-size:13px;color:var(--room-event);cursor:pointer;width:100%;">
-          + 이벤트 추가
-        </button>` : ''}
-    </div>` : state.isOwner ? `
-    <div style="margin-top:28px;margin-bottom:12px;">
-      <div class="sec-label">EVENTS</div>
-    </div>
-    <button onclick="openCatEdit(null,'',true,'')"
-      style="background:none;border:1.5px dashed rgba(196,120,75,.3);border-radius:14px;
-      padding:12px;font-size:13px;color:var(--room-event);cursor:pointer;width:100%;margin-bottom:28px;">
-      + 이벤트 추가
-    </button>` : '';
-
-  container.innerHTML = `
-    <div class="section">
-      <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">ROOM</div><div class="sec-title">${room.room_name}</div></div>
-        ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
-      </div>
-      ${catHtml}
-      <div id="roomPostList-${room.id}"></div>
-      ${eventSection}
-    </div>`;
-
-  renderPostList(posts, `roomPostList-${room.id}`);
-  const postIds = posts.map(p => p.id).filter(Boolean);
-  if (postIds.length) loadReactions(postIds);
-  if (postIds.length) loadCommentCounts(postIds);
-}
-// ── 댓글 카운트 로드 (집주인만) ───────────────────────────────────────────
-export async function loadCommentCounts(postIds) {
-  if (!postIds?.length || !state.isOwner) return;
-  await Promise.all(postIds.map(async (id) => {
-    try {
-      const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
-      const data = await res.json();
-      const count = (data.comments || []).length;
-      const btn = document.querySelector(`[data-comment-id="${id}"]`);
-      if (!btn || count === 0) return;
-      btn.dataset.count = count;
-      btn.innerHTML = `💬 ${count}`;
-    } catch (e) {}
-  }));
+// ── 이벤트 상태 도출 (내부) ───────────────────────────────────────────────
+function getEventStatus(date) {
+  if (!date) return null;
+  const diff = Math.ceil((new Date(date) - new Date()) / 86400000);
+  if (diff > 0)  return { status: 'upcoming', diff, badge: `D-${diff}` };
+  if (diff === 0) return { status: 'ongoing',  diff: 0, badge: 'D-DAY 🎉' };
+  return { status: 'ended', diff, badge: '완료 🎂' };
 }
 
 // ── 카테고리 필터 ─────────────────────────────────────────────────────────
@@ -145,16 +16,112 @@ export function filterCat(catId, btn) {
   btn?.classList.add('active');
   state.activeCat = catId === 'all' ? null : catId;
 
-  const room = state.rooms.find(r => r.room_type === 'room');
-  if (!room) return;
-  const posts = catId === 'all'
-    ? state.allPosts.filter(p => p.room_id === room.id)
-    : state.allPosts.filter(p => p.room_id === room.id && (p.category_ids || []).includes(catId));
+  const opts = state._currentRoomOpts;
+  if (!opts) return;
 
-  renderPostList(posts, `roomPostList-${room.id}`);
+  const posts = _getFilteredPosts(opts, catId === 'all' ? null : catId);
+  renderPostList(posts, `roomPostList-${opts.meta.roomId}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
-  if (postIds.length) loadCommentCounts(postIds);  // 추가
+  if (postIds.length) loadCommentCounts(postIds);
+}
+
+// ── 포스트 필터링 공통 ────────────────────────────────────────────────────
+function _getFilteredPosts(opts, overrideCatId) {
+  const catId = overrideCatId !== undefined ? overrideCatId : opts.filter.categoryId;
+
+  if (opts.mode === 'event') {
+    // 이벤트: categoryId 기준
+    return (state.allPosts || []).filter(p =>
+      catId
+        ? (p.category_ids || []).map(String).includes(String(catId))
+        : (p.category_ids || []).some(cid => {
+            const cat = (state.categories || []).find(c => String(c.id) === String(cid));
+            return cat?.is_event;
+          })
+    );
+  }
+
+  // 일반 방: room_id 기준
+  const posts = (state.allPosts || []).filter(p => p.room_id === opts.meta.roomId);
+  if (!catId) return posts;
+  return posts.filter(p => (p.category_ids || []).map(String).includes(String(catId)));
+}
+
+// ── 메인 렌더 ─────────────────────────────────────────────────────────────
+export function renderRoom(container, room, opts) {
+  // opts 저장 (filterCat에서 참조)
+  state._currentRoomOpts = opts;
+
+  const isEvent  = opts.mode === 'event';
+  const evInfo   = isEvent ? getEventStatus(opts.event.date) : null;
+  const cats     = state.categories || [];
+  const normal   = cats.filter(c => !c.is_event);
+  const events   = cats.filter(c =>  c.is_event);
+
+  // ── 카테고리 칩 ──
+  const makeChip = c =>
+    `<button class="cat-chip${opts.filter.categoryId === c.id ? ' active' : ''}"
+      data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+      style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</button>`;
+
+  const catHtml = cats.length ? `
+    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+      <button class="cat-chip${!opts.filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
+      ${normal.map(makeChip).join('')}
+      ${events.length ? `<span style="color:var(--muted);font-size:11px;margin:0 2px;">|</span>${events.map(makeChip).join('')}` : ''}
+    </div>` : '';
+
+  // ── 이벤트 헤더 (mode=event일 때만) ──
+  const eventHeader = isEvent && evInfo ? `
+    <div class="ev-header" style="margin-bottom:20px;">
+      ${opts.event.date ? `<div class="ev-date">📅 ${fmtDate(opts.event.date)}</div>` : ''}
+      <div class="ev-dday">${evInfo.badge}</div>
+      ${opts.meta.source === 'house' ? `
+        <a href="/event?slug=${state.slug}&cat=${opts.filter.categoryId}"
+          target="_blank"
+          style="display:inline-block;margin-top:12px;background:var(--gold);color:white;
+                 border-radius:20px;padding:7px 18px;font-size:12px;text-decoration:none;">
+          🔗 이벤트 페이지
+        </a>` : ''}
+    </div>` : '';
+
+  container.innerHTML = `
+    <div class="section">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div>
+          <div class="sec-label">${isEvent ? 'EVENT' : 'ROOM'}</div>
+          <div class="sec-title">${room.room_name}</div>
+        </div>
+        ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+      </div>
+      ${eventHeader}
+      ${catHtml}
+      <div id="roomPostList-${opts.meta.roomId}"></div>
+    </div>`;
+
+  const posts = _getFilteredPosts(opts);
+  renderPostList(posts, `roomPostList-${opts.meta.roomId}`);
+
+  const postIds = posts.map(p => p.id).filter(Boolean);
+  if (postIds.length) loadReactions(postIds);
+  if (postIds.length) loadCommentCounts(postIds);
+}
+
+// ── 댓글 카운트 로드 ──────────────────────────────────────────────────────
+export async function loadCommentCounts(postIds) {
+  if (!postIds?.length || !state.isOwner) return;
+  await Promise.all(postIds.map(async (id) => {
+    try {
+      const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
+      const data = await res.json();
+      const count = (data.comments || []).length;
+      const btn = document.querySelector(`[data-comment-id="${id}"]`);
+      if (!btn || count === 0) return;
+      btn.dataset.count = count;
+      btn.innerHTML = `💬 ${count}`;
+    } catch (e) {}
+  }));
 }
 
 // ── Reaction 토글 ─────────────────────────────────────────────────────────
@@ -207,33 +174,30 @@ export async function loadReactions(postIds) {
   }));
 }
 
-// ── 포스트 댓글 열기 (인스타 방식 인라인) ────────────────────────────────
+// ── 포스트 댓글 열기 ──────────────────────────────────────────────────────
 export async function openPostComment(postId) {
   const existing = document.getElementById(`comments-${postId}`);
-
-  // 이미 열려있으면 닫기
   if (existing) { existing.remove(); return; }
 
-  // 포스트 카드 찾기
-  const btn = document.querySelector(`[data-comment-id="${postId}"]`);
+  const btn  = document.querySelector(`[data-comment-id="${postId}"]`);
   const card = btn?.closest('.post-item');
   if (!card) return;
 
-  // 댓글 영역 생성
   const wrap = document.createElement('div');
   wrap.id = `comments-${postId}`;
   wrap.style.cssText = 'border-top:1px solid rgba(139,94,60,.1);padding:12px 16px;background:rgba(247,238,227,.4);';
-  wrap.innerHTML = `<div id="clist-${postId}" style="margin-bottom:10px;"></div>
+  wrap.innerHTML = `
+    <div id="clist-${postId}" style="margin-bottom:10px;"></div>
     <div style="display:flex;gap:8px;align-items:center;">
       <input id="cinput-${postId}" placeholder="댓글 달기..."
-        style="flex:1;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:8px 14px;font-size:13px;font-family:'Gowun Dodum',serif;background:white;outline:none;"
+        style="flex:1;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:8px 14px;
+               font-size:13px;font-family:'Gowun Dodum',serif;background:white;outline:none;"
         onkeydown="if(event.key==='Enter')submitPostComment('${postId}')">
       <button onclick="submitPostComment('${postId}')"
-        style="background:var(--brown);color:white;border:none;border-radius:20px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:'Gowun Dodum',serif;">게시</button>
+        style="background:var(--brown);color:white;border:none;border-radius:20px;
+               padding:8px 16px;font-size:12px;cursor:pointer;font-family:'Gowun Dodum',serif;">게시</button>
     </div>`;
   card.appendChild(wrap);
-
-  // 댓글 로드
   await loadPostComments(postId);
 }
 
@@ -241,20 +205,18 @@ export async function openPostComment(postId) {
 async function loadPostComments(postId) {
   const el = document.getElementById(`clist-${postId}`);
   if (!el) return;
-
   try {
-    const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
+    const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
     const data = await res.json();
     const comments = data.comments || [];
-
     if (!comments.length) {
       el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0;">첫 댓글을 남겨보세요 💬</div>`;
       return;
     }
-
     el.innerHTML = comments.map(c => `
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;">
-        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));
+                    display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
           ${c.author_name?.charAt(0) || '?'}
         </div>
         <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;">
@@ -270,16 +232,14 @@ async function loadPostComments(postId) {
 
 // ── 댓글 작성 ─────────────────────────────────────────────────────────────
 export async function submitPostComment(postId) {
-  const input = document.getElementById(`cinput-${postId}`);
+  const input   = document.getElementById(`cinput-${postId}`);
   const content = input?.value.trim();
   if (!content) return;
-
   const author = localStorage.getItem('cn_author_name') || '익명';
   input.value = '';
   input.disabled = true;
-
   try {
-    const res = await fetch('/api/comment', {
+    const res  = await fetch('/api/comment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: postId })
@@ -287,7 +247,6 @@ export async function submitPostComment(postId) {
     const data = await res.json();
     if (data.success) {
       await loadPostComments(postId);
-      // 댓글 카운트 업데이트
       const countBtn = document.querySelector(`[data-comment-id="${postId}"]`);
       if (countBtn) {
         const cur = parseInt(countBtn.dataset.count || '0') + 1;
@@ -302,7 +261,7 @@ export async function submitPostComment(postId) {
 // ── 댓글 삭제 ─────────────────────────────────────────────────────────────
 export async function deletePostComment(commentId, postId) {
   try {
-    const res = await fetch('/api/comment', {
+    const res  = await fetch('/api/comment', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
@@ -313,93 +272,9 @@ export async function deletePostComment(commentId, postId) {
   } catch (e) { showToast('삭제 실패'); }
 }
 
-// ── 분류 수정/삭제 팝업 ───────────────────────────────────────────────────
-export function openCatEditPopup(catId, catName, triggerEl) {
-  const exist = document.getElementById('catEditPopup');
-  if (exist) { exist.remove(); if (exist.dataset.catId === catId) return; }
-
-  const popup = document.createElement('div');
-  popup.id = 'catEditPopup';
-  popup.dataset.catId = catId;
-  popup.style.cssText = `
-    position:fixed;background:white;border:1px solid rgba(139,94,60,.2);
-    border-radius:12px;padding:12px;z-index:300;
-    box-shadow:0 8px 24px rgba(44,26,14,.15);min-width:180px;`;
-  popup.innerHTML = `
-    <input id="catEditInput" value="${catName}"
-      style="width:100%;background:var(--warm);border:none;border-radius:8px;
-             padding:8px 10px;font-family:'Gowun Dodum',serif;font-size:13px;
-             color:var(--dark);outline:none;margin-bottom:8px;">
-    <div style="display:flex;gap:6px;">
-      <button onclick="saveCatEdit('${catId}')"
-        style="flex:1;background:var(--brown);color:white;border:none;border-radius:8px;
-               padding:8px;font-family:'Gowun Dodum',serif;font-size:12px;cursor:pointer;">저장</button>
-      <button onclick="confirmDelCat('${catId}','${catName}')"
-        style="background:#fff0f0;border:1px solid #fcc;border-radius:8px;padding:8px 10px;
-               font-size:12px;cursor:pointer;color:#e55;">삭제</button>
-      <button onclick="document.getElementById('catEditPopup')?.remove()"
-        style="background:var(--warm);border:none;border-radius:8px;padding:8px 10px;
-               font-size:12px;cursor:pointer;">✕</button>
-    </div>`;
-
-  const rect = triggerEl.getBoundingClientRect();
-  popup.style.top  = (rect.bottom + 6) + 'px';
-  popup.style.left = Math.min(rect.left, window.innerWidth - 196) + 'px';
-  document.body.appendChild(popup);
-  document.getElementById('catEditInput').focus();
-
-  setTimeout(() => {
-    document.addEventListener('click', function handler(e) {
-      if (!popup.contains(e.target) && e.target !== triggerEl) {
-        popup.remove();
-        document.removeEventListener('click', handler);
-      }
-    });
-  }, 0);
-}
-
-export async function saveCatEdit(catId) {
-  const name = document.getElementById('catEditInput')?.value.trim();
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-  try {
-    const res  = await fetch('/api/categories', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        category_id: catId,
-        house_id: state.houseId,
-        owner_key: state.ownerKey,
-        name
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast('수정됐어요 ✅');
-      document.getElementById('catEditPopup')?.remove();
-      location.reload();
-    } else showToast(data.error || '수정 실패');
-  } catch(e) { showToast('오류가 발생했어요'); }
-}
-
-export function confirmDelCat(catId, catName) {
-  document.getElementById('catEditPopup')?.remove();
-  if (!confirm(`'${catName}' 분류를 삭제할까요?\n이 분류로 작성된 글의 태그가 제거돼요.`)) return;
-  deleteCat(catId);
-}
-
-export async function deleteCat(catId) {
-  try {
-    const res  = await fetch('/api/categories', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        category_id: catId,
-        house_id: state.houseId,
-        owner_key: state.ownerKey
-      })
-    });
-    const data = await res.json();
-    if (data.success) { showToast('삭제됐어요'); location.reload(); }
-    else showToast(data.error || '삭제 실패');
-  } catch(e) { showToast('오류가 발생했어요'); }
+// ── 유틸 ─────────────────────────────────────────────────────────────────
+function fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }

@@ -9,11 +9,11 @@
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
   <link rel="stylesheet" href="/public/css/layout.css">
   <link rel="stylesheet" href="/public/css/house.css">
-  <script>Kakao.init('deff4cdd41db40e09d6a4ca2a3c9f628');</script>
+  <script>Kakao.init('7dc617c2e0468c4f094e9fad63d2430a');</script>
 </head>
 <body>
 
-<!-- ── Top Nav ──────────────────────────────────────────────────────────── -->
+<!-- ── Top Nav ── -->
 <nav class="top-nav" id="topNav">
   <div class="top-nav-inner">
     <div class="top-logo">CoreNull</div>
@@ -22,7 +22,7 @@
   </div>
 </nav>
 
-<!-- ── Cover Banner ─────────────────────────────────────────────────────── -->
+<!-- ── Cover Banner ── -->
 <div class="cover-wrap" id="coverWrap">
   <div class="cover-img" id="coverImg"></div>
   <div class="cover-gradient"></div>
@@ -30,7 +30,7 @@
   <input type="file" id="profileInput" accept="image/*" style="display:none" onchange="uploadProfile(this)">
 </div>
 
-<!-- ── Profile Area ─────────────────────────────────────────────────────── -->
+<!-- ── Profile Area ── -->
 <div class="profile-area">
   <div class="profile-inner">
     <div class="profile-left">
@@ -44,8 +44,8 @@
         <div class="profile-dday" id="ddayWrap"></div>
       </div>
     </div>
-    <div class="profile-right" id="profileActions">
-      <div id="shareWrap" class="share-wrap">
+    <div class="profile-right">
+      <div class="share-wrap">
         <button onclick="shareKakao()" class="share-btn kakao">
           <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" style="width:16px;height:16px;border-radius:50%;">카카오
         </button>
@@ -56,45 +56,36 @@
   </div>
 </div>
 
-<!-- ── Tab Contents ─────────────────────────────────────────────────────── -->
+<!-- ── Tab Contents ── -->
 <div id="tabContents"></div>
 
-<!-- ── Footer ───────────────────────────────────────────────────────────── -->
+<!-- ── Footer ── -->
 <div class="footer">
   <div class="footer-ei" id="footerEi">🏠</div>
   <div class="footer-name" id="footerName">CoreNull</div>
   <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
 </div>
 
-<!-- ── FAB (1개) ─────────────────────────────────────────────────────────── -->
+<!-- ── FAB ── -->
 <button class="fab" id="fab" style="display:none" onclick="openWriteModal()">✏️</button>
 
-<!-- ── 글쓰기 모달 ──────────────────────────────────────────────────────── -->
+<!-- ── 글쓰기 모달 ── -->
 <div class="modal-overlay" id="composeModal" onclick="closeModal('composeModal',event)">
   <div class="modal-box" style="border-radius:20px;">
     <div class="modal-title">작성하기 ✏️</div>
-
     <textarea class="modal-input" id="composeContent"
       placeholder="오늘 있었던 일을 기록해요..." style="height:100px;"></textarea>
-
-    <!-- 사진 미리보기 -->
     <div id="composePrevWrap" style="display:none;margin-bottom:10px;">
       <div class="prev-grid" id="composePrevCells"></div>
     </div>
-
-    <!-- 업로드 진행 -->
     <div class="prog-wrap" id="composeProgWrap">
       <div class="prog-bar"><div class="prog-fill" id="composeProgFill"></div></div>
       <div class="prog-text" id="composeProgText"></div>
     </div>
-
-    <!-- 분류 선택 -->
     <div style="margin:10px 0 4px;">
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">분류 선택</div>
       <div id="composeCatWrap"></div>
     </div>
-
-    <!-- 하단 액션 -->
     <div style="display:flex;gap:8px;margin-top:10px;">
       <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;"
         onclick="document.getElementById('composePhotoInput').click()">📷</button>
@@ -105,7 +96,7 @@
   </div>
 </div>
 
-<!-- ── 사진 설명 수정 모달 ───────────────────────────────────────────────── -->
+<!-- ── 사진 설명 수정 모달 ── -->
 <div class="modal-overlay" id="editModal" onclick="closeModal('editModal',event)">
   <div class="modal-box" style="border-radius:20px;">
     <div class="modal-handle"></div>
@@ -116,7 +107,7 @@
   </div>
 </div>
 
-<!-- ── 영상 추가 모달 ────────────────────────────────────────────────────── -->
+<!-- ── 영상 추가 모달 ── -->
 <div class="modal-overlay" id="videoModal" onclick="closeModal('videoModal',event)">
   <div class="modal-box">
     <div class="modal-handle"></div>
@@ -126,7 +117,7 @@
   </div>
 </div>
 
-<!-- ── 라이트박스 ────────────────────────────────────────────────────────── -->
+<!-- ── 라이트박스 ── -->
 <div class="lightbox" id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
   <span class="lb-counter" id="lbCounter"></span>
@@ -138,7 +129,7 @@
   <div class="lb-thumbs" id="lbThumbs"></div>
 </div>
 
-<!-- ── Confirm ───────────────────────────────────────────────────────────── -->
+<!-- ── Confirm ── -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
     <div class="confirm-title" id="confirmTitle">삭제할까요?</div>
@@ -150,7 +141,7 @@
   </div>
 </div>
 
-<!-- ── Onboarding ────────────────────────────────────────────────────────── -->
+<!-- ── Onboarding ── -->
 <div class="onboard-overlay" id="onboardOverlay">
   <div class="onboard-box">
     <div id="stepInterest">
@@ -175,7 +166,7 @@
   </div>
 </div>
 
-<!-- ── Post Viewer Modal ─────────────────────────────────────────────────── -->
+<!-- ── Post Viewer Modal ── -->
 <div class="pv-overlay" id="postModal" onclick="closePvModal(event)">
   <div class="pv-box">
     <div class="pv-media" id="pvMedia"></div>
@@ -211,127 +202,102 @@
   </div>
 </div>
 
-<!-- ── Module Script ─────────────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Module Script ── -->
 <script type="module">
 import {
   state, DEVICE_ID, CAT_META, ROOM_META,
   showToast, openConfirm, closeConfirm, closeModal,
   fmtDate, timeAgo, resizeImg, b64Blob,
-  renderPost, renderPostList, renderStoryImgs,
-  escHtml,
+  renderPost, renderPostList, renderStoryImgs, escHtml,
 } from '/public/js/common.js';
 
 import { loadHouseData, submitPost, deletePost as apiDeletePost } from '/public/js/api.js';
 import { renderLobby }   from '/public/tabs/living.js';
 import { renderRoom, filterCat, toggleReaction, openPostComment, submitPostComment, deletePostComment, loadReactions } from '/public/tabs/room.js';
-import { renderLibrary, generateStory as libGenerateStory } from '/public/tabs/library.js';
-import { shareHouseKakao as coreShareKakao, shareHouseZalo as coreShareZalo, copyLink as coreCopyLink } from '/public/js/core/share.js';
+import { renderLibrary } from '/public/tabs/library.js';
+import { shareHouseKakao, shareHouseZalo, copyLink as coreCopyLink } from '/public/js/core/share.js';
+import { sharePost as coreSharePost } from '/public/js/core/share.js';
 import { openWriteModal as coreOpenWriteModal, handleWritePhoto, submitWrite as coreSubmitWrite } from '/public/js/features/write.js';
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
-import { showInterestModal, toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
-import { uploadMany, uploadCoverImage, uploadCover, uploadProfile } from '/public/js/core/upload.js';
-// window 노출 블록에 추가
-import { sharePost as coreSharePost } from '/public/js/core/share.js';
+import { toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
+import { uploadCover, uploadProfile } from '/public/js/core/upload.js';
 
-window.sharePost = (postId, btn) => {
+// ── window 노출 ──────────────────────────────────────────────────────────
+window.showToast         = showToast;
+window.openConfirm       = openConfirm;
+window.closeConfirm      = closeConfirm;
+window.closeModal        = closeModal;
+window.fmtDate           = fmtDate;
+window.timeAgo           = timeAgo;
+window.escHtml           = escHtml;
+window.renderPost        = renderPost;
+window.renderPostList    = renderPostList;
+window.renderStoryImgs   = renderStoryImgs;
+window.filterCat         = filterCat;
+window.toggleReaction    = toggleReaction;
+window.openPostComment   = openPostComment;
+window.submitPostComment = submitPostComment;
+window.deletePostComment = deletePostComment;
+window.switchTab         = switchTab;
+window.switchToRoomType  = switchToRoomType;
+window.openPostModal     = openPostModal;
+window.closePvModal      = closePvModal;
+window.openLightbox      = openLightbox;
+window.closeLightbox     = closeLightbox;
+window.lbPrev            = lbPrev;
+window.lbNext            = lbNext;
+window.lbGoTo            = lbGoTo;
+window.openWriteModal    = () => coreOpenWriteModal('write');
+window.openUploadModal   = () => coreOpenWriteModal('photo');
+window.handleWritePhoto  = handleWritePhoto;
+window.submitWrite       = () => coreSubmitWrite(reloadData);
+window.submitEdit        = submitEdit;
+window.submitVideo       = submitVideo;
+window.confirmDelMedia   = confirmDelMedia;
+window.openEditModal     = openEditModal;
+window.previewGbPhoto    = previewGbPhoto;
+window.submitGuestbook   = () => coreSubmitGuestbook(reloadData);
+window.deleteComment     = (id) => coreDeleteComment(id, reloadData);
+window.getAiMsg          = getAiMsg;
+window.translateComment  = translateComment;
+window.deletePost        = deletePost;
+window.toggleInterest    = toggleInterest;
+window.goStepHouse       = goStepHouse;
+window.joinCurrentHouse  = joinCurrentHouse;
+window.skipOnboarding    = skipOnboarding;
+window.uploadCover       = (input) => uploadCover(input, state, showToast, reloadData);
+window.uploadProfile     = (input) => uploadProfile(input, state, showToast, reloadData);
+window.shareKakao        = () => shareHouseKakao({ name: state.houseData?.name, description: state.houseData?.description, cover_url: state.houseData?.cover_url, url: location.href });
+window.shareZalo         = () => shareHouseZalo(location.href);
+window.copyLink          = () => coreCopyLink(location.href, showToast);
+window.sharePost         = (postId, btn) => {
   const post = (state.allPosts || []).find(p => p.id === postId);
-  coreSharePost({
-    postId,
-    houseId  : state.houseId,
-    ownerKey : state.ownerKey || null,
-    houseName: state.houseData?.name || state.slug,
-    content  : post?.content || '',
-    coverUrl : post?.media_urls?.[0] || state.houseData?.cover_url || null,
-    slug     : state.slug,
-    onToast  : showToast,
-    btn
-  });
+  coreSharePost({ postId, houseId: state.houseId, ownerKey: state.ownerKey || null, houseName: state.houseData?.name || state.slug, content: post?.content || '', coverUrl: post?.media_urls?.[0] || state.houseData?.cover_url || null, slug: state.slug, onToast: showToast, btn });
 };
+window.pvNav             = pvNav;
+window.pvFocusComment    = pvFocusComment;
+window.pvShare           = pvShare;
+window.pvToggleReact     = pvToggleReact;
+window.pvSubmitComment   = pvSubmitComment;
+window.pvDeleteComment   = pvDeleteComment;
+window.parseVideoUrl     = parseVideoUrl;
 
-// ── 전역 노출 ──────────────────────────────────────────────────────────────
-window.openCatEdit    = openCatEdit;
-window.openCatInlineForm = openCatInlineForm;
-window.submitCatInlineForm = submitCatInlineForm;
-window.openEventPage  = (catId) => {
-  window.open(`/event?slug=${state.slug}&cat=${catId}`, '_blank');
-};
-// ── 전역 노출 섹션 (보강 버전) ──
+// ── buildRoomOpts ────────────────────────────────────────────────────────
+function buildRoomOpts(room, cat) {
+  return {
+    mode: room.room_type === 'event' ? 'event' : 'normal',
+    event: { date: room.event_date || cat?.event_date || null },
+    filter: { categoryId: cat?.id || null },
+    meta: { roomId: room.id, source: 'house' }
+  };
+}
 
-window.submitCatEdit = submitCatEdit; // 이 줄이 없으면 모달 내 '저장' 버튼이 작동 안 합니다.
-window.confirmDeleteCat = confirmDeleteCat; // 이 줄이 없으면 삭제 버튼이 작동 안 합니다.
-window.pvLoadComments = pvLoadComments;
-window.showToast          = showToast;
-window.openConfirm        = openConfirm;
-window.closeConfirm       = closeConfirm;
-window.closeModal         = closeModal;
-window.fmtDate            = fmtDate;
-window.timeAgo            = timeAgo;
-window.renderPost         = renderPost;
-window.renderPostList     = renderPostList;
-window.renderStoryImgs    = renderStoryImgs;
-window.filterCat          = filterCat;
-window.toggleReaction     = toggleReaction;
-window.openPostComment    = openPostComment;
-window.submitPostComment  = submitPostComment;
-window.deletePostComment  = deletePostComment;
-window.switchTab          = switchTab;
-window.switchToRoomType   = switchToRoomType;
-window.openPostModal      = openPostModal;
-window.closePostModal     = closePvModal;
-window.openLightbox       = openLightbox;
-window.closeLightbox      = closeLightbox;
-window.lbPrev             = lbPrev;
-window.lbNext             = lbNext;
-window.lbGoTo             = lbGoTo;
-window.openWriteModal     = () => coreOpenWriteModal('write');
-window.openUploadModal = (roomId) => {
-  if (roomId) state.currentRoomId = roomId;
-  coreOpenWriteModal('photo');
-};
-window.handleWritePhoto   = handleWritePhoto;
-window.submitWrite        = () => coreSubmitWrite(reloadData);
-window.submitEdit         = submitEdit;
-window.submitVideo        = submitVideo;
-window.confirmDelMedia    = confirmDelMedia;
-window.openEditModal      = openEditModal;
-window.previewGbPhoto     = previewGbPhoto;
-window.submitGuestbook    = () => coreSubmitGuestbook(reloadData);
-window.deleteComment      = (id) => coreDeleteComment(id, reloadData);
-window.getAiMsg           = getAiMsg;
-window.translateComment   = translateComment;
-window.deletePost         = deletePost;
-window.toggleInterest     = toggleInterest;
-window.goStepHouse        = goStepHouse;
-window.joinCurrentHouse   = joinCurrentHouse;
-window.skipOnboarding     = skipOnboarding;
-window.uploadCover        = (input) => uploadCover(input, state, showToast, reloadData);
-window.uploadProfile      = (input) => uploadProfile(input, state, showToast, reloadData);
-window.shareKakao         = () => coreShareKakao({ name: state.houseData?.name || state.slug, description: state.houseData?.description, cover_url: state.houseData?.cover_url, url: location.href });
-window.shareZalo          = () => coreShareZalo(location.href);
-window.copyLink           = () => coreCopyLink(location.href, showToast);
-window.parseVideoUrl      = parseVideoUrl;
-window.escHtml            = escHtml;
-window.closePvModal       = closePvModal;
-window.pvNav              = pvNav;
-window.pvFocusComment     = pvFocusComment;
-window.pvShare            = pvShare;
-window.pvToggleReact      = pvToggleReact;
-window.pvSubmitComment    = pvSubmitComment;
-window.pvDeleteComment    = pvDeleteComment;
-window.generateStory = (catId) => {
-  const cat = (state.categories || []).find(c => String(c.id) === String(catId));
-  if (cat) libGenerateStory(cat);
-};
-
-// ── 데이터 로드 & 리로드 ──────────────────────────────────────────────────
+// ── 데이터 로드 & 리로드 ─────────────────────────────────────────────────
 async function reloadData() {
   try {
     const data = await loadHouseData();
-    // 아래 줄을 추가하여 state를 동기화해야 합니다.
-    state.houseData = data.house; 
-    state.rooms = data.rooms || [];
-    state.categories = data.categories || []; 
-
     applyHero(data.house);
     buildTabs(data.house, data.rooms || [], data.milestones || [], data.comments || []);
   } catch (e) { console.error('reloadData 실패', e); }
@@ -358,35 +324,32 @@ function applyHero(house) {
   const name = house.name || state.slug;
   document.title = `${name} · CoreNull`;
 
-  document.getElementById('heroName').textContent   = name;
-  document.getElementById('heroSub').textContent    = house.description || '';
+  document.getElementById('heroName').textContent = name;
+  document.getElementById('heroSub').textContent  = house.description || '';
   document.getElementById('footerName').textContent = name;
   document.getElementById('footerEi').textContent   = cat.emoji;
 
+  // 커버
   const coverImg  = document.getElementById('coverImg');
   const coverWrap = document.getElementById('coverWrap');
-  // 커버 빈 상태 문구 중복 방지
-  const existing = coverWrap.querySelector('.cover-empty');
-  if (existing) existing.remove();
+  coverWrap.querySelector('.cover-empty')?.remove();
 
   if (house.cover_url) {
     coverImg.style.backgroundImage = `url(${house.cover_url})`;
   } else {
     coverWrap.insertAdjacentHTML('beforeend',
-      `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`
-    );
+      `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`);
   }
 
-  // 커버 편집 버튼 중복 방지
-  const existingEditBtn = coverWrap.querySelector('.cover-edit-btn');
-  if (!existingEditBtn && state.isOwner) {
-    const editBtn = document.createElement('button');
-    editBtn.className   = 'cover-edit-btn';
-    editBtn.textContent = '📷 커버 수정';
-    editBtn.onclick     = () => document.getElementById('coverInput').click();
-    coverWrap.appendChild(editBtn);
+  if (state.isOwner && !coverWrap.querySelector('.cover-edit-btn')) {
+    const btn = document.createElement('button');
+    btn.className   = 'cover-edit-btn';
+    btn.textContent = '📷 커버 수정';
+    btn.onclick     = () => document.getElementById('coverInput').click();
+    coverWrap.appendChild(btn);
   }
 
+  // 프로필
   const photo = document.getElementById('profilePhoto');
   if (house.profile_url) {
     photo.innerHTML = `<img src="${house.profile_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
@@ -402,13 +365,14 @@ function applyHero(house) {
 // ── initDday ─────────────────────────────────────────────────────────────
 function initDday(house) {
   if (!house.birth_date && !house.start_date) return;
-  const start   = new Date(house.birth_date || house.start_date), now = new Date();
+  const start   = new Date(house.birth_date || house.start_date);
+  const now     = new Date();
   const elapsed = Math.floor((now - start) / 86400000);
   let items = [{ num: elapsed + '일', label: '지난 날' }];
   if (house.category === 'baby' && house.hundred_date) {
     const diff = Math.ceil((new Date(house.hundred_date) - now) / 86400000);
     items = [
-      { num: elapsed + '일',  label: '태어난 지' },
+      { num: elapsed + '일', label: '태어난 지' },
       { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
       { num: '100', label: '기념일' }
     ];
@@ -422,11 +386,9 @@ function initDday(house) {
 function buildTabs(house, rooms, milestones, comments) {
   const topTabs     = document.getElementById('topTabs');
   const tabContents = document.getElementById('tabContents');
-
-  // 현재 활성 탭 ID 저장 (리로드 후 복원용)
   const activeTabId = document.querySelector('.top-tab-btn.active')?.dataset?.tab || null;
-
-  topTabs.innerHTML = ''; tabContents.innerHTML = '';
+  topTabs.innerHTML = '';
+  tabContents.innerHTML = '';
 
   const spaceRooms = [
     ...rooms.filter(r => r.room_type === 'living'),
@@ -434,31 +396,48 @@ function buildTabs(house, rooms, milestones, comments) {
     ...rooms.filter(r => r.room_type === 'library'),
   ];
 
-  const allTabs = spaceRooms.map(r => ({ kind: 'room', data: r }));
+  // 이벤트: categories.is_event 기준
+  const eventCats = (state.categories || []).filter(c => c.is_event);
+
+  const allTabs = [
+    ...spaceRooms.map(r => ({ kind: 'room',  data: r })),
+    ...eventCats.map(c  => ({ kind: 'event', data: c })),
+  ];
 
   allTabs.forEach((tab, idx) => {
-    if (tab.kind === 'room') {
-      const room  = tab.data;
-      const meta  = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
-      const tabId = `tab-${room.id}`;
-      const btn   = document.createElement('button');
-      btn.className   = 'top-tab-btn';
-      btn.innerHTML   = `<span class="ti">${meta.icon}</span>${meta.label}`;
-      btn.dataset.tab = tabId;
-      btn.onclick     = () => switchTab(tabId);
-      topTabs.appendChild(btn);
-      const div = document.createElement('div');
-      div.className = 'tab-content';
-      div.id = tabId;
-      tabContents.appendChild(div);
+    const isEvent = tab.kind === 'event';
+    const id      = isEvent ? `tab-ev-${tab.data.id}` : `tab-${tab.data.id}`;
+    const meta    = isEvent ? { icon: '🎂', label: tab.data.name } : (ROOM_META[tab.data.room_type] || { icon: '🚪', label: tab.data.room_name });
+    const label   = meta.label || tab.data.room_name || tab.data.name;
+
+    const btn = document.createElement('button');
+    btn.className   = 'top-tab-btn';
+    btn.innerHTML   = `<span class="ti">${meta.icon}</span>${label}`;
+    btn.dataset.tab = id;
+    btn.onclick     = () => switchTab(id);
+    topTabs.appendChild(btn);
+
+    const div = document.createElement('div');
+    div.className = 'tab-content';
+    div.id = id;
+    tabContents.appendChild(div);
+
+    if (!isEvent) {
+      const room = tab.data;
       if (room.room_type === 'living')  renderLobby(div, house, milestones, comments, spaceRooms);
-      if (room.room_type === 'room')    renderRoom(div, room);
+      if (room.room_type === 'room')    renderRoom(div, room, buildRoomOpts(room, null));
       if (room.room_type === 'library') renderLibrary(div);
-    } 
+    } else {
+      // 이벤트 탭 → room.js renderRoom (mode: event)
+      const cat    = tab.data;
+      const evRoom = { id: cat.id, room_name: cat.name, room_type: 'event', event_date: cat.event_date };
+      renderRoom(div, evRoom, buildRoomOpts(evRoom, cat));
+    }
   });
 
-  // 활성 탭 복원 or 첫 번째 탭 활성화
-  const restoreId = activeTabId && document.getElementById(activeTabId) ? activeTabId
+  // 탭 복원
+  const restoreId = activeTabId && document.getElementById(activeTabId)
+    ? activeTabId
     : document.querySelector('.top-tab-btn')?.dataset?.tab;
   if (restoreId) switchTab(restoreId);
 }
@@ -478,144 +457,7 @@ function switchToRoomType(type) {
   if (r) switchTab(`tab-${r.id}`);
 }
 
-// ── renderEvent ──────────────────────────────────────────────────────────
-function renderEvent(container, cat) {
-  const diff = cat.event_date
-    ? Math.ceil((new Date(cat.event_date) - new Date()) / 86400000)
-    : null;
-  const ddayText = diff === null ? ''
-    : diff > 0   ? `D-${diff}`
-    : diff === 0 ? 'D-DAY 🎉'
-    : '완료 🎂';
-
-  const eventPosts = (state.allPosts || []).filter(p =>
-    (p.category_ids || []).map(String).includes(String(cat.id))
-  );
-
-  const postsHtml = eventPosts.length
-    ? eventPosts.map((p, i) => renderPost(p, { delay: i, showTags: false })).join('')
-    : `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>`;
-
-  container.innerHTML = `
-    <div class="section">
-      <div class="ev-header">
-        <div class="ev-title">${cat.name}</div>
-        ${cat.event_date ? `<div class="ev-date">${fmtDate(cat.event_date)}</div>` : ''}
-        ${ddayText       ? `<div class="ev-dday">${ddayText}</div>`               : ''}
-        <a href="/event?slug=${state.slug}&cat=${cat.id}" target="_blank"
-          style="display:inline-block;margin-top:14px;background:var(--gold);color:white;
-                 border-radius:20px;padding:8px 20px;font-size:12px;
-                 text-decoration:none;letter-spacing:1px;">🔗 이벤트 페이지 열기</a>
-      </div>
-      <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">POSTS</div><div class="sec-title">글</div></div>
-        ${state.isOwner
-          ? `<button class="more-btn" onclick="openWriteModal()">+ 글쓰기</button>`
-          : ''}
-      </div>
-      <div class="post-list">${postsHtml}</div>
-    </div>`;
-}
-// ── 분류 인라인 추가 (방 탭) ──────────────────────────────────
-function openCatInlineForm(mode) {
-  const wrap = document.getElementById('catInlineFormWrap');
-  wrap.dataset.mode = mode;
-  wrap.style.display = 'block';
-  document.getElementById('catInlineName2')?.focus();
-}
-
-async function submitCatInlineForm() {
-  const input   = document.getElementById('catInlineName2');
-  const name    = input?.value.trim();
-  const isEvent = document.getElementById('catInlineFormWrap')?.dataset.mode === 'event';
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-  const res  = await fetch('/api/categories', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-    body: JSON.stringify({ house_id: state.houseId, name, is_event: isEvent, color: isEvent ? '#C4784B' : '#8FBFAB' })
-  });
-  const data = await res.json();
-  if (data.id) {
-    showToast(`${isEvent ? '이벤트' : '분류'} 추가됐어요 ✅`);
-    document.getElementById('catInlineFormWrap').style.display = 'none';
-    if (input) input.value = '';
-    await reloadData();
-  } else showToast(data.error || '추가 실패');
-}
-
-// ── 분류/이벤트 수정 모달 ──────────────────────────────────────
-function openCatEdit(catId, catName, isEvent, eventDate = '') {
-  // 기존 모달 제거
-  document.getElementById('__catEditModal')?.remove();
-
-  const modal = document.createElement('div');
-  modal.id = '__catEditModal';
-  modal.className = 'modal-overlay open';
-  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-
-  const isNew = !catId;
-  const titleTxt = isNew ? (isEvent ? '이벤트 추가' : '분류 추가') : (isEvent ? '이벤트 수정' : '분류 수정');
-
-  modal.innerHTML = `
-    <div class="modal-box" style="border-radius:20px;">
-      <div class="modal-handle"></div>
-      <div class="modal-title">${titleTxt}</div>
-      <input class="modal-input" id="ceNameInput" value="${catName}" placeholder="${isEvent ? '이벤트 이름' : '분류 이름'}" maxlength="20">
-      ${isEvent ? `<input class="modal-input" id="ceDateInput" type="date" value="${eventDate}" style="margin-top:4px;">` : ''}
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="modal-submit" style="margin-top:0;" onclick="submitCatEdit('${catId||''}',${isEvent},${isNew})">
-          ${isNew ? '추가' : '저장'}
-        </button>
-        ${!isNew ? `<button onclick="confirmDeleteCat('${catId}','${catName}',${isEvent})"
-          style="background:#E05555;color:white;border:none;border-radius:14px;padding:15px 20px;font-family:'Gowun Dodum',serif;font-size:14px;cursor:pointer;">삭제</button>` : ''}
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  setTimeout(() => document.getElementById('ceNameInput')?.focus(), 50);
-}
-
-async function submitCatEdit(catId, isEvent, isNew) {
-  const name  = document.getElementById('ceNameInput')?.value.trim();
-  const date  = document.getElementById('ceDateInput')?.value || null;
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-
-  if (isNew) {
-    const res  = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-      body: JSON.stringify({ house_id: state.houseId, name, is_event: isEvent,
-        event_date: isEvent ? date : null, color: isEvent ? '#C4784B' : '#8FBFAB' })
-    });
-    const data = await res.json();
-    if (data.id) { showToast('추가됐어요 ✅'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
-    else showToast(data.error || '추가 실패');
-  } else {
-    // PATCH — api/categories에 PATCH 추가 필요 (아래 5단계)
-    const res  = await fetch('/api/categories', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-      body: JSON.stringify({ category_id: catId, house_id: state.houseId,
-        name, event_date: isEvent ? date : null })
-    });
-    const data = await res.json();
-    if (data.success) { showToast('수정됐어요 ✅'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
-    else showToast(data.error || '수정 실패');
-  }
-}
-
-function confirmDeleteCat(catId, catName, isEvent) {
-  openConfirm(`'${catName}'을 삭제할까요?`, '연결된 글의 분류도 해제돼요.', async () => {
-    const res  = await fetch('/api/categories', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category_id: catId, house_id: state.houseId })
-    });
-    const data = await res.json();
-    if (data.success) { showToast('삭제됐어요'); document.getElementById('__catEditModal')?.remove(); await reloadData(); }
-    else showToast(data.error || '삭제 실패');
-  });
-}
-// ── Post Viewer ───────────────────────────────────────────────────────────
+// ── Post Viewer (pv) ─────────────────────────────────────────────────────
 let pvState = { postId: null, images: [], idx: 0 };
 
 function openPostModal(item) {
@@ -634,44 +476,21 @@ function openPostModal(item) {
     media.style.display = '';
   } else {
     media.style.display = 'none';
-    document.querySelector('.pv-panel').style.width = '100%';
   }
 
   document.getElementById('pvAuthorName').textContent = state.houseData?.name || state.slug;
-  document.getElementById('pvAv').textContent =
-    (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
+  document.getElementById('pvAv').textContent = (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
   document.getElementById('pvDate').textContent = item.date
-    ? new Date(item.date).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '';
-
+    ? new Date(item.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
   document.getElementById('pvText').textContent = item.content || '';
+
   const tags = (item.category_ids || []).map(cid => {
     const c = state.categories.find(x => String(x.id) === String(cid));
-    return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : '';
+    return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
   }).join('');
   document.getElementById('pvTags').innerHTML = tags;
-// openPostModal() 안에 이 블록 추가 (pvComments 초기화 바로 위)
-const reactBtn = document.getElementById('pvReactBtn');
-reactBtn.innerHTML = '🤍 관심';
-reactBtn.style.background = 'none';
-reactBtn.style.borderColor = '';
-reactBtn.dataset.count = '0';
-if (pvState.postId) {
-  fetch(`/api/comment?action=react&target_id=${pvState.postId}&target_type=post`,
-    { headers: { 'x-device-id': DEVICE_ID } })
-    .then(r => r.json())
-    .then(data => {
-      reactBtn.dataset.count = data.count || 0;
-      if (data.reacted) {
-        reactBtn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
-        reactBtn.style.background = 'rgba(255,100,100,.1)';
-        reactBtn.style.borderColor = 'rgba(255,100,100,.3)';
-      } else {
-        reactBtn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍 관심';
-      }
-    }).catch(() => {});
-}
-  document.getElementById('pvComments').innerHTML =
-    '<div class="pv-comments-empty">불러오는 중...</div>';
+
+  document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오는 중...</div>';
   if (pvState.postId) pvLoadComments();
 
   document.getElementById('postModal').classList.add('open');
@@ -681,54 +500,26 @@ if (pvState.postId) {
 function closePvModal(e) {
   if (e && e.target !== document.getElementById('postModal')) return;
   document.getElementById('postModal').classList.remove('open');
-  document.querySelector('.pv-panel').style.width = '';
   document.body.style.overflow = '';
 }
 
 function pvNav(dir) {
   pvState.idx = Math.max(0, Math.min(pvState.images.length - 1, pvState.idx + dir));
   document.getElementById('pvMainImg').src = pvState.images[pvState.idx];
-  const counter = document.getElementById('pvCounter');
-  if (counter) counter.textContent = `${pvState.idx + 1} / ${pvState.images.length}`;
+  const c = document.getElementById('pvCounter');
+  if (c) c.textContent = `${pvState.idx + 1} / ${pvState.images.length}`;
 }
 
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
+
 function pvShare() {
   const post = (state.allPosts || []).find(p => p.id === pvState.postId);
-  coreSharePost({
-    postId   : pvState.postId,
-    houseId  : state.houseId,
-    ownerKey : state.ownerKey || null,
-    houseName: state.houseData?.name || state.slug,
-    content  : post?.content || '',
-    coverUrl : pvState.images?.[0] || state.houseData?.cover_url || null,
-    slug     : state.slug,
-    onToast  : showToast,
-    btn      : null
-  });
+  coreSharePost({ postId: pvState.postId, houseId: state.houseId, ownerKey: state.ownerKey || null, houseName: state.houseData?.name || state.slug, content: post?.content || '', coverUrl: pvState.images?.[0] || state.houseData?.cover_url || null, slug: state.slug, onToast: showToast, btn: null });
 }
 
 function pvToggleReact() {
   if (!pvState.postId) return;
-  const btn = document.getElementById('pvReactBtn');
-  toggleReaction(pvState.postId, btn);
-  // 카드의 reaction 버튼도 동기화
-  setTimeout(() => {
-    const cardBtn = document.querySelector(`[data-reaction-id="${pvState.postId}"]`);
-    if (cardBtn) {
-      cardBtn.dataset.count = btn.dataset.count;
-      const count = parseInt(btn.dataset.count || '0');
-      if (btn.innerHTML.startsWith('❤️')) {
-        cardBtn.innerHTML = `❤️ ${count > 0 ? count : ''}`;
-        cardBtn.style.background = 'rgba(255,100,100,.1)';
-        cardBtn.style.borderColor = 'rgba(255,100,100,.3)';
-      } else {
-        cardBtn.innerHTML = count > 0 ? `🤍 ${count}` : '🤍';
-        cardBtn.style.background = 'none';
-        cardBtn.style.borderColor = 'rgba(139,94,60,.15)';
-      }
-    }
-  }, 300);
+  toggleReaction(pvState.postId, document.getElementById('pvReactBtn'));
 }
 
 async function pvLoadComments() {
@@ -737,20 +528,16 @@ async function pvLoadComments() {
     const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${pvState.postId}`);
     const data = await res.json();
     const list = data.comments || [];
-    if (!list.length) {
-      el.innerHTML = '<div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>';
-      return;
-    }
+    if (!list.length) { el.innerHTML = '<div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>'; return; }
     el.innerHTML = list.map(c => `
       <div class="pv-comment-item">
-        <div class="pv-comment-av">${(c.author_name||'?').charAt(0)}</div>
+        <div class="pv-comment-av">${(c.author_name || '?').charAt(0)}</div>
         <div class="pv-comment-bubble">
           <div class="pv-comment-name">${escHtml(c.author_name)}</div>
           <div class="pv-comment-text">${escHtml(c.content)}</div>
           <div class="pv-comment-time">${timeAgo(c.created_at)}</div>
         </div>
-        ${state.isOwner ? `<button class="pv-comment-del"
-          onclick="pvDeleteComment('${c.id}')">🗑️</button>` : ''}
+        ${state.isOwner ? `<button class="pv-comment-del" onclick="pvDeleteComment('${c.id}')">🗑️</button>` : ''}
       </div>`).join('');
   } catch(e) { el.innerHTML = '<div class="pv-comments-empty">불러오기 실패</div>'; }
 }
@@ -762,32 +549,23 @@ async function pvSubmitComment() {
   const author = localStorage.getItem('cn_author_name') || '익명';
   input.value = ''; input.disabled = true;
   try {
-    const res  = await fetch('/api/comment', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: pvState.postId })
-    });
+    const res  = await fetch('/api/comment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: pvState.postId }) });
     const data = await res.json();
     if (data.success) {
       await pvLoadComments();
       const btn = document.querySelector(`[data-comment-id="${pvState.postId}"]`);
-      if (btn) {
-        const cur = parseInt(btn.dataset.count||'0') + 1;
-        btn.dataset.count = cur; btn.innerHTML = `💬 ${cur}`;
-      }
-    } else showToast(data.error||'댓글 등록 실패');
+      if (btn) { const cur = parseInt(btn.dataset.count || '0') + 1; btn.dataset.count = cur; btn.innerHTML = `💬 ${cur}`; }
+    } else showToast(data.error || '댓글 등록 실패');
   } catch(e) { showToast('댓글 등록 실패'); }
   finally { input.disabled = false; input.focus(); }
 }
 
 async function pvDeleteComment(commentId) {
   try {
-    const res  = await fetch('/api/comment', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
-    });
+    const res  = await fetch('/api/comment', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment_id: commentId, house_id: state.houseId }) });
     const data = await res.json();
     if (data.success) await pvLoadComments();
-    else showToast(data.error||'삭제 실패');
+    else showToast(data.error || '삭제 실패');
   } catch(e) { showToast('삭제 실패'); }
 }
 
@@ -797,8 +575,8 @@ function openLightbox(images, startIdx = 0) {
   const track  = document.getElementById('lbTrack');
   const thumbs = document.getElementById('lbThumbs');
   track.innerHTML  = images.map(u => `<div class="lb-slide"><img src="${u}"></div>`).join('');
-  thumbs.innerHTML = images.map((u,i) =>
-    `<div class="lb-thumb${i===startIdx?' active':''}" onclick="lbGoTo(${i})"><img src="${u}"></div>`).join('');
+  thumbs.innerHTML = images.map((u, i) =>
+    `<div class="lb-thumb${i === startIdx ? ' active' : ''}" onclick="lbGoTo(${i})"><img src="${u}"></div>`).join('');
   lbGoTo(startIdx);
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -807,16 +585,13 @@ function lbGoTo(idx) {
   state.lbIndex = idx;
   document.getElementById('lbTrack').style.transform = `translateX(-${idx * 100}vw)`;
   document.getElementById('lbCounter').textContent   = `${idx + 1} / ${state.lbImages.length}`;
-  document.querySelectorAll('.lb-thumb').forEach((t,i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.lb-thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
 }
 function lbPrev() { if (state.lbIndex > 0) lbGoTo(state.lbIndex - 1); }
 function lbNext() { if (state.lbIndex < state.lbImages.length - 1) lbGoTo(state.lbIndex + 1); }
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow = ''; }
 
-// ── 사진 설명 수정 ────────────────────────────────────────────────────────
+// ── 사진 설명 수정 ───────────────────────────────────────────────────────
 function openEditModal(mediaId, content) {
   document.getElementById('editMediaId').value = mediaId;
   document.getElementById('editContent').value = content;
@@ -825,48 +600,33 @@ function openEditModal(mediaId, content) {
 async function submitEdit() {
   const mediaId = document.getElementById('editMediaId').value;
   const content = document.getElementById('editContent').value.trim();
-  const res  = await fetch('/api/upload', {
-    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ media_id: mediaId, house_id: state.houseId, owner_key: state.ownerKey, content })
-  });
+  const res  = await fetch('/api/upload', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: mediaId, house_id: state.houseId, owner_key: state.ownerKey, content }) });
   const data = await res.json();
-  if (data.success) {
-    showToast('수정됐어요 ✅');
-    document.getElementById('editModal').classList.remove('open');
-    await reloadData();
-  } else showToast(data.error || '수정 실패');
+  if (data.success) { showToast('수정됐어요 ✅'); document.getElementById('editModal').classList.remove('open'); await reloadData(); }
+  else showToast(data.error || '수정 실패');
 }
 
-// ── 영상 추가 ─────────────────────────────────────────────────────────────
+// ── 영상 추가 ────────────────────────────────────────────────────────────
 async function submitVideo() {
   const url = document.getElementById('videoUrlInput').value.trim();
   if (!url) { showToast('링크를 입력해주세요'); return; }
-  const res  = await fetch('/api/upload', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, room_id: null, file_urls: [url], media_type: 'video' })
-  });
+  const res  = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ house_id: state.houseId, owner_key: state.ownerKey, room_id: null, file_urls: [url], media_type: 'video' }) });
   const data = await res.json();
-  if (data.success) {
-    showToast('영상이 추가됐어요 🎬');
-    document.getElementById('videoModal').classList.remove('open');
-    await reloadData();
-  } else showToast(data.error || '추가 실패');
+  if (data.success) { showToast('영상이 추가됐어요 🎬'); document.getElementById('videoModal').classList.remove('open'); await reloadData(); }
+  else showToast(data.error || '추가 실패');
 }
 
-// ── 미디어 삭제 ───────────────────────────────────────────────────────────
+// ── 미디어 삭제 ──────────────────────────────────────────────────────────
 function confirmDelMedia(mediaId) {
   openConfirm('삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
-    const res  = await fetch('/api/upload', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ media_id: mediaId, house_id: state.houseId, owner_key: state.ownerKey })
-    });
+    const res  = await fetch('/api/upload', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: mediaId, house_id: state.houseId, owner_key: state.ownerKey }) });
     const data = await res.json();
     if (data.success) { showToast('삭제됐어요'); await reloadData(); }
     else showToast(data.error || '삭제 실패');
   });
 }
 
-// ── 포스트 삭제 ───────────────────────────────────────────────────────────
+// ── 포스트 삭제 ──────────────────────────────────────────────────────────
 async function deletePost(postId) {
   openConfirm('글을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
     const data = await apiDeletePost(postId);
@@ -875,7 +635,7 @@ async function deletePost(postId) {
   });
 }
 
-// ── Visit 추적 ────────────────────────────────────────────────────────────
+// ── Visit 추적 ───────────────────────────────────────────────────────────
 function trackVisit(houseId) {
   const ref        = new URLSearchParams(location.search).get('ref') || 'direct';
   const invited_by = ref.startsWith('dev_') ? ref : null;
@@ -886,7 +646,7 @@ function trackVisit(houseId) {
   }).catch(() => {});
 }
 
-// ── Video URL 파서 ────────────────────────────────────────────────────────
+// ── Video URL 파서 ───────────────────────────────────────────────────────
 function parseVideoUrl(url) {
   if (!url) return null;
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
@@ -898,7 +658,7 @@ function parseVideoUrl(url) {
   return null;
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────
+// ── Start ────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
