@@ -43,17 +43,45 @@ export function fmtDate(str) {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
-export function timeAgo(str) {
+export function timeAgo(str, birthDate) {
   const diff = Date.now() - new Date(str).getTime();
   const m = Math.floor(diff / 60000);
   const h = Math.floor(m / 60);
   const d = Math.floor(h / 24);
-  if (d > 0) return `${d}일 전`;
-  if (h > 0) return `${h}시간 전`;
-  if (m > 0) return `${m}분 전`;
-  return '방금';
+
+  let ago = '';
+  if (d > 365) ago = `${Math.floor(d/365)}년 전`;
+  else if (d > 30) ago = `${Math.floor(d/30)}개월 전`;
+  else if (d > 0) ago = `${d}일 전`;
+  else if (h > 0) ago = `${h}시간 전`;
+  else if (m > 0) ago = `${m}분 전`;
+  else ago = '방금';
+
+  if (!birthDate) return ago;
+  const postDay = daysFromBirth(new Date(str));  // 글 작성 시점 D+N
+  // postDay가 null이거나 음수면 그냥 ago만
+  if (!postDay || postDay < 0) return ago;
+  return `${ago} · D+${postDay}`;
 }
 
+// ── 탄생 D+N 계산 ──────────────────────────────────────────────────────────
+export function daysFromBirth(birthDate) {
+  if (!birthDate) return null;
+  const diff = Math.floor((Date.now() - new Date(birthDate).getTime()) / 86400000);
+  return diff;
+}
+
+export function birthLabel(birthDate) {
+  if (!birthDate) return '';
+  const d = daysFromBirth(birthDate);
+  if (d === 0) return '🎂 태어난 날';
+  if (d < 0)  return '';
+  // 특별한 날 강조
+  if (d === 100) return '🎉 D+100 백일!';
+  if (d === 365) return '🎂 D+365 첫돌!';
+  if (d % 100 === 0) return `🎊 D+${d}`;
+  return `D+${d}`;
+}
 // ── 문자열 유틸 ───────────────────────────────────────────────────────────────
 export function escHtml(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
