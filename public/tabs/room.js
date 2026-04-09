@@ -40,10 +40,9 @@ export function renderRoom(container, room, opts = {}) {
       style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</button>`;
 
   const makeEventChip = c =>
-    `<button class="cat-chip event-chip"
-      data-cat="${c.id}"
-      onclick="location.href='event.html?cat=${c.id}'"
-      style="--cat-color:${c.color || 'var(--gold)'};">🎉 ${c.name}</button>`;
+  `<button class="cat-chip event-chip${filter.categoryId === c.id ? ' active' : ''}"
+    data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+    style="--cat-color:${c.color || 'var(--gold)'};">🎉 ${c.name}</button>`;
 
   const catHtml = (normalCats.length || eventCats.length) ? `
     <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
