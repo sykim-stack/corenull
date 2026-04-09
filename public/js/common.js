@@ -179,6 +179,14 @@ export async function apiFetch(url, options = {}) {
 window.showToast = showToast;
 window.apiFetch  = apiFetch;
 
+// ── editPostById — state.allPosts에서 찾아서 openEditModal 호출 ──────────
+window.editPostById = function(postId) {
+  const post = (state.allPosts || []).find(p => p.id === postId);
+  if (!post) { showToast('글을 찾을 수 없어요', 'error'); return; }
+  if (typeof window.openEditModal === 'function') window.openEditModal(post);
+  else showToast('수정 기능을 불러오는 중이에요', 'warn');
+};
+
 // ── Confirm Dialog ────────────────────────────────────────────────────────────
 export function openConfirm(title, sub, onOk) {
   document.getElementById('confirmTitle').textContent = title;
@@ -266,7 +274,7 @@ export function renderPost(p, opts = {}) {
       </button>
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
       ${showDel ? `
-        <button class="post-edit" onclick="event.stopPropagation();openEditModal(${JSON.stringify({id:p.id,content:p.content,media_urls:p.media_urls||[],category_ids:p.category_ids||[]})})"
+        <button class="post-edit" data-post-id="${p.id}" onclick="event.stopPropagation();editPostById(this.dataset.postId)"
           style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:4px;">✏️</button>
         <button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')"
           style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:4px;">🗑️</button>
