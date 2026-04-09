@@ -1,14 +1,5 @@
 // public/tabs/room.js
-import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
-
-// ── 이벤트 상태 도출 (내부) ───────────────────────────────────────────────
-function getEventStatus(date) {
-  if (!date) return null;
-  const diff = Math.ceil((new Date(date) - new Date()) / 86400000);
-  if (diff > 0)  return { status: 'upcoming', diff, badge: `D-${diff}` };
-  if (diff === 0) return { status: 'ongoing',  diff: 0, badge: 'D-DAY 🎉' };
-  return { status: 'ended', diff, badge: '완료 🎂' };
-}
+import { state, DEVICE_ID, showToast, apiFetch, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
 
 // ── 카테고리 필터 ─────────────────────────────────────────────────────────
 export function filterCat(catId, btn) {
@@ -26,82 +17,52 @@ export function filterCat(catId, btn) {
   if (postIds.length) loadCommentCounts(postIds);
 }
 
-// ── 포스트 필터링 공통 ────────────────────────────────────────────────────
+// ── 포스트 필터링 ─────────────────────────────────────────────────────────
 function _getFilteredPosts(opts, overrideCatId) {
-  const catId = overrideCatId !== undefined ? overrideCatId : opts.filter.categoryId;
-
-  if (opts.mode === 'event') {
-    // 이벤트: categoryId 기준
-    return (state.allPosts || []).filter(p =>
-      catId
-        ? (p.category_ids || []).map(String).includes(String(catId))
-        : (p.category_ids || []).some(cid => {
-            const cat = (state.categories || []).find(c => String(c.id) === String(cid));
-            return cat?.is_event;
-          })
-    );
-  }
-
-  // 일반 방: room_id 기준
+  const catId = overrideCatId !== undefined ? overrideCatId : opts.filter?.categoryId;
   const posts = (state.allPosts || []).filter(p => p.room_id === opts.meta.roomId);
   if (!catId) return posts;
   return posts.filter(p => (p.category_ids || []).map(String).includes(String(catId)));
 }
 
 // ── 메인 렌더 ─────────────────────────────────────────────────────────────
-export function renderRoom(container, room, opts) {
-  // opts 저장 (filterCat에서 참조)
+export function renderRoom(container, room, opts = {}) {
   state._currentRoomOpts = opts;
 
-  const isEvent  = opts.mode === 'event';
-  const evInfo   = isEvent ? getEventStatus(opts.event.date) : null;
-  const cats     = state.categories || [];
-  const normal   = cats.filter(c => !c.is_event);
-  const events   = cats.filter(c =>  c.is_event);
+  const cats   = (state.categories || []).filter(c => !c.is_event);
+  const filter = opts.filter || {};
 
-  // ── 카테고리 칩 ──
   const makeChip = c =>
-    `<button class="cat-chip${opts.filter.categoryId === c.id ? ' active' : ''}"
+    `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
       data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
       style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</button>`;
 
   const catHtml = cats.length ? `
-    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
-      <button class="cat-chip${!opts.filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
-      ${normal.map(makeChip).join('')}
-      ${events.length ? `<span style="color:var(--muted);font-size:11px;margin:0 2px;">|</span>${events.map(makeChip).join('')}` : ''}
-    </div>` : '';
-
-  // ── 이벤트 헤더 (mode=event일 때만) ──
-  const eventHeader = isEvent && evInfo ? `
-    <div class="ev-header" style="margin-bottom:20px;">
-      ${opts.event.date ? `<div class="ev-date">📅 ${fmtDate(opts.event.date)}</div>` : ''}
-      <div class="ev-dday">${evInfo.badge}</div>
-      ${opts.meta.source === 'house' ? `
-        <a href="/event?slug=${state.slug}&cat=${opts.filter.categoryId}"
-          target="_blank"
-          style="display:inline-block;margin-top:12px;background:var(--gold);color:white;
-                 border-radius:20px;padding:7px 18px;font-size:12px;text-decoration:none;">
-          🔗 이벤트 페이지
-        </a>` : ''}
+    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
+      ${cats.map(makeChip).join('')}
     </div>` : '';
 
   container.innerHTML = `
     <div class="section">
       <div class="sec-head" style="margin-bottom:16px;">
         <div>
-          <div class="sec-label">${isEvent ? 'EVENT' : 'ROOM'}</div>
+          <div class="sec-label">ROOM</div>
           <div class="sec-title">${room.room_name}</div>
         </div>
-        ${state.isOwner ? `<button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>` : ''}
+        <div style="display:flex;gap:8px;">
+          ${state.isOwner ? `
+            <button class="more-btn" onclick="openShareModal('${room.id}')">🔗 공유</button>
+            <button class="more-btn" onclick="state.currentRoomId='${room.id}';openWriteModal()">+ 글쓰기</button>
+          ` : ''}
+        </div>
       </div>
-      ${eventHeader}
       ${catHtml}
-      <div id="roomPostList-${opts.meta.roomId}"></div>
+      <div id="roomPostList-${opts.meta?.roomId}"></div>
     </div>`;
 
   const posts = _getFilteredPosts(opts);
-  renderPostList(posts, `roomPostList-${opts.meta.roomId}`);
+  renderPostList(posts, `roomPostList-${opts.meta?.roomId}`);
 
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
@@ -110,17 +71,14 @@ export function renderRoom(container, room, opts) {
 
 // ── 댓글 카운트 로드 ──────────────────────────────────────────────────────
 export async function loadCommentCounts(postIds) {
-  if (!postIds?.length || !state.isOwner) return;
+  if (!postIds?.length) return;
   await Promise.all(postIds.map(async (id) => {
-    try {
-      const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
-      const data = await res.json();
-      const count = (data.comments || []).length;
-      const btn = document.querySelector(`[data-comment-id="${id}"]`);
-      if (!btn || count === 0) return;
-      btn.dataset.count = count;
-      btn.innerHTML = `💬 ${count}`;
-    } catch (e) {}
+    const data = await apiFetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`, { silent: true });
+    const count = (data?.comments || []).length;
+    const btn = document.querySelector(`[data-comment-id="${id}"]`);
+    if (!btn || count === 0) return;
+    btn.dataset.count = count;
+    btn.innerHTML = `💬 ${count}`;
   }));
 }
 
@@ -129,48 +87,47 @@ export async function toggleReaction(postId, btn) {
   if (!state.houseId) return;
   btn.disabled = true;
   try {
-    const res = await fetch('/api/comment?action=react', {
+    const data = await apiFetch('/api/comment', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
-      body: JSON.stringify({ house_id: state.houseId, target_id: postId, target_type: 'post', emoji: '❤️' })
+      headers: { 'x-device-id': DEVICE_ID },
+      body: { action: 'react', house_id: state.houseId, target_id: postId, target_type: 'post', emoji: '❤️' }
     });
-    const data = await res.json();
-    const count = parseInt(btn.dataset.count || '0');
+    if (!data) return; // apiFetch가 이미 토스트 띄움
+    const count = data.count || 0;
     if (data.reacted) {
-      btn.dataset.count = count + 1;
-      btn.innerHTML = `❤️ ${count + 1}`;
-      btn.style.background = 'rgba(255,100,100,.1)';
+      btn.dataset.count = count;
+      btn.innerHTML = `❤️ ${count > 0 ? count : ''}`;
+      btn.style.background  = 'rgba(255,100,100,.1)';
       btn.style.borderColor = 'rgba(255,100,100,.3)';
     } else {
-      const newCount = Math.max(0, count - 1);
-      btn.dataset.count = newCount;
-      btn.innerHTML = newCount > 0 ? `🤍 ${newCount}` : '🤍';
-      btn.style.background = 'none';
+      btn.dataset.count = count;
+      btn.innerHTML = count > 0 ? `🤍 ${count}` : '🤍';
+      btn.style.background  = 'none';
       btn.style.borderColor = 'rgba(139,94,60,.15)';
     }
-  } catch (e) { console.error('reaction 실패', e); }
-  finally { btn.disabled = false; }
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── Reaction 수 로드 ──────────────────────────────────────────────────────
 export async function loadReactions(postIds) {
   if (!postIds?.length) return;
   await Promise.all(postIds.map(async (id) => {
-    try {
-      const res = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`,
-        { headers: { 'x-device-id': DEVICE_ID } });
-      const data = await res.json();
-      const btn = document.querySelector(`[data-reaction-id="${id}"]`);
-      if (!btn) return;
-      btn.dataset.count = data.count || 0;
-      if (data.reacted) {
-        btn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
-        btn.style.background = 'rgba(255,100,100,.1)';
-        btn.style.borderColor = 'rgba(255,100,100,.3)';
-      } else {
-        btn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍';
-      }
-    } catch (e) {}
+    const data = await apiFetch(
+      `/api/comment?action=react&target_id=${id}&target_type=post`,
+      { headers: { 'x-device-id': DEVICE_ID }, silent: true }
+    );
+    const btn = document.querySelector(`[data-reaction-id="${id}"]`);
+    if (!btn || !data) return;
+    btn.dataset.count = data.count || 0;
+    if (data.reacted) {
+      btn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
+      btn.style.background  = 'rgba(255,100,100,.1)';
+      btn.style.borderColor = 'rgba(255,100,100,.3)';
+    } else {
+      btn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍';
+    }
   }));
 }
 
@@ -205,29 +162,29 @@ export async function openPostComment(postId) {
 async function loadPostComments(postId) {
   const el = document.getElementById(`clist-${postId}`);
   if (!el) return;
-  try {
-    const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
-    const data = await res.json();
-    const comments = data.comments || [];
-    if (!comments.length) {
-      el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0;">첫 댓글을 남겨보세요 💬</div>`;
-      return;
-    }
-    el.innerHTML = comments.map(c => `
-      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;">
-        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));
-                    display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
-          ${c.author_name?.charAt(0) || '?'}
-        </div>
-        <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;">
-          <div style="font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;">${escHtml(c.author_name)}</div>
-          <div style="font-size:13px;color:var(--text);">${escHtml(c.content)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">${timeAgo(c.created_at)}</div>
-        </div>
-        ${state.isOwner ? `<button onclick="deletePostComment('${c.id}','${postId}')"
+
+  const data = await apiFetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`, { silent: true });
+  const comments = data?.comments || [];
+
+  if (!comments.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0;">첫 댓글을 남겨보세요 💬</div>`;
+    return;
+  }
+  el.innerHTML = comments.map(c => `
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));
+                  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+        ${c.author_name?.charAt(0) || '?'}
+      </div>
+      <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;">
+        <div style="font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;">${escHtml(c.author_name)}</div>
+        <div style="font-size:13px;color:var(--text);">${escHtml(c.content_original ?? c.content ?? '')}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">${timeAgo(c.created_at)}</div>
+      </div>
+      ${state.isOwner ? `
+        <button onclick="deletePostComment('${c.id}','${postId}')"
           style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);padding:4px;">🗑️</button>` : ''}
-      </div>`).join('');
-  } catch (e) { console.error('댓글 로드 실패', e); }
+    </div>`).join('');
 }
 
 // ── 댓글 작성 ─────────────────────────────────────────────────────────────
@@ -236,40 +193,44 @@ export async function submitPostComment(postId) {
   const content = input?.value.trim();
   if (!content) return;
   const author = localStorage.getItem('cn_author_name') || '익명';
-  input.value = '';
+  input.value    = '';
   input.disabled = true;
-  try {
-    const res  = await fetch('/api/comment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: postId })
-    });
-    const data = await res.json();
-    if (data.success) {
-      await loadPostComments(postId);
-      const countBtn = document.querySelector(`[data-comment-id="${postId}"]`);
-      if (countBtn) {
-        const cur = parseInt(countBtn.dataset.count || '0') + 1;
-        countBtn.dataset.count = cur;
-        countBtn.innerHTML = `💬 ${cur}`;
-      }
-    } else showToast(data.error || '댓글 등록 실패');
-  } catch (e) { showToast('댓글 등록 실패'); }
-  finally { input.disabled = false; input.focus(); }
+
+  const data = await apiFetch('/api/comment', {
+    method: 'POST',
+    body: { house_id: state.houseId, author_name: author, content, post_id: postId }
+  });
+
+  if (data) {
+    await loadPostComments(postId);
+    const countBtn = document.querySelector(`[data-comment-id="${postId}"]`);
+    if (countBtn) {
+      const cur = parseInt(countBtn.dataset.count || '0') + 1;
+      countBtn.dataset.count = cur;
+      countBtn.innerHTML = `💬 ${cur}`;
+    }
+  }
+  input.disabled = false;
+  input.focus();
 }
 
 // ── 댓글 삭제 ─────────────────────────────────────────────────────────────
 export async function deletePostComment(commentId, postId) {
-  try {
-    const res  = await fetch('/api/comment', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
-    });
-    const data = await res.json();
-    if (data.success) await loadPostComments(postId);
-    else showToast(data.error || '삭제 실패');
-  } catch (e) { showToast('삭제 실패'); }
+  const data = await apiFetch('/api/comment', {
+    method: 'DELETE',
+    body: { comment_id: commentId, house_id: state.houseId }
+  });
+  if (data) await loadPostComments(postId);
+}
+
+// ── 공유 모달 (stub — house.html의 openShareModal 연결) ──────────────────
+export function openShareModal(roomId) {
+  const url = `${location.origin}${location.pathname}?room=${roomId}`;
+  if (navigator.share) {
+    navigator.share({ title: document.title, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast('링크 복사됨 🔗', 'success'));
+  }
 }
 
 // ── 유틸 ─────────────────────────────────────────────────────────────────
