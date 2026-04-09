@@ -82,13 +82,102 @@ export async function b64Blob(b64) {
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
-export function showToast(msg) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+let _toastTimer = null;
+
+export function showToast(msg, type = 'info', duration = 3000) {
+  // 기존 #toast 엘리먼트 있으면 그것도 지원 (하위 호환)
+  const legacy = document.getElementById('toast');
+  if (legacy) {
+    legacy.textContent = msg;
+    legacy.classList.add('show');
+    setTimeout(() => legacy.classList.remove('show'), duration);
+    return;
+  }
+
+  let el = document.getElementById('_bp_toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_bp_toast';
+    el.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+      min-width:220px;max-width:360px;padding:12px 20px;
+      border-radius:14px;font-size:13px;font-family:'Gowun Dodum',serif;
+      text-align:center;z-index:99999;pointer-events:none;
+      opacity:0;transition:opacity .25s,transform .25s;
+      box-shadow:0 4px 20px rgba(0,0,0,.18);
+    `;
+    document.body.appendChild(el);
+  }
+
+  const themes = {
+    info:    { bg: 'var(--brown,#8b5e3c)', color: '#fff' },
+    success: { bg: '#4caf82',              color: '#fff' },
+    error:   { bg: '#e05c5c',              color: '#fff' },
+    warn:    { bg: '#e0a84a',              color: '#fff' },
+  };
+  const th = themes[type] || themes.info;
+  el.style.background = th.bg;
+  el.style.color      = th.color;
+  el.textContent      = msg;
+
+  requestAnimationFrame(() => {
+    el.style.opacity   = '1';
+    el.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    el.style.opacity   = '0';
+    el.style.transform = 'translateX(-50%) translateY(20px)';
+  }, duration);
 }
+
+// ── apiFetch ──────────────────────────────────────────────────────────────────
+const IS_DEV = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+export async function apiFetch(url, options = {}) {
+  const { body, headers = {}, silent = false, method = 'GET', ...rest } = options;
+
+  const fetchOpts = {
+    method,
+    ...rest,
+    headers: { 'Content-Type': 'application/json', ...headers },
+  };
+  if (body) fetchOpts.body = typeof body === 'string' ? body : JSON.stringify(body);
+
+  let res, raw;
+  try {
+    res = await fetch(url, fetchOpts);
+    raw = await res.text();
+  } catch (networkErr) {
+    if (!silent) showToast('네트워크 오류가 발생했어요', 'error');
+    console.error(`[apiFetch] 네트워크 실패 → ${url}`, networkErr);
+    return null;
+  }
+
+  let data;
+  try { data = JSON.parse(raw); } catch {
+    console.error(`[apiFetch] JSON 파싱 실패 → ${url}`, raw);
+    if (!silent) showToast('서버 응답 오류', 'error');
+    return null;
+  }
+
+  if (!res.ok || data?.success === false || data?.error) {
+    const userMsg  = data?.error || `오류 (${res.status})`;
+    const debugMsg = data?.debug || data?.raw || raw;
+    if (!silent) showToast(userMsg, 'error');
+    console.group(`[apiFetch] ❌ ${res.status} → ${url}`);
+    console.error('error :', userMsg);
+    if (debugMsg) console.error('debug :', debugMsg);
+    console.groupEnd();
+    return null;
+  }
+
+  return data;
+}
+
+// ── window 노출 (인라인 onclick 호환) ─────────────────────────────────────────
+window.showToast = showToast;
+window.apiFetch  = apiFetch;
 
 // ── Confirm Dialog ────────────────────────────────────────────────────────────
 export function openConfirm(title, sub, onOk) {
@@ -131,12 +220,9 @@ export function renderStoryImgs(urls, post) {
   return `<div class="story-imgs many"><div class="row-top">${topImgs}</div><div class="row-bot">${botMid}${lastCell}</div></div>`;
 }
 
-// common.js 의 renderPost 함수만 교체하세요
-// (나머지 코드는 그대로 유지)
- 
 export function renderPost(p, opts = {}) {
-  const showDel     = opts.showDel  !== undefined ? opts.showDel  : state.isOwner;
-  const showTags    = opts.showTags !== undefined ? opts.showTags : true;
+  const showDel     = opts.showDel     !== undefined ? opts.showDel     : state.isOwner;
+  const showTags    = opts.showTags    !== undefined ? opts.showTags    : true;
   const showActions = opts.showActions !== undefined ? opts.showActions : true;
   const delay       = opts.delay || 0;
 
@@ -147,31 +233,35 @@ export function renderPost(p, opts = {}) {
       }).join('')
     : '';
 
-  const imgs   = p.media_urls || [];
-  const media  = imgs.length ? renderStoryImgs(imgs, p) : '';
+  const imgs    = p.media_urls || [];
+  const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
   const postData = encodeURIComponent(JSON.stringify({
-    postId: p.id,   // ← 이거 추가
+    postId: p.id,
     urls: imgs, content: p.content, date: p.created_at, category_ids: p.category_ids
   }));
 
-  // 미디어/텍스트 클릭 → 모달 (액션바는 클릭 안됨)
-  const clickable = imgs.length > 0;
+  const mediaHtml = imgs.length
+    ? `<div onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))" style="cursor:zoom-in;">${media}</div>`
+    : '';
 
   const actionBar = (showActions && p.id) ? `
     <div class="post-actions" style="display:flex;align-items:center;gap:8px;padding:0 16px 14px;">
       <button class="reaction-btn" data-reaction-id="${p.id}"
         onclick="event.stopPropagation();toggleReaction('${p.id}',this)"
-        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);
+               border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
         🤍
       </button>
       <button class="comment-btn" data-comment-id="${p.id}" data-count="0"
         onclick="event.stopPropagation();openPostComment('${p.id}')"
-        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);
+               border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
         💬
       </button>
       <button class="share-post-btn" data-post-id="${p.id}"
         onclick="event.stopPropagation();sharePost('${p.id}',this)"
-        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);
+               border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
         🔗
       </button>
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
@@ -181,11 +271,6 @@ export function renderPost(p, opts = {}) {
       <span class="post-time">${timeAgo(p.created_at)}</span>
       ${showDel ? `<button class="post-del" onclick="deletePost('${p.id}')">🗑️</button>` : ''}
     </div>`;
-
-  // 미디어만 클릭 가능하게 — 텍스트+액션은 클릭 전파 없음
-  const mediaHtml = imgs.length
-    ? `<div onclick="openPostModal(JSON.parse(decodeURIComponent('${postData}')))" style="cursor:zoom-in;">${media}</div>`
-    : '';
 
   return `<div class="post-item" style="animation-delay:${delay * .05}s;">
     ${tags ? `<div class="post-tags">${tags}</div>` : ''}
