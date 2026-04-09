@@ -178,7 +178,7 @@ async function loadPostComments(postId) {
       </div>
       <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;">
         <div style="font-size:12px;font-weight:600;color:var(--dark);margin-bottom:2px;">${escHtml(c.author_name)}</div>
-        <div style="font-size:13px;color:var(--text);">${escHtml(c.content_original ?? c.content ?? '')}</div>
+        <div style="font-size:13px;color:var(--text);">${escHtml(c.content ?? '')}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;">${timeAgo(c.created_at)}</div>
       </div>
       ${state.isOwner ? `

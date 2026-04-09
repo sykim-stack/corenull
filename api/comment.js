@@ -184,7 +184,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           house_id,
           author_name,
-          content_original: content,
+          content,
           lang,
           media_url: media_url || null,
           post_id: post_id || null,
