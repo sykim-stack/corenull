@@ -382,4 +382,7 @@ body {
   font-weight: 500;
 }
 
-
+/* 분류 수정/삭제 버튼 */
+.cat-editable { display: inline-flex; align-items: center; gap: 3px; }
+.cat-edit-btn { background: none; border: none; padding: 0; font-size: 11px; cursor: pointer; opacity: .6; line-height: 1; }
+.cat-edit-btn:hover { opacity: 1; }
