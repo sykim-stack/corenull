@@ -364,3 +364,20 @@ body {
   .share-btn       { padding:7px 10px; font-size:11px; }
   .profile-name    { font-size:16px; }
 }
+
+/* 감정 칩 */
+.emotion-chip {
+  border: 1.5px solid var(--border, #e0e0e0);
+  background: transparent;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all .15s;
+}
+.emotion-chip.on {
+  background: var(--warm, #fff3e0);
+  border-color: var(--accent, #ffb347);
+  font-weight: 500;
+}
