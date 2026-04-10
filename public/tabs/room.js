@@ -32,16 +32,28 @@ export function renderRoom(container, room, opts = {}) {
   const cats   = state.categories || [];
   const filter = opts.filter || {};
 
-  const makeChip = c =>
-    `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
-      data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-      style="--cat-color:${c.color || 'var(--mint)'};">${c.is_event ? '🎉 ' : ''}${c.name}</button>`;
+  // 변경 — 일반/이벤트 분리 + owner면 수정/삭제 버튼
+const normal = cats.filter(c => !c.is_event);
+const events = cats.filter(c =>  c.is_event);
 
-  const catHtml = cats.length ? `
-    <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-      <button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
-      ${cats.map(makeChip).join('')}
-    </div>` : '';
+const makeNormalChip = c =>
+  `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
+    data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+    style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</button>`;
+
+const makeEventChip = c => {
+  const dateStr = c.event_date ? c.event_date.slice(5).replace('-','/') : '';
+  return `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
+    data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+    style="--cat-color:${c.color || '#F7C59F'};">🎉 ${c.name}${dateStr ? ` <span style="font-size:10px;opacity:.6;">${dateStr}</span>` : ''}</button>`;
+};
+
+const catHtml = cats.length ? `
+  <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+    <button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
+    ${normal.map(makeNormalChip).join('')}
+    ${events.length ? `<span style="color:var(--muted);font-size:11px;align-self:center;">|</span>${events.map(makeEventChip).join('')}` : ''}
+  </div>` : '';
 
   container.innerHTML = `
     <div class="section">
