@@ -36,10 +36,14 @@ export function renderRoom(container, room, opts = {}) {
 const normal = cats.filter(c => !c.is_event);
 const events = cats.filter(c =>  c.is_event);
 
-const makeNormalChip = c =>
-  `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
+const makeNormalChip = c => {
+  const editBtns = state.isOwner ? `
+    <button class="cat-edit-btn" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
+    <button class="cat-edit-btn" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
+  return `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
     data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-    style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</button>`;
+    style="--cat-color:${c.color || 'var(--mint)'};">${c.name}${editBtns}</button>`;
+};
 
 const makeEventChip = c => {
   const dateStr = c.event_date ? c.event_date.slice(5).replace('-','/') : '';

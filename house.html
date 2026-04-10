@@ -123,6 +123,21 @@
     <button class="modal-submit" onclick="submitVideo()">추가</button>
   </div>
 </div>
+<!-- ── 이벤트 수정 모달 ── -->
+<div class="modal-overlay" id="eventEditModal" onclick="closeModal('eventEditModal',event)">
+  <div class="modal-box" style="border-radius:20px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">이벤트 수정 🎉</div>
+    <input type="hidden" id="eventEditId">
+    <input class="modal-input" id="eventEditName" placeholder="이벤트 이름" maxlength="20" style="margin-bottom:8px;">
+    <input class="modal-input" id="eventEditDate" type="date" style="margin-bottom:8px;">
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="modal-submit" style="margin-top:0;background:#e55;flex:none;padding:12px 16px;"
+        onclick="deleteEventCat()">삭제</button>
+      <button class="modal-submit" style="margin-top:0;" onclick="submitEventEdit()">저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── 라이트박스 ── -->
 <div class="lightbox" id="lightbox">
@@ -230,7 +245,58 @@ import { openWriteModal as coreOpenWriteModal, handleWritePhoto, submitWrite as 
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
 import { toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 import { uploadCover, uploadProfile } from '/public/js/core/upload.js';
+// ── 이벤트 수정 모달 ──────────────────────────────────────────────────────
+window.openEventEditModal = (id, name, date) => {
+  document.getElementById('eventEditId').value   = id;
+  document.getElementById('eventEditName').value = name;
+  document.getElementById('eventEditDate').value = date || '';
+  document.getElementById('eventEditModal').classList.add('open');
+};
 
+window.submitEventEdit = async () => {
+  const id   = document.getElementById('eventEditId').value;
+  const name = document.getElementById('eventEditName').value.trim();
+  const date = document.getElementById('eventEditDate').value || null;
+  if (!name) { showToast('이름을 입력해주세요'); return; }
+  if (!date) { showToast('날짜를 선택해주세요'); return; }
+
+  const res  = await fetch('/api/categories', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
+    body: JSON.stringify({ category_id: id, house_id: state.houseId, name, event_date: date })
+  });
+  const data = await res.json();
+  if (data.success) {
+    const cat = state.categories.find(c => String(c.id) === String(id));
+    if (cat) { cat.name = name; cat.event_date = date; }
+    document.getElementById('eventEditModal').classList.remove('open');
+    showToast('수정됐어요 ✅');
+    if (typeof window._reloadData === 'function') window._reloadData();
+  } else {
+    showToast(data.error || '수정 실패');
+  }
+};
+
+window.deleteEventCat = async () => {
+  const id = document.getElementById('eventEditId').value;
+  const name = document.getElementById('eventEditName').value;
+  if (!confirm(`"${name}" 이벤트를 삭제할까요?`)) return;
+
+  const res  = await fetch('/api/categories', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
+    body: JSON.stringify({ category_id: id, house_id: state.houseId })
+  });
+  const data = await res.json();
+  if (data.success) {
+    state.categories = state.categories.filter(c => String(c.id) !== String(id));
+    document.getElementById('eventEditModal').classList.remove('open');
+    showToast('삭제됐어요 🗑️');
+    if (typeof window._reloadData === 'function') window._reloadData();
+  } else {
+    showToast(data.error || '삭제 실패');
+  }
+};
 // ── window 노출 ──────────────────────────────────────────────────────────
 window.showToast         = showToast;
 window.openConfirm       = openConfirm;
