@@ -592,3 +592,38 @@
   border: 1.5px dashed var(--cat-color, var(--gold));
   background: transparent;
 }
+
+/* 수정 폼 (catEditForm) — 기존 cat-inline-form 재사용이라 추가 불필요 */
+
+/* 이벤트 칩 날짜 텍스트 */
+.cat-sel .event-date {
+  font-size: 10px;
+  opacity: .6;
+  margin-left: 2px;
+}
+
+/* 분류 칩 수정/삭제 버튼 */
+.cat-editable { display: inline-flex; align-items: center; gap: 2px; }
+.cat-edit-btn {
+  background: none;
+  border: none;
+  padding: 0 1px;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s;
+  line-height: 1;
+}
+.cat-editable:hover .cat-edit-btn { opacity: .7; }
+.cat-edit-btn:hover { opacity: 1 !important; }
+
+/* date input 스타일 통일 */
+.cat-inline-form input[type="date"] {
+  flex: none;
+  width: 130px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #ddd);
+  font-size: 12px;
+  color: var(--text);
+}
