@@ -36,22 +36,38 @@ export function renderRoom(container, room, opts = {}) {
 const normal = cats.filter(c => !c.is_event);
 const events = cats.filter(c =>  c.is_event);
 
-const makeNormalChip = c => {
-  const editBtns = state.isOwner ? `
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
-  return `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
-    data-cat="${c.id}" data-color="${c.color || ''}" onclick="filterCat('${c.id}',this)">${c.name}${editBtns}</button>`;
-};
+// 일반 분류 칩 — owner면 수정/삭제 버튼 포함
+  const makeNormalChip = c => {
+    const sel = selectedIds.map(String).includes(String(c.id));
+    if (state.isOwner) {
+      return `<span class="cat-sel cat-editable${sel ? ' on' : ''}" data-id="${c.id}"
+        style="--cat-color:${c.color || 'var(--mint)'};">
+        <span onclick="this.parentElement.classList.toggle('on')">${c.name}</span>
+        <button class="cat-edit-btn" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
+        <button class="cat-edit-btn" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </span>`;
+    }
+    return `<span class="cat-sel${sel ? ' on' : ''}" data-id="${c.id}"
+      onclick="this.classList.toggle('on')"
+      style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</span>`;
+  };
 
-const makeEventChip = c => {
-  const dateStr = c.event_date ? c.event_date.slice(5).replace('-','/') : '';
-  const editBtns = state.isOwner ? `
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._openEditEvent('${c.id}','${c.name.replace(/'/g,"\\'")}','${c.event_date||''}')">✏️</button>
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
-  return `<button class="cat-chip cat-chip-event${filter.categoryId === c.id ? ' active' : ''}"
-    data-cat="${c.id}" onclick="filterCat('${c.id}',this)">🎉 ${c.name}${dateStr ? `<span class="cat-chip-date">${dateStr}</span>` : ''}${editBtns}</button>`;
-};
+  // 이벤트 칩 — 날짜 표시 + owner면 수정/삭제
+  const makeEventChip = c => {
+    const sel = selectedIds.map(String).includes(String(c.id));
+    const dateStr = c.event_date ? `<span style="font-size:10px;opacity:.7;margin-left:2px;">${c.event_date.slice(5).replace('-','/')}</span>` : '';
+    if (state.isOwner) {
+      return `<span class="cat-sel cat-event cat-editable${sel ? ' on' : ''}" data-id="${c.id}"
+        style="--cat-color:${c.color || '#F7C59F'};">
+        <span onclick="this.parentElement.classList.toggle('on')">🎉 ${c.name}${dateStr}</span>
+        <button class="cat-edit-btn" onclick="event.stopPropagation();window._openEditEvent('${c.id}','${c.name.replace(/'/g,"\\'")}','${c.event_date||''}')">✏️</button>
+        <button class="cat-edit-btn" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </span>`;
+    }
+    return `<span class="cat-sel cat-event${sel ? ' on' : ''}" data-id="${c.id}"
+      onclick="this.classList.toggle('on')"
+      style="--cat-color:${c.color || '#F7C59F'};">🎉 ${c.name}${dateStr}</span>`;
+  };
 
 const catHtml = cats.length ? `
   <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
