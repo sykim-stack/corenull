@@ -631,3 +631,150 @@
   border-color: #e8cfa8;
   padding: 3px 8px;
 }
+
+/* ── 분류 칩 선택 영역 ── */
+.cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ── 분류 칩 (선택 전) ── */
+.cat-sel {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid rgba(139,94,60,0.2);
+  background: #f5f0ea;
+  color: #7a6a5a;
+  transition: all 0.15s;
+}
+
+/* ── 분류 칩 (선택됨) ── */
+.cat-sel.on {
+  background: var(--cat-color, #A8D8A8);
+  border-color: transparent;
+  color: #3a2f28;
+  font-weight: 600;
+}
+
+/* ── + 분류 / + 이벤트 버튼 ── */
+.cat-add-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: 1.5px dashed #b0a090;
+  color: #7a6a5a;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cat-add-btn:hover {
+  background: #f0ebe3;
+  border-color: #8a7a6a;
+}
+
+.cat-add-event {
+  border-color: #c8a850;
+  color: #7a5a10;
+}
+
+.cat-add-event:hover {
+  background: #fef8ec;
+  border-color: #a8880a;
+}
+
+/* ── 분류 구분선 ── */
+.cat-divider {
+  height: 1px;
+  background: rgba(139,94,60,0.12);
+  margin: 8px 0;
+}
+
+/* ── catInlineForm ── */
+.cat-inline-form {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #faf7f2;
+  border: 1px solid #e0d8cc;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+.cat-inline-form input {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid #d8cfc4;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #4a3a2a;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cat-inline-form input:focus {
+  border-color: #c8a060;
+}
+
+.cat-inline-form input::placeholder {
+  color: #b0a090;
+}
+
+.cat-inline-form button:first-of-type {
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #d4a840;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cat-inline-form button:first-of-type:hover {
+  background: #b89030;
+}
+
+.cat-inline-form button:last-of-type {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  background: transparent;
+  color: #a09080;
+  border: 1px solid #d8cfc4;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cat-inline-form button:last-of-type:hover {
+  background: #f0e8e0;
+}
+
+/* ── 포스트 태그 ── */
+.post-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid rgba(139,94,60,0.15);
+}
