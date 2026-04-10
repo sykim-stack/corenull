@@ -602,20 +602,14 @@
   margin-left: 2px;
 }
 
-/* 분류 칩 수정/삭제 버튼 */
-.cat-editable { display: inline-flex; align-items: center; gap: 2px; }
+/* 분류/이벤트 칩 수정·삭제 버튼 */
+.cat-editable { display: inline-flex; align-items: center; gap: 3px; }
 .cat-edit-btn {
-  background: none;
-  border: none;
-  padding: 0 1px;
-  font-size: 10px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity .15s;
-  line-height: 1;
+  background: none; border: none; padding: 0 1px;
+  font-size: 11px; cursor: pointer; line-height: 1;
+  color: var(--muted); opacity: .5; transition: opacity .15s;
 }
-.cat-editable:hover .cat-edit-btn { opacity: .7; }
-.cat-edit-btn:hover { opacity: 1 !important; }
+.cat-edit-btn:hover { opacity: 1; }
 
 /* date input 스타일 통일 */
 .cat-inline-form input[type="date"] {
