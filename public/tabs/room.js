@@ -38,18 +38,19 @@ const events = cats.filter(c =>  c.is_event);
 
 const makeNormalChip = c => {
   const editBtns = state.isOwner ? `
-    <button class="cat-edit-btn" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
-    <button class="cat-edit-btn" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
+    <button class="cat-chip-edit" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
+    <button class="cat-chip-edit" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
   return `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
-    data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-    style="--cat-color:${c.color || 'var(--mint)'};">${c.name}${editBtns}</button>`;
+    data-cat="${c.id}" data-color="${c.color || ''}" onclick="filterCat('${c.id}',this)">${c.name}${editBtns}</button>`;
 };
 
 const makeEventChip = c => {
   const dateStr = c.event_date ? c.event_date.slice(5).replace('-','/') : '';
-  return `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
-    data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-    style="--cat-color:${c.color || '#F7C59F'};">🎉 ${c.name}${dateStr ? ` <span style="font-size:10px;opacity:.6;">${dateStr}</span>` : ''}</button>`;
+  const editBtns = state.isOwner ? `
+    <button class="cat-chip-edit" onclick="event.stopPropagation();window._openEditEvent('${c.id}','${c.name.replace(/'/g,"\\'")}','${c.event_date||''}')">✏️</button>
+    <button class="cat-chip-edit" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
+  return `<button class="cat-chip cat-chip-event${filter.categoryId === c.id ? ' active' : ''}"
+    data-cat="${c.id}" onclick="filterCat('${c.id}',this)">🎉 ${c.name}${dateStr ? `<span class="cat-chip-date">${dateStr}</span>` : ''}${editBtns}</button>`;
 };
 
 const catHtml = cats.length ? `
