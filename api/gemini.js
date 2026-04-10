@@ -1,6 +1,6 @@
 // ============================================================
 // CoreNull | api/gemini.js
-// Gemini 2.5 Flash - 문구 자동생성 (사진설명 / 메시지 제안 / 스토리 / 감정)
+// Gemini 2.5 Flash - 문구 자동생성 + 감정 분석
 // ============================================================
 
 export default async function handler(req, res) {
@@ -14,8 +14,6 @@ export default async function handler(req, res) {
   if (!type) return res.status(400).json({ error: 'type 필수' });
 
   let prompt = '';
-  let isStory = false;
-  let isEmotion = false;
 
   if (type === 'caption') {
     prompt = `당신은 갓 태어난 아기 김하준(Mango)의 100일 기념 앨범 작성자입니다.
@@ -46,94 +44,86 @@ Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
 - 반드시 JSON 배열만 반환 (다른 텍스트 없이): ["메시지1", "메시지2", "메시지3"]`;
     }
 
-  } else if (type === 'story') {
-    isStory = true;
-    const { category_name, posts_summary, house_name } = context || {};
-    prompt = `당신은 아기 김하준(Mango)의 성장 기록을 따뜻하게 정리하는 작가입니다.
-아래 기록들을 바탕으로 "${category_name || '추억'}" 카테고리의 성장 스토리를 작성해주세요.
-
-집 이름: ${house_name || '하준이네'}
-기록 요약:
-${posts_summary || '소중한 순간들이 담겨 있습니다.'}
-
-조건:
-- 한국어로 작성
-- 제목 1개 + 본문 3~5문단
-- 따뜻하고 감성적인 톤, 이모지 포함
-- 반드시 JSON 객체만 반환 (다른 텍스트 없이):
-{"title": "스토리 제목", "content": "본문 내용 (\\n으로 문단 구분)"}`;
-
   } else if (type === 'emotion') {
-    isEmotion = true;
-    prompt = `아래 텍스트의 감정을 분석해서 가장 잘 맞는 태그 1개만 반환해주세요.
-텍스트: "${context?.content || ''}"
-선택지: 행복 / 사랑 / 웃김 / 뭉클 / 설렘 / 일상 / 신남 / 그리움
+    const content = context?.content || '';
+    prompt = `다음 텍스트를 읽고 가장 적합한 감정 태그 하나를 반환하세요.
+
+텍스트: "${content}"
+
+선택 가능한 감정 태그:
+- happy (행복, 기쁨, 설렘)
+- sad (슬픔, 아쉬움)
+- love (사랑, 애정, 그리움)
+- funny (웃김, 유머)
+- touching (뭉클함, 감동)
+
 조건:
-- 반드시 선택지 중 1개만 반환
-- 반드시 JSON 객체만 반환 (다른 텍스트 없이): {"emotion": "행복"}`;
+- 반드시 위 5개 중 하나만 반환
+- JSON 형식: {"emotion": "happy"}
+- 다른 텍스트 없이 JSON만 반환`;
 
   } else {
-    return res.status(400).json({ error: 'type은 caption / message / story / emotion' });
+    return res.status(400).json({ error: 'type은 caption, message, emotion 중 하나' });
   }
 
-  const apiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 2048,
-          thinkingConfig: { thinkingBudget: 0 }
-        }
-      })
-    }
-  );
-
-  const data = await apiRes.json();
-  if (!apiRes.ok) return res.status(500).json({ error: 'Gemini API 오류', detail: data });
-
-  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
   try {
+    const apiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: type === 'emotion' ? 0.2 : 0.8, maxOutputTokens: 1024 }
+        })
+      }
+    );
+
+    const data = await apiRes.json();
+
+    if (!apiRes.ok) {
+      return res.status(500).json({ error: 'Gemini API 오류', detail: data });
+    }
+
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     let clean = raw.replace(/```json|```/gi, '').trim();
 
-    if (isEmotion) {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) {
-        const result = JSON.parse(match[0]);
-        if (result.emotion) return res.status(200).json({ emotion: result.emotion });
-      }
-      throw new Error('emotion 파싱 불가');
-    }
-
-    if (isStory) {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) {
-        const story = JSON.parse(match[0]);
-        if (story.title && story.content) {
-          return res.status(200).json({ story });
+    // emotion 타입: 단일 객체 반환
+    if (type === 'emotion') {
+      try {
+        const match = clean.match(/\{[\s\S]*?\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          return res.status(200).json({ emotion: parsed.emotion || null });
         }
+        // fallback: 텍스트에서 감정어 직접 추출
+        const emotions = ['happy', 'sad', 'love', 'funny', 'touching'];
+        const found = emotions.find(e => clean.toLowerCase().includes(e));
+        return res.status(200).json({ emotion: found || null });
+      } catch(e) {
+        return res.status(200).json({ emotion: null });
       }
-      throw new Error('story 파싱 불가');
     }
 
-    const match = clean.match(/\[[\s\S]*?\]/);
-    if (match) {
-      const suggestions = JSON.parse(match[0]);
-      return res.status(200).json({ suggestions });
+    // caption / message 타입: 배열 반환
+    try {
+      const match = clean.match(/\[[\s\S]*?\]/);
+      if (match) {
+        const suggestions = JSON.parse(match[0]);
+        return res.status(200).json({ suggestions });
+      }
+      const lines = raw.split('\n')
+        .map(l => l.replace(/^[\s\d\.\-\*\"]+|[\s\"\,]+$/g, '').trim())
+        .filter(l => l.length > 5);
+      if (lines.length >= 1) {
+        return res.status(200).json({ suggestions: lines.slice(0, 3) });
+      }
+      throw new Error('파싱 불가');
+    } catch(e) {
+      return res.status(500).json({ error: 'Gemini 응답 파싱 실패', raw });
     }
-    const lines = raw.split('\n')
-      .map(l => l.replace(/^[\s\d\.\-\*\"]+|[\s\"\,]+$/g, '').trim())
-      .filter(l => l.length > 5);
-    if (lines.length >= 1) {
-      return res.status(200).json({ suggestions: lines.slice(0, 3) });
-    }
-    throw new Error('파싱 불가');
 
   } catch(e) {
-    return res.status(500).json({ error: 'Gemini 응답 파싱 실패', raw });
+    return res.status(500).json({ error: 'Gemini 요청 실패', message: e.message });
   }
 }

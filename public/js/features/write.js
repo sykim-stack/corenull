@@ -6,6 +6,47 @@ import { uploadMany } from '/public/js/core/upload.js';
 // ── 편집 중인 post_id (null이면 새 글) ───────────────────────────────────
 let _editPostId = null;
 
+// 감정 칩 목록
+const EMOTION_CHIPS = [
+  { key: 'happy',    emoji: '😊', label: '행복' },
+  { key: 'sad',      emoji: '😢', label: '슬픔' },
+  { key: 'love',     emoji: '🥰', label: '사랑' },
+  { key: 'funny',    emoji: '😂', label: '웃김' },
+  { key: 'touching', emoji: '🥺', label: '뭉클' },
+];
+
+/* ── 감정 칩 렌더 ── */
+function _renderEmotionChips(selectedKey = null) {
+  const wrap = document.getElementById('composeEmotionWrap');
+  if (!wrap) return;
+
+  wrap.innerHTML = EMOTION_CHIPS.map(c =>
+    `<button type="button"
+       class="emotion-chip${selectedKey === c.key ? ' on' : ''}"
+       data-emotion="${c.key}"
+       onclick="window._toggleEmotion('${c.key}', this)">
+       ${c.emoji} ${c.label}
+     </button>`
+  ).join('');
+}
+
+window._toggleEmotion = (key, el) => {
+  const wrap = document.getElementById('composeEmotionWrap');
+  wrap.querySelectorAll('.emotion-chip').forEach(c => c.classList.remove('on'));
+  // 이미 선택된 것을 다시 누르면 선택 해제
+  if (el.dataset.emotion === wrap.dataset.selected) {
+    wrap.dataset.selected = '';
+  } else {
+    el.classList.add('on');
+    wrap.dataset.selected = key;
+  }
+};
+
+function _getSelectedEmotion() {
+  const wrap = document.getElementById('composeEmotionWrap');
+  return wrap?.dataset.selected || null;
+}
+
 /* ── 분류 렌더 ── */
 function _renderComposeCats(selectedIds = []) {
   const wrap = document.getElementById('composeCatWrap');
@@ -107,6 +148,10 @@ function _resetModal() {
   document.getElementById('composePrevWrap').style.display = 'none';
   document.getElementById('composePrevCells').innerHTML    = '';
   document.getElementById('composeProgWrap').style.display = 'none';
+  // 감정 칩 초기화
+  const emotionWrap = document.getElementById('composeEmotionWrap');
+  if (emotionWrap) emotionWrap.dataset.selected = '';
+  _renderEmotionChips();
 }
 
 /* ── 새 글쓰기 모달 열기 ── */
@@ -136,6 +181,12 @@ export function openPostEditModal(post) {
 
   document.getElementById('composeContent').value = post.content || '';
   _renderComposeCats(post.category_ids || []);
+  // 수정 시 기존 감정 태그 복원
+  if (post.emotion_tag) {
+    const wrap = document.getElementById('composeEmotionWrap');
+    if (wrap) wrap.dataset.selected = post.emotion_tag;
+    _renderEmotionChips(post.emotion_tag);
+  }
 
   if (post.media_urls?.length) {
     const cells = document.getElementById('composePrevCells');
@@ -185,6 +236,28 @@ export async function handleWritePhoto(input) {
   input.value = '';
 }
 
+/* ── 감정 태그 결정 (사용자 선택 우선, 없으면 Gemini fallback) ── */
+async function _resolveEmotionTag(content) {
+  // 1순위: 사용자가 직접 선택
+  const userSelected = _getSelectedEmotion();
+  if (userSelected) return userSelected;
+
+  // 2순위: Gemini 자동 분석 (content 있을 때만)
+  if (!content) return null;
+  try {
+    const res = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'emotion', context: { content } })
+    });
+    const data = await res.json();
+    return data.emotion ?? null;
+  } catch(e) {
+    console.warn('감정 분석 실패, null로 처리', e);
+    return null;
+  }
+}
+
 /* ── 제출 (새 글 / 수정 공통) ── */
 export async function submitWrite(reloadData) {
   const reload = typeof reloadData === 'function' ? reloadData : window._reloadData;
@@ -215,6 +288,7 @@ export async function submitWrite(reloadData) {
 
   // ── 수정 모드 ──
   if (_editPostId) {
+    const emotion_tag = await _resolveEmotionTag(content);
     const data = await apiFetch('/api/posts', {
       method: 'PUT',
       body: {
@@ -224,6 +298,7 @@ export async function submitWrite(reloadData) {
         content,
         media_urls:   mediaUrls,
         category_ids: catIds,
+        emotion_tag,
       }
     });
     if (data) {
@@ -234,6 +309,7 @@ export async function submitWrite(reloadData) {
           content,
           media_urls:   mediaUrls,
           category_ids: catIds,
+          emotion_tag,
         };
       }
       showToast('수정됐어요 ✅', 'success');
@@ -243,22 +319,8 @@ export async function submitWrite(reloadData) {
     return;
   }
 
-  // ── 새 글 모드 (감정 분석 포함) ──
-  let emotion_tag = null;
-  if (content) {
-    try {
-      const emoRes = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'emotion', context: { content } })
-      });
-      const emoData = await emoRes.json();
-      emotion_tag = emoData.emotion || null;
-    } catch(e) {
-      console.warn('감정 분석 실패, 계속 진행', e);
-      // 실패해도 등록은 계속
-    }
-  }
+  // ── 새 글 모드 ──
+  const emotion_tag = await _resolveEmotionTag(content);
 
   const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId, emotion_tag });
   if (data?.id || data?.success) {
