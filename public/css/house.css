@@ -601,16 +601,6 @@
   opacity: .6;
   margin-left: 2px;
 }
-
-/* 분류/이벤트 칩 수정·삭제 버튼 */
-.cat-editable { display: inline-flex; align-items: center; gap: 3px; }
-.cat-edit-btn {
-  background: none; border: none; padding: 0 1px;
-  font-size: 11px; cursor: pointer; line-height: 1;
-  color: var(--muted); opacity: .5; transition: opacity .15s;
-}
-.cat-edit-btn:hover { opacity: 1; }
-
 /* date input 스타일 통일 */
 .cat-inline-form input[type="date"] {
   flex: none;
@@ -621,7 +611,184 @@
   font-size: 12px;
   color: var(--text);
 }
-/* 분류 수정/삭제 버튼 */
-.cat-editable { display: inline-flex; align-items: center; gap: 3px; }
-.cat-edit-btn { background: none; border: none; padding: 0; font-size: 11px; cursor: pointer; opacity: .6; line-height: 1; }
-.cat-edit-btn:hover { opacity: 1; }
+
+/* ── 포스트 카드 분류 태그 ── */
+.post-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.cat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #e8f5f0;
+  color: #2d7a5f;
+  border: 1px solid #b8ddd0;
+  line-height: 1.4;
+}
+
+/* ── 감정 칩 (태그와 분리) ── */
+.emotion-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: #fdf3e7;
+  color: #7a4f2d;
+  border: 1px solid #e8cfa8;
+  line-height: 1.4;
+}
+
+.emotion-chip .emoji {
+  font-size: 13px;
+}
+
+/* ── + 분류 / + 이벤트 버튼 ── */
+.btn-add-category,
+.btn-add-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: 1.5px dashed #b0a090;
+  color: #7a6a5a;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn-add-category:hover {
+  background: #f0ebe3;
+  border-color: #8a7a6a;
+  color: #4a3a2a;
+}
+
+.btn-add-event:hover {
+  background: #fef8ec;
+  border-color: #c8a850;
+  color: #7a5a10;
+}
+
+/* ── 이벤트 칩 (gold 계열) ── */
+.event-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #fef3d0;
+  color: #7a5a10;
+  border: 1px solid #e8cc78;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.event-chip:hover {
+  background: #fde9a8;
+}
+
+.event-chip .chip-icon {
+  font-size: 13px;
+}
+
+/* ── catInlineForm 인라인 폼 박스 ── */
+.catInlineForm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #faf7f2;
+  border: 1px solid #e0d8cc;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
+.catInlineForm input[type="text"] {
+  flex: 1;
+  padding: 5px 10px;
+  border: 1px solid #d8cfc4;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #4a3a2a;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.catInlineForm input[type="text"]:focus {
+  border-color: #c8a060;
+}
+
+.catInlineForm input[type="text"]::placeholder {
+  color: #b0a090;
+}
+
+.catInlineForm .btn-confirm {
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #d4a840;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.catInlineForm .btn-confirm:hover {
+  background: #b89030;
+}
+
+.catInlineForm .btn-cancel {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  background: transparent;
+  color: #a09080;
+  border: 1px solid #d8cfc4;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.catInlineForm .btn-cancel:hover {
+  background: #f0e8e0;
+  color: #6a4a3a;
+}
+
+/* ── 이벤트 모드 폼 (노란 배경) ── */
+.catInlineForm.event-mode {
+  background: #fffae8;
+  border-color: #e8d080;
+}
+
+.catInlineForm.event-mode input[type="date"] {
+  padding: 5px 8px;
+  border: 1px solid #d8c060;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #4a3a2a;
+  outline: none;
+}
+
+.catInlineForm.event-mode input[type="date"]:focus {
+  border-color: #b89030;
+}
