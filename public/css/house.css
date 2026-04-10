@@ -641,7 +641,7 @@
   color: var(--muted);
   padding: 0 2px 0 4px;
   vertical-align: middle;
-  opacity: 0;
+  opacity: 1;
   transition: opacity .15s;
 }
 .cat-chip:hover .cat-chip-edit { opacity: 1; }
