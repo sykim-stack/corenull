@@ -284,12 +284,19 @@ export function renderPost(p, opts = {}) {
   const showActions = opts.showActions !== undefined ? opts.showActions : true;
   const delay       = opts.delay || 0;
 
-  const tags = showTags
-    ? (p.category_ids || []).map(cid => {
+  const EMOTION_MAP = { happy:'😊', sad:'😢', love:'🥰', funny:'😂', touching:'🥺' };
+
+const tags = showTags
+  ? [
+      ...(p.category_ids || []).map(cid => {
         const c = state.categories.find(x => x.id === cid);
-        return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>` : '';
-      }).join('')
-    : '';
+        return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
+      }),
+      p.emotion_tag && EMOTION_MAP[p.emotion_tag]
+        ? `<span class="post-tag" style="background:var(--warm,#fff3e0);">${EMOTION_MAP[p.emotion_tag]}</span>`
+        : ''
+    ].join('')
+  : '';
 
   const imgs    = p.media_urls || [];
   const media   = imgs.length ? renderStoryImgs(imgs, p) : '';
