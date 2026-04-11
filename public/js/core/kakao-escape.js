@@ -183,14 +183,27 @@
 
   // ── 나에게 보내기 ──────────────────────────────────────────
   function sendToMe(toastMsg, service) {
-    TRACK.markSaved();
-    TRACK.log('kakao-sendme', service);
-    if (window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized()) {
-      try { window.Kakao.Share.sendScrap({ requestUrl: location.href }); return; }
-      catch (e) { /* fallback */ }
-    }
-    copyLink(toastMsg, service);
+  TRACK.markSaved();
+  TRACK.log('kakao-sendme', service);
+  
+  // sendScrap 대신 sendDefault로 교체
+  if (window.Kakao && window.Kakao.isInitialized && window.Kakao.isInitialized()) {
+    try {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title      : document.title || 'CoreNull',
+          description: '소중한 순간을 함께 기록해요',
+          imageUrl   : document.querySelector('meta[property="og:image"]')?.content || '',
+          link       : { mobileWebUrl: location.href, webUrl: location.href }
+        },
+        buttons: [{ title: '보러 가기', link: { mobileWebUrl: location.href, webUrl: location.href } }]
+      });
+      return;
+    } catch (e) { /* fallback */ }
   }
+  copyLink(toastMsg, service);
+}
 
   // ── 크롬 열기 ──────────────────────────────────────────────
   var _failTimer = null;
