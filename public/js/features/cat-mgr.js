@@ -339,5 +339,3 @@ function _injectStyles() {
   `;
   document.head.appendChild(s);
 }
-
-export { openCatMgr };
