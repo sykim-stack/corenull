@@ -413,6 +413,8 @@ async function init() {
     trackVisit(data.house.id);
     window._reloadData = reloadData;
     if (state.isOwner) document.getElementById('fab').style.display = 'flex';
+    // ← 이 줄 추가
+    window.__ke_house_id = state.houseId;
   } catch (e) {
     console.error(e);
     showToast('데이터를 불러오지 못했어요');
