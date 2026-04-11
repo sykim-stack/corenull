@@ -251,6 +251,8 @@
 
 <!-- ── Module Script ── -->
 <script type="module">
+import { initKakaoEscape } from '/public/js/core/kakao-escape.js';
+initKakaoEscape({ tone: 'content' });
 import {
   state, DEVICE_ID, CAT_META, ROOM_META,
   showToast, openConfirm, closeConfirm, closeModal,
