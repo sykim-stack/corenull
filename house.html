@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
   <script src="/public/js/core/kakao-escape.js"></script>
-  <script>if (!Kakao.isInitialized()) Kakao.init('deff4cdd41db40e09d6a4ca2a3c9f628');</script>
+<script>if (!Kakao.isInitialized()) Kakao.init('deff4cdd41db40e09d6a4ca2a3c9f628');</script>
   <link rel="stylesheet" href="/public/css/layout.css">
   <link rel="stylesheet" href="/public/css/house.css">
 </head>
@@ -756,11 +756,11 @@ function closeFabSheet() {
   const fab = document.getElementById('fab');
   if (fab) { fab.classList.remove('sheet-open'); fab.textContent = '✏️'; }
 }
+// KakaoEscape 하단 바 활성화
+if (window.KakaoEscape) KakaoEscape.init({ tone: 'content', service: 'corenull' });
 // ── Start ────────────────────────────────────────────────────────────────
 init();
-// init() 완료 후
-window.__ke_house_id = state.houseId;
-KakaoEscape.init({ tone: 'content', service: 'corenull' });
+
 </script>
 </body>
 </html>
