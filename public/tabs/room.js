@@ -1,5 +1,6 @@
 // public/tabs/room.js
 import { state, DEVICE_ID, showToast, apiFetch, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
+import { openCatMgr } from '/public/js/features/cat-mgr.js';
 
 // ── 카테고리 필터 ─────────────────────────────────────────────────────────
 export function filterCat(catId, btn) {
@@ -25,6 +26,21 @@ function _getFilteredPosts(opts, overrideCatId) {
   return posts.filter(p => (p.category_ids || []).map(String).includes(String(catId)));
 }
 
+// ── 이벤트 날짜 기준 정렬 (진행 중 앞, 완료 뒤) ──────────────────────────
+function _sortedCats(cats) {
+  const now = new Date();
+  return [...cats].sort((a, b) => {
+    if (!a.event_date && !b.event_date) return 0;
+    if (!a.event_date) return -1;  // 날짜 없는 일반 분류 앞
+    if (!b.event_date) return 1;
+    const aFuture = new Date(a.event_date) >= now;
+    const bFuture = new Date(b.event_date) >= now;
+    if (aFuture && !bFuture) return -1;  // 진행 중 앞
+    if (!aFuture && bFuture) return 1;   // 완료 뒤
+    return new Date(a.event_date) - new Date(b.event_date);
+  });
+}
+
 // ── 메인 렌더 ─────────────────────────────────────────────────────────────
 export function renderRoom(container, room, opts = {}) {
   state._currentRoomOpts = opts;
@@ -32,33 +48,41 @@ export function renderRoom(container, room, opts = {}) {
   const cats   = state.categories || [];
   const filter = opts.filter || {};
 
-  // 변경 — 일반/이벤트 분리 + owner면 수정/삭제 버튼
-const normal = cats.filter(c => !c.is_event);
-const events = cats.filter(c =>  c.is_event);
+  const normal = cats.filter(c => !c.is_event);
+  const events = _sortedCats(cats.filter(c => c.is_event));
+  const now    = new Date();
 
-const makeNormalChip = c => {
-  const editBtns = state.isOwner ? `
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
-  return `<button class="cat-chip${filter.categoryId === c.id ? ' active' : ''}"
-    data-cat="${c.id}" data-color="${c.color || ''}" onclick="filterCat('${c.id}',this)">${c.name}${editBtns}</button>`;
-};
+  // ── 칩 HTML (날짜 제거, 깔끔하게) ────────────────────────────────────────
+  const makeChip = (c, isEvent) => {
+    const isActive  = filter.categoryId === c.id;
+    const isDone    = isEvent && c.event_date && new Date(c.event_date) < now;
+    const isToday   = isEvent && c.event_date && Math.abs(new Date(c.event_date) - now) < 86400000;
 
-const makeEventChip = c => {
-  const dateStr = c.event_date ? c.event_date.slice(5).replace('-','/') : '';
-  const editBtns = state.isOwner ? `
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._openEditEvent('${c.id}','${c.name.replace(/'/g,"\\'")}','${c.event_date||''}')">✏️</button>
-    <button class="cat-chip-edit" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>` : '';
-  return `<button class="cat-chip cat-chip-event${filter.categoryId === c.id ? ' active' : ''}"
-    data-cat="${c.id}" onclick="filterCat('${c.id}',this)">🎉 ${c.name}${dateStr ? `<span class="cat-chip-date">${dateStr}</span>` : ''}${editBtns}</button>`;
-};
+    let cls = 'cat-chip';
+    if (isEvent) cls += ' cat-chip-event';
+    if (isDone)  cls += ' cat-chip-done';
+    if (isActive) cls += ' active';
 
-const catHtml = cats.length ? `
-  <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-    <button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
-    ${normal.map(makeNormalChip).join('')}
-    ${events.length ? `<span style="color:var(--muted);font-size:11px;align-self:center;">|</span>${events.map(makeEventChip).join('')}` : ''}
-  </div>` : '';
+    const label = isEvent ? `🎉 ${c.name}` : c.name;
+    const badge = isToday ? '<span class="cat-chip-badge">D-DAY</span>' : '';
+
+    return `<button class="${cls}" data-cat="${c.id}" onclick="filterCat('${c.id}',this)">${label}${badge}</button>`;
+  };
+
+  const allChip = `<button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>`;
+  const gearBtn = state.isOwner
+    ? `<button class="cat-gear-btn" onclick="openCatMgr()" title="분류 관리">⚙️</button>`
+    : '';
+
+  const catHtml = `
+    <div class="cat-bar-wrap">
+      <div class="cat-bar" id="catBar">
+        ${allChip}
+        ${normal.map(c => makeChip(c, false)).join('')}
+        ${events.length ? `<span class="cat-bar-sep"></span>${events.map(c => makeChip(c, true)).join('')}` : ''}
+      </div>
+      ${gearBtn}
+    </div>`;
 
   container.innerHTML = `
     <div class="section">
@@ -78,12 +102,142 @@ const catHtml = cats.length ? `
       <div id="roomPostList-${opts.meta?.roomId}"></div>
     </div>`;
 
+  _injectCatBarStyles();
+
   const posts = _getFilteredPosts(opts);
   renderPostList(posts, `roomPostList-${opts.meta?.roomId}`);
 
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
   if (postIds.length) loadCommentCounts(postIds);
+}
+
+// ── cat-bar 스타일 주입 ───────────────────────────────────────────────────
+function _injectCatBarStyles() {
+  if (document.getElementById('__catBarStyle')) return;
+  const s = document.createElement('style');
+  s.id = '__catBarStyle';
+  s.textContent = `
+    /* ── cat-bar 래퍼 ── */
+    .cat-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    /* ── 가로 스크롤 바 ── */
+    .cat-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      flex: 1;
+      /* 오른쪽 페이드 힌트 (더 있음 암시) */
+      -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+      mask-image: linear-gradient(to right, black 80%, transparent 100%);
+      padding-bottom: 4px;
+      padding-right: 24px; /* 마지막 칩 살짝 잘리게 */
+    }
+    .cat-bar::-webkit-scrollbar { display: none; }
+
+    /* ── 기본 칩 ── */
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--warm, #F7EEE3);
+      border: 1.5px solid rgba(139,94,60,.15);
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-size: 13px;
+      color: var(--muted, #9B8B7E);
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'Gowun Dodum', serif;
+      transition: all .15s;
+      flex-shrink: 0;
+      position: relative;
+      /* 터치 타겟 최소 44px */
+      min-height: 36px;
+    }
+    .cat-chip:hover:not(.active) {
+      background: var(--peach, #F2C4A0);
+      color: var(--brown, #8B5E3C);
+    }
+    .cat-chip.active {
+      background: var(--cb-bg, #1a1a1a);
+      color: var(--cb-accent, #C9A84C);
+      border-color: transparent;
+    }
+
+    /* ── 이벤트 칩 ── */
+    .cat-chip-event {
+      border-style: dashed;
+      border-color: rgba(196,120,75,.35);
+      color: var(--room-event, #C4784B);
+    }
+    .cat-chip-event.active {
+      background: var(--room-event, #C4784B);
+      color: white;
+      border-style: solid;
+      border-color: transparent;
+    }
+    /* 완료된 이벤트 칩 — 흐리게 */
+    .cat-chip-event.cat-chip-done {
+      opacity: .45;
+      filter: grayscale(.4);
+    }
+    .cat-chip-event.cat-chip-done.active {
+      opacity: 1;
+      filter: none;
+    }
+
+    /* D-DAY 뱃지 */
+    .cat-chip-badge {
+      display: inline-block;
+      background: var(--gold, #C9A84C);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      border-radius: 8px;
+      padding: 1px 5px;
+      margin-left: 2px;
+      vertical-align: middle;
+    }
+
+    /* ── 구분선 ── */
+    .cat-bar-sep {
+      width: 1px;
+      height: 16px;
+      background: rgba(139,94,60,.2);
+      flex-shrink: 0;
+      margin: 0 2px;
+    }
+
+    /* ── ⚙️ 관리 버튼 (오너 전용) ── */
+    .cat-gear-btn {
+      background: var(--warm, #F7EEE3);
+      border: 1.5px solid rgba(139,94,60,.15);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .cat-gear-btn:hover {
+      background: var(--peach, #F2C4A0);
+    }
+  `;
+  document.head.appendChild(s);
 }
 
 // ── 댓글 카운트 로드 ──────────────────────────────────────────────────────
@@ -109,7 +263,7 @@ export async function toggleReaction(postId, btn) {
       headers: { 'x-device-id': DEVICE_ID },
       body: { action: 'react', house_id: state.houseId, target_id: postId, target_type: 'post', emoji: '❤️' }
     });
-    if (!data) return; // apiFetch가 이미 토스트 띄움
+    if (!data) return;
     const count = data.count || 0;
     if (data.reacted) {
       btn.dataset.count = count;
@@ -240,7 +394,7 @@ export async function deletePostComment(commentId, postId) {
   if (data) await loadPostComments(postId);
 }
 
-// ── 공유 모달 (stub — house.html의 openShareModal 연결) ──────────────────
+// ── 공유 ─────────────────────────────────────────────────────────────────
 export function openShareModal(roomId) {
   const url = `${location.origin}${location.pathname}?room=${roomId}`;
   if (navigator.share) {
@@ -250,18 +404,12 @@ export function openShareModal(roomId) {
   }
 }
 
-// ── 유틸 ─────────────────────────────────────────────────────────────────
-function fmtDate(str) {
-  if (!str) return '';
-  const d = new Date(str);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
-// ── window 노출 (인라인 onclick용) ────────────────────────────────────────
-window.state            = state;
-window.filterCat        = filterCat;
-window.toggleReaction   = toggleReaction;
-window.openPostComment  = openPostComment;
+// ── window 노출 ───────────────────────────────────────────────────────────
+window.state             = state;
+window.filterCat         = filterCat;
+window.toggleReaction    = toggleReaction;
+window.openPostComment   = openPostComment;
 window.submitPostComment = submitPostComment;
 window.deletePostComment = deletePostComment;
-window.openShareModal   = openShareModal;
+window.openShareModal    = openShareModal;
+window.openCatMgr        = openCatMgr;

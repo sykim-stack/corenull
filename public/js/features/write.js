@@ -33,7 +33,6 @@ function _renderEmotionChips(selectedKey = null) {
 window._toggleEmotion = (key, el) => {
   const wrap = document.getElementById('composeEmotionWrap');
   wrap.querySelectorAll('.emotion-chip').forEach(c => c.classList.remove('on'));
-  // 이미 선택된 것을 다시 누르면 선택 해제
   if (el.dataset.emotion === wrap.dataset.selected) {
     wrap.dataset.selected = '';
   } else {
@@ -47,7 +46,7 @@ function _getSelectedEmotion() {
   return wrap?.dataset.selected || null;
 }
 
-/* ── 분류 렌더 ── */
+/* ── 분류 렌더 (관리 버튼 없는 순수 선택 칩만) ── */
 function _renderComposeCats(selectedIds = []) {
   const wrap = document.getElementById('composeCatWrap');
   if (!wrap) return;
@@ -55,199 +54,89 @@ function _renderComposeCats(selectedIds = []) {
   const normal = (state.categories || []).filter(c => !c.is_event);
   const events = (state.categories || []).filter(c =>  c.is_event);
 
-  // 일반 분류 칩 — owner면 수정/삭제 버튼 포함
-  const makeNormalChip = c => {
+  const makeChip = (c, isEvent) => {
     const sel = selectedIds.map(String).includes(String(c.id));
-    if (state.isOwner) {
-      return `<span class="cat-sel cat-editable${sel ? ' on' : ''}" data-id="${c.id}"
-        style="--cat-color:${c.color || 'var(--mint)'};">
-        <span onclick="this.parentElement.classList.toggle('on')">${c.name}</span>
-        <button class="cat-edit-btn" onclick="event.stopPropagation();window._openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">✏️</button>
-        <button class="cat-edit-btn" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>
-      </span>`;
-    }
-    return `<span class="cat-sel${sel ? ' on' : ''}" data-id="${c.id}"
+    const label = isEvent ? `🎉 ${c.name}` : c.name;
+    const cls   = `cat-sel${sel ? ' on' : ''}${isEvent ? ' cat-event' : ''}`;
+    return `<span class="${cls}" data-id="${c.id}"
       onclick="this.classList.toggle('on')"
-      style="--cat-color:${c.color || 'var(--mint)'};">${c.name}</span>`;
+      style="--cat-color:${c.color || (isEvent ? '#F7C59F' : 'var(--mint)')}">${label}</span>`;
   };
 
-  // 이벤트 칩 — 날짜 표시 + owner면 수정/삭제
-  const makeEventChip = c => {
-    const sel = selectedIds.map(String).includes(String(c.id));
-    const dateStr = c.event_date ? `<span style="font-size:10px;opacity:.7;margin-left:2px;">${c.event_date.slice(5).replace('-','/')}</span>` : '';
-    if (state.isOwner) {
-      return `<span class="cat-sel cat-event cat-editable${sel ? ' on' : ''}" data-id="${c.id}"
-        style="--cat-color:${c.color || '#F7C59F'};">
-        <span onclick="this.parentElement.classList.toggle('on')">🎉 ${c.name}${dateStr}</span>
-        <button class="cat-edit-btn" onclick="event.stopPropagation();window._openEditEvent('${c.id}','${c.name.replace(/'/g,"\\'")}','${c.event_date||''}')">✏️</button>
-        <button class="cat-edit-btn" onclick="event.stopPropagation();window._deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑️</button>
-      </span>`;
-    }
-    return `<span class="cat-sel cat-event${sel ? ' on' : ''}" data-id="${c.id}"
-      onclick="this.classList.toggle('on')"
-      style="--cat-color:${c.color || '#F7C59F'};">🎉 ${c.name}${dateStr}</span>`;
-  };
+  // 관리 버튼은 ⚙️ 링크로만 노출
+  const gearHint = state.isOwner
+    ? `<button class="cat-gear-hint" onclick="import('/public/js/features/cat-mgr.js').then(m=>m.openCatMgr())">⚙️ 관리</button>`
+    : '';
 
   wrap.innerHTML = `
-    <div class="cat-group">
-      <div class="cat-chips" id="catNormalChips">
-        ${normal.map(makeNormalChip).join('') || '<span class="cat-empty">분류 없음</span>'}
-        ${state.isOwner ? '<button class="cat-add-btn" id="btnAddCat" onclick="window._openAddCat()">+ 분류</button>' : ''}
-      </div>
-    </div>
-    ${events.length ? `
-    <div class="cat-divider"></div>
-    <div class="cat-group">
-      <div class="cat-chips" id="catEventChips">
-        ${events.map(makeEventChip).join('')}
-        ${state.isOwner ? '<button class="cat-add-btn cat-add-event" id="btnAddEvent" onclick="window._openAddEvent()">+ 이벤트</button>' : ''}
-      </div>
-    </div>` : `
-    <div class="cat-divider"></div>
-    <div class="cat-group">
-      <div class="cat-chips">
-        ${state.isOwner ? '<button class="cat-add-btn cat-add-event" onclick="window._openAddEvent()">+ 이벤트</button>' : ''}
-      </div>
-    </div>`}
-    <div id="catInlineForm" style="display:none;" class="cat-inline-form">
-      <input id="catInlineName" placeholder="이름" maxlength="20" />
-      <input id="catInlineDate" type="date" style="display:none;" />
-      <button onclick="window._submitAddCat()">추가</button>
-      <button onclick="document.getElementById('catInlineForm').style.display='none'">✕</button>
-    </div>
-    <div id="catEditForm" style="display:none;" class="cat-inline-form">
-      <input id="catEditName" placeholder="이름" maxlength="20" />
-      <input id="catEditDate" type="date" style="display:none;" />
-      <button onclick="window._submitEditCat()">저장</button>
-      <button onclick="document.getElementById('catEditForm').style.display='none'">✕</button>
-    </div>
-  `;
+    <div class="compose-cat-chips">
+      ${normal.map(c => makeChip(c, false)).join('') || '<span style="font-size:12px;color:var(--muted);">분류 없음</span>'}
+      ${events.length ? `<span class="cat-bar-sep" style="height:16px;width:1px;background:rgba(139,94,60,.2);display:inline-block;vertical-align:middle;margin:0 4px;"></span>${events.map(c => makeChip(c, true)).join('')}` : ''}
+      ${gearHint}
+    </div>`;
+
+  _injectComposeCatStyles();
 }
 
-/* ── 인라인 분류 추가 ── */
-window._openAddCat = () => {
-  const form = document.getElementById('catInlineForm');
-  form.dataset.mode = 'normal';
-  document.getElementById('catInlineDate').style.display = 'none';
-  document.getElementById('catInlineName').value = '';
-  form.style.display = 'flex';
-  document.getElementById('catInlineName').focus();
-};
-
-window._openAddEvent = () => {
-  const form = document.getElementById('catInlineForm');
-  form.dataset.mode = 'event';
-  document.getElementById('catInlineDate').style.display = 'block';
-  document.getElementById('catInlineName').value = '';
-  document.getElementById('catInlineDate').value = '';
-  form.style.display = 'flex';
-  document.getElementById('catInlineName').focus();
-};
-
-/* ── 분류 수정 폼 열기 ── */
-window._openEditCat = (id, name) => {
-  const form = document.getElementById('catEditForm');
-  form.dataset.id   = id;
-  form.dataset.mode = 'normal';
-  document.getElementById('catEditName').value        = name;
-  document.getElementById('catEditDate').style.display = 'none';
-  form.style.display = 'flex';
-  document.getElementById('catEditName').focus();
-};
-
-window._openEditEvent = (id, name, date) => {
-  const form = document.getElementById('catEditForm');
-  form.dataset.id   = id;
-  form.dataset.mode = 'event';
-  document.getElementById('catEditName').value         = name;
-  document.getElementById('catEditDate').value         = date || '';
-  document.getElementById('catEditDate').style.display = 'block';
-  form.style.display = 'flex';
-  document.getElementById('catEditName').focus();
-};
-
-/* ── 분류 수정 제출 ── */
-window._submitEditCat = async () => {
-  const form = document.getElementById('catEditForm');
-  const id   = form.dataset.id;
-  const name = document.getElementById('catEditName').value.trim();
-  const date = document.getElementById('catEditDate').value || null;
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-
-  const res = await fetch('/api/categories', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-    body: JSON.stringify({ category_id: id, house_id: state.houseId, name, event_date: date })
-  });
-  const data = await res.json();
-  if (data.success) {
-    const cat = state.categories.find(c => String(c.id) === String(id));
-    if (cat) { cat.name = name; if (date !== undefined) cat.event_date = date; }
-    form.style.display = 'none';
-    _renderComposeCats([...document.querySelectorAll('#composeCatWrap .cat-sel.on')].map(el => el.dataset.id));
-    showToast('수정됐어요 ✅');
-  } else {
-    showToast(data.error || '수정 실패');
-  }
-};
-
-/* ── 분류 삭제 ── */
-window._deleteCat = async (id, name) => {
-  if (!confirm(`"${name}" 분류를 삭제할까요?`)) return;
-  const res = await fetch('/api/categories', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-    body: JSON.stringify({ category_id: id, house_id: state.houseId })
-  });
-  const data = await res.json();
-  if (data.success) {
-    state.categories = state.categories.filter(c => String(c.id) !== String(id));
-    _renderComposeCats([...document.querySelectorAll('#composeCatWrap .cat-sel.on')].map(el => el.dataset.id).filter(x => x !== id));
-    showToast('삭제됐어요 🗑️');
-  } else {
-    showToast(data.error || '삭제 실패');
-  }
-};
-
-window._submitAddCat = async () => {
-  const input      = document.getElementById('catInlineName');
-  const name       = input.value.trim();
-  const isEvent    = document.getElementById('catInlineForm').dataset.mode === 'event';
-  const event_date = isEvent ? (document.getElementById('catInlineDate').value || null) : null;
-  if (!name) { showToast('이름을 입력해주세요'); return; }
-  if (isEvent && !event_date) { showToast('이벤트 날짜를 선택해주세요'); return; }
-
-  const res = await fetch('/api/categories', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Profile': 'corenull' },
-    body: JSON.stringify({
-      house_id:   state.houseId,
-      name,
-      color:      isEvent ? '#F7C59F' : '#A8D8A8',
-      is_event:   isEvent,
-      event_date,
-      order_num:  (state.categories?.length || 0) + 1
-    })
-  });
-
-  const data = await res.json();
-  if (data.id || data.success) {
-    if (!state.categories) state.categories = [];
-    state.categories.push({
-      id:         data.id || data.data?.id,
-      name,
-      color:      isEvent ? '#F7C59F' : '#A8D8A8',
-      is_event:   isEvent,
-      event_date: event_date || null,
-    });
-    input.value = '';
-    document.getElementById('catInlineForm').style.display = 'none';
-    _renderComposeCats();
-    showToast(`${isEvent ? '이벤트' : '분류'} 추가됐어요 ✅`);
-  } else {
-    showToast(data.error || '추가 실패');
-  }
-};
+function _injectComposeCatStyles() {
+  if (document.getElementById('__composeCatStyle')) return;
+  const s = document.createElement('style');
+  s.id = '__composeCatStyle';
+  s.textContent = `
+    .compose-cat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+    }
+    .cat-sel {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid rgba(139,94,60,.2);
+      background: var(--warm, #F7EEE3);
+      color: var(--muted, #9B8B7E);
+      transition: all .15s;
+      min-height: 32px;
+    }
+    .cat-sel:hover:not(.on) { background: var(--peach, #F2C4A0); }
+    .cat-sel.on {
+      background: var(--cat-color, #A8D8A8);
+      border-color: transparent;
+      color: #3a2f28;
+      font-weight: 600;
+    }
+    .cat-sel.cat-event {
+      border-style: dashed;
+      border-color: rgba(200,151,58,.35);
+      color: #a07820;
+    }
+    .cat-sel.cat-event.on {
+      background: var(--cat-color, #F7C59F);
+      color: #5a3a10;
+      border-style: solid;
+      border-color: transparent;
+    }
+    .cat-gear-hint {
+      background: none;
+      border: 1px dashed rgba(139,94,60,.2);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--muted, #9B8B7E);
+      cursor: pointer;
+      font-family: 'Gowun Dodum', serif;
+      transition: all .15s;
+      min-height: 28px;
+    }
+    .cat-gear-hint:hover { background: var(--warm, #F7EEE3); color: var(--brown, #8B5E3C); }
+  `;
+  document.head.appendChild(s);
+}
 
 /* ── 모달 초기화 공통 ── */
 function _resetModal() {
@@ -256,7 +145,6 @@ function _resetModal() {
   document.getElementById('composePrevWrap').style.display = 'none';
   document.getElementById('composePrevCells').innerHTML    = '';
   document.getElementById('composeProgWrap').style.display = 'none';
-  // 감정 칩 초기화
   const emotionWrap = document.getElementById('composeEmotionWrap');
   if (emotionWrap) emotionWrap.dataset.selected = '';
   _renderEmotionChips();
@@ -268,7 +156,7 @@ export function openWriteModal(mode = 'write') {
   _resetModal();
   _renderComposeCats();
 
-  const modal = document.getElementById('composeModal');
+  const modal   = document.getElementById('composeModal');
   const titleEl = modal?.querySelector('.modal-title');
   if (titleEl) titleEl.textContent = '작성하기 ✏️';
   const submitEl = modal?.querySelector('.modal-submit');
@@ -289,7 +177,6 @@ export function openPostEditModal(post) {
 
   document.getElementById('composeContent').value = post.content || '';
   _renderComposeCats(post.category_ids || []);
-  // 수정 시 기존 감정 태그 복원
   if (post.emotion_tag) {
     const wrap = document.getElementById('composeEmotionWrap');
     if (wrap) wrap.dataset.selected = post.emotion_tag;
@@ -307,7 +194,7 @@ export function openPostEditModal(post) {
     document.getElementById('composePrevWrap').style.display = 'block';
   }
 
-  const modal = document.getElementById('composeModal');
+  const modal   = document.getElementById('composeModal');
   const titleEl = modal?.querySelector('.modal-title');
   if (titleEl) titleEl.textContent = '수정하기 ✏️';
   const submitEl = modal?.querySelector('.modal-submit');
@@ -344,16 +231,13 @@ export async function handleWritePhoto(input) {
   input.value = '';
 }
 
-/* ── 감정 태그 결정 (사용자 선택 우선, 없으면 Gemini fallback) ── */
+/* ── 감정 태그 결정 ── */
 async function _resolveEmotionTag(content) {
-  // 1순위: 사용자가 직접 선택
   const userSelected = _getSelectedEmotion();
   if (userSelected) return userSelected;
-
-  // 2순위: Gemini 자동 분석 (content 있을 때만)
   if (!content) return null;
   try {
-    const res = await fetch('/api/gemini', {
+    const res  = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'emotion', context: { content } })
@@ -361,14 +245,13 @@ async function _resolveEmotionTag(content) {
     const data = await res.json();
     return data.emotion ?? null;
   } catch(e) {
-    console.warn('감정 분석 실패, null로 처리', e);
     return null;
   }
 }
 
 /* ── 제출 (새 글 / 수정 공통) ── */
 export async function submitWrite(reloadData) {
-  const reload = typeof reloadData === 'function' ? reloadData : window._reloadData;
+  const reload  = typeof reloadData === 'function' ? reloadData : window._reloadData;
   const content = document.getElementById('composeContent').value.trim();
   const catIds  = [...document.querySelectorAll('#composeCatWrap .cat-sel.on')].map(el => el.dataset.id);
   const roomId  = state.currentRoomId || state.rooms?.find(r => r.room_type === 'room')?.id;
@@ -377,11 +260,9 @@ export async function submitWrite(reloadData) {
     showToast('내용이나 사진을 추가해주세요'); return;
   }
 
-  // 기존 이미지 URL (삭제 안 된 것만)
   const existingUrls = [...document.querySelectorAll('#composePrevCells .prev-cell[data-existing]')]
     .map(el => el.dataset.existing);
 
-  // 새 파일 업로드
   let newUrls = [];
   if (state.writeFiles?.length) {
     document.getElementById('composeProgWrap').style.display = 'block';
@@ -412,13 +293,7 @@ export async function submitWrite(reloadData) {
     if (data) {
       const idx = state.allPosts.findIndex(p => p.id === _editPostId);
       if (idx !== -1) {
-        state.allPosts[idx] = {
-          ...state.allPosts[idx],
-          content,
-          media_urls:   mediaUrls,
-          category_ids: catIds,
-          emotion_tag,
-        };
+        state.allPosts[idx] = { ...state.allPosts[idx], content, media_urls: mediaUrls, category_ids: catIds, emotion_tag };
       }
       showToast('수정됐어요 ✅', 'success');
       document.getElementById('composeModal').classList.remove('open');
@@ -429,7 +304,6 @@ export async function submitWrite(reloadData) {
 
   // ── 새 글 모드 ──
   const emotion_tag = await _resolveEmotionTag(content);
-
   const data = await submitPost({ content, mediaUrls, categoryIds: catIds, roomId, emotion_tag });
   if (data?.id || data?.success) {
     showToast('등록됐어요 ✅', 'success');

@@ -67,7 +67,12 @@
 </div>
 
 <!-- ── FAB ── -->
-<button class="fab" id="fab" style="display:none" onclick="openWriteModal()">✏️</button>
+<button class="fab" id="fab" style="display:none" onclick="toggleFabSheet()">✏️</button>
+<div class="fab-sheet-backdrop" id="fabBackdrop" onclick="closeFabSheet()"></div>
+<div class="fab-sheet" id="fabSheet">
+  <button class="fab-sheet-btn" onclick="closeFabSheet();openWriteModal('write')">✏️ 글쓰기</button>
+  <button class="fab-sheet-btn" onclick="closeFabSheet();openUploadModal(null)">📷 사진 추가</button>
+</div>
 
 <!-- ── 글쓰기 모달 ── -->
 <div class="modal-overlay" id="composeModal" onclick="closeModal('composeModal',event)">
@@ -263,6 +268,7 @@ import { openWriteModal as coreOpenWriteModal, handleWritePhoto, submitWrite as 
 import { previewGbPhoto, submitGuestbook as coreSubmitGuestbook, deleteComment as coreDeleteComment, getAiMsg, translateComment } from '/public/js/features/guestbook.js';
 import { toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding } from '/public/js/features/onboarding.js';
 import { uploadCover, uploadProfile } from '/public/js/core/upload.js';
+import { openCatMgr } from '/public/js/features/cat-mgr.js';
 // ── 이벤트 수정 모달 ──────────────────────────────────────────────────────
 window.openEventEditModal = (id, name, date) => {
   document.getElementById('eventEditId').value   = id;
@@ -374,6 +380,9 @@ window.pvToggleReact     = pvToggleReact;
 window.pvSubmitComment   = pvSubmitComment;
 window.pvDeleteComment   = pvDeleteComment;
 window.parseVideoUrl     = parseVideoUrl;
+window.openCatMgr     = openCatMgr;
+window.toggleFabSheet = toggleFabSheet;
+window.closeFabSheet  = closeFabSheet;
 
 // ── buildRoomOpts ────────────────────────────────────────────────────────
 function buildRoomOpts(room) {
@@ -730,7 +739,22 @@ function parseVideoUrl(url) {
   if (fb) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}` };
   return null;
 }
-
+function toggleFabSheet() {
+  const sheet = document.getElementById('fabSheet');
+  const backdrop = document.getElementById('fabBackdrop');
+  const fab = document.getElementById('fab');
+  const isOpen = sheet.classList.contains('open');
+  sheet.classList.toggle('open', !isOpen);
+  backdrop.classList.toggle('open', !isOpen);
+  fab.classList.toggle('sheet-open', !isOpen);
+  fab.textContent = isOpen ? '✏️' : '✕';
+}
+function closeFabSheet() {
+  document.getElementById('fabSheet')?.classList.remove('open');
+  document.getElementById('fabBackdrop')?.classList.remove('open');
+  const fab = document.getElementById('fab');
+  if (fab) { fab.classList.remove('sheet-open'); fab.textContent = '✏️'; }
+}
 // ── Start ────────────────────────────────────────────────────────────────
 init();
 </script>
