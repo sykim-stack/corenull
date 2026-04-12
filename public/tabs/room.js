@@ -11,10 +11,16 @@ export function renderRoom(container, room) {
 
   const makeChip = c => {
     const isEvent = c.is_event;
-    const eventUrl = `/event?slug=${state.slug}&cat=${c.id}`;
+    const eventRoom = isEvent
+      ? state.rooms.find(r => r.room_type === 'event' && r.room_name === c.name)
+      : null;
+    const eventUrl = eventRoom
+      ? `/event?slug=${state.slug}&room=${eventRoom.id}`
+      : `/event?slug=${state.slug}&cat=${c.id}`;
+
     return `
       <button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-        style="--cat-color:${c.color||'var(--mint)'};position:relative;padding-right:${isEvent ? '28px' : ''};">
+        style="--cat-color:${c.color||'var(--mint)'};${isEvent ? 'padding-right:28px;position:relative;' : ''}">
         ${c.name}
         ${isEvent ? `<a href="${eventUrl}" target="_blank"
           onclick="event.stopPropagation()"
@@ -53,16 +59,10 @@ export function renderRoom(container, room) {
 
 // ── 이벤트 배너 렌더 ──────────────────────────────────────────────────────
 function renderEventBanner(room, cat) {
-  const room_ = state.rooms.find(r => r.room_type === 'room');
-  if (!room_) return;
-  const bannerId = `eventBanner-${room_.id}`;
-  const el = document.getElementById(bannerId);
+  const el = document.getElementById(`eventBanner-${room.id}`);
   if (!el) return;
 
-  if (!cat || !cat.is_event) {
-    el.innerHTML = '';
-    return;
-  }
+  if (!cat || !cat.is_event) { el.innerHTML = ''; return; }
 
   const diff = cat.event_date
     ? Math.ceil((new Date(cat.event_date) - new Date()) / 86400000)
@@ -71,7 +71,11 @@ function renderEventBanner(room, cat) {
     : diff > 0  ? `D-${diff}`
     : diff === 0 ? 'D-DAY 🎉'
     : `+${Math.abs(diff)}일`;
-  const eventUrl = `/event?slug=${state.slug}&cat=${cat.id}`;
+
+  const eventRoom = state.rooms.find(r => r.room_type === 'event' && r.room_name === cat.name);
+  const eventUrl = eventRoom
+    ? `/event?slug=${state.slug}&room=${eventRoom.id}`
+    : `/event?slug=${state.slug}&cat=${cat.id}`;
 
   el.innerHTML = `
     <div style="
@@ -98,7 +102,7 @@ function renderEventBanner(room, cat) {
     </div>`;
 }
 
-// ── 날짜 포맷 (로컬) ──────────────────────────────────────────────────────
+// ── 날짜 포맷 ─────────────────────────────────────────────────────────────
 function fmtDate(str) {
   if (!str) return '';
   const d = new Date(str);
@@ -127,7 +131,6 @@ export function filterCat(catId, btn) {
   btn?.classList.add('active');
   state.activeCat = catId === 'all' ? null : catId;
 
-  // 이벤트 배너 처리
   const cat = catId === 'all' ? null : (state.categories || []).find(c => String(c.id) === String(catId));
   const room = state.rooms.find(r => r.room_type === 'room');
   if (room) renderEventBanner(room, cat);
@@ -193,7 +196,7 @@ export async function loadReactions(postIds) {
   }));
 }
 
-// ── 포스트 댓글 열기 (인스타 방식 인라인) ────────────────────────────────
+// ── 포스트 댓글 열기 (인라인) ────────────────────────────────────────────
 export async function openPostComment(postId) {
   const existing = document.getElementById(`comments-${postId}`);
   if (existing) { existing.remove(); return; }
