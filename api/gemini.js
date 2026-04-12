@@ -1,6 +1,6 @@
 // ============================================================
 // CoreNull | api/gemini.js
-// Gemini 2.5 Flash - 문구 자동생성 + 감정 분석
+// Gemini 2.5 Flash - 문구 자동생성 + 감정 분석 + 스토리 생성
 // ============================================================
 
 export default async function handler(req, res) {
@@ -62,8 +62,25 @@ Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
 - JSON 형식: {"emotion": "happy"}
 - 다른 텍스트 없이 JSON만 반환`;
 
+  } else if (type === 'story') {
+    const { category_name, house_name, posts_summary } = context || {};
+    if (!posts_summary) return res.status(400).json({ error: 'posts_summary 필수' });
+
+    prompt = `당신은 "${house_name || '우리 집'}"의 "${category_name || '기록'}" 스토리 작가입니다.
+아래 기록들을 바탕으로 따뜻하고 감성적인 스토리를 작성해주세요.
+
+기록 목록:
+${posts_summary}
+
+조건:
+- 한국어로 작성
+- 제목(title): 15자 이내, 감성적으로
+- 내용(content): 200~400자, 1인칭 시점, 따뜻한 어조
+- 이모지 1~2개 포함
+- 반드시 JSON만 반환 (다른 텍스트 없이): {"title":"제목","content":"내용"}`;
+
   } else {
-    return res.status(400).json({ error: 'type은 caption, message, emotion 중 하나' });
+    return res.status(400).json({ error: 'type은 caption, message, emotion, story 중 하나' });
   }
 
   try {
@@ -74,7 +91,10 @@ Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: type === 'emotion' ? 0.2 : 0.8, maxOutputTokens: 1024 }
+          generationConfig: {
+            temperature: (type === 'emotion' || type === 'story') ? 0.2 : 0.8,
+            maxOutputTokens: 1024
+          }
         })
       }
     );
@@ -88,7 +108,22 @@ Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     let clean = raw.replace(/```json|```/gi, '').trim();
 
-    // emotion 타입: 단일 객체 반환
+    // ── story 타입: 단일 객체 반환 ──
+    if (type === 'story') {
+      try {
+        const match = clean.match(/\{[\s\S]*?\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          if (!parsed.title || !parsed.content) throw new Error('필드 누락');
+          return res.status(200).json({ story: parsed });
+        }
+        throw new Error('파싱 불가');
+      } catch(e) {
+        return res.status(500).json({ error: 'story 파싱 실패', raw });
+      }
+    }
+
+    // ── emotion 타입: 단일 객체 반환 ──
     if (type === 'emotion') {
       try {
         const match = clean.match(/\{[\s\S]*?\}/);
@@ -96,7 +131,6 @@ Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
           const parsed = JSON.parse(match[0]);
           return res.status(200).json({ emotion: parsed.emotion || null });
         }
-        // fallback: 텍스트에서 감정어 직접 추출
         const emotions = ['happy', 'sad', 'love', 'funny', 'touching'];
         const found = emotions.find(e => clean.toLowerCase().includes(e));
         return res.status(200).json({ emotion: found || null });
@@ -105,7 +139,7 @@ Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
       }
     }
 
-    // caption / message 타입: 배열 반환
+    // ── caption / message 타입: 배열 반환 ──
     try {
       const match = clean.match(/\[[\s\S]*?\]/);
       if (match) {

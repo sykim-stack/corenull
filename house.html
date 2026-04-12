@@ -679,7 +679,7 @@ function openEditModal(mediaId, content) {
 async function submitEdit() {
   const mediaId = document.getElementById('editMediaId').value;
   const content = document.getElementById('editContent').value.trim();
-  const res  = await fetch('/api/upload', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: mediaId, house_id: state.houseId, owner_key: state.ownerKey, content }) });
+  const res = await fetch('/api/media', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ media_id: mediaId, house_id: state.houseId, owner_key: state.ownerKey, content }) });
   const data = await res.json();
   if (data.success) { showToast('수정됐어요 ✅'); document.getElementById('editModal').classList.remove('open'); await reloadData(); }
   else showToast(data.error || '수정 실패');
