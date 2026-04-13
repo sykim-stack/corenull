@@ -4,16 +4,28 @@ import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHt
 // ── 방 렌더 ───────────────────────────────────────────────────────────────
 export function renderRoom(container, room) {
   const posts = state.allPosts.filter(p => p.room_id === room.id);
-  const cats  = state.categories || [];
+  const cats = state.categories || [];
 
   const normal = cats.filter(c => !c.is_event);
   const events = cats.filter(c =>  c.is_event);
 
-  const makeChip = c => `
-    <button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
-      style="--cat-color:${c.color||'var(--mint)'};">
-      ${c.is_event ? '🎂 ' : ''}${c.name}
-    </button>`;
+  const makeChip = c => {
+    const isEvent = c.is_event;
+    const eventUrl = `/event?slug=${state.slug}&room=${c.id}`;
+    return `
+      <button class="cat-chip" data-cat="${c.id}" onclick="filterCat('${c.id}',this)"
+        style="--cat-color:${c.color||'var(--mint)'};position:relative;padding-right:${isEvent ? '28px' : ''};">
+        ${c.name}
+        ${isEvent ? `<a href="${eventUrl}" target="_blank"
+          onclick="event.stopPropagation()"
+          title="이벤트 페이지 열기"
+          style="position:absolute;right:6px;top:50%;transform:translateY(-50%);
+                 font-size:11px;color:var(--muted);text-decoration:none;
+                 opacity:0.6;transition:opacity .2s;line-height:1;"
+          onmouseover="this.style.opacity='1'"
+          onmouseout="this.style.opacity='0.6'">↗</a>` : ''}
+      </button>`;
+  };
 
   const catHtml = cats.length ? `
     <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
@@ -39,11 +51,18 @@ export function renderRoom(container, room) {
   if (postIds.length) loadCommentCounts(postIds);
 }
 
-// ── 이벤트 배너 (상태 트리거) ─────────────────────────────────────────────
+// ── 이벤트 배너 렌더 ──────────────────────────────────────────────────────
 function renderEventBanner(room, cat) {
-  const el = document.getElementById(`eventBanner-${room.id}`);
+  const room_ = state.rooms.find(r => r.room_type === 'room');
+  if (!room_) return;
+  const bannerId = `eventBanner-${room_.id}`;
+  const el = document.getElementById(bannerId);
   if (!el) return;
-  if (!cat || !cat.is_event) { el.innerHTML = ''; return; }
+
+  if (!cat || !cat.is_event) {
+    el.innerHTML = '';
+    return;
+  }
 
   const diff = cat.event_date
     ? Math.ceil((new Date(cat.event_date) - new Date()) / 86400000)
@@ -51,20 +70,35 @@ function renderEventBanner(room, cat) {
   const ddayText = diff === null ? ''
     : diff > 0  ? `D-${diff}`
     : diff === 0 ? 'D-DAY 🎉'
-    : `완료 🎂`;
+    : `+${Math.abs(diff)}일`;
+  const eventUrl = `/event?slug=${state.slug}&room=${cat.id}`;
 
   el.innerHTML = `
-    <div class="event-banner">
-      <div class="event-banner-icon">🎂</div>
-      <div class="event-banner-info">
-        <div class="event-banner-name">${escHtml(cat.name)}</div>
-        ${cat.event_date ? `<div class="event-banner-date">${fmtDate(cat.event_date)}</div>` : ''}
+    <div style="
+      background:linear-gradient(135deg,rgba(196,120,75,.12),rgba(196,120,75,.04));
+      border:1px solid rgba(196,120,75,.25);
+      border-radius:14px;padding:14px 16px;
+      display:flex;align-items:center;gap:12px;
+      margin-bottom:16px;animation:fadeUp .3s ease;
+    ">
+      <div style="font-size:24px;flex-shrink:0;">🎂</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--dark);">${escHtml(cat.name)}</div>
+        ${cat.event_date ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${fmtDate(cat.event_date)}${ddayText ? ' · ' + ddayText : ''}</div>` : ''}
       </div>
-      ${ddayText ? `<div class="event-banner-dday">${ddayText}</div>` : ''}
+      <a href="${eventUrl}" target="_blank"
+        style="background:var(--room-event);color:white;border-radius:20px;
+               padding:7px 14px;font-size:12px;text-decoration:none;
+               white-space:nowrap;flex-shrink:0;font-family:'Gowun Dodum',serif;
+               transition:opacity .2s;"
+        onmouseover="this.style.opacity='.85'"
+        onmouseout="this.style.opacity='1'">
+        이벤트 페이지 열기 →
+      </a>
     </div>`;
 }
 
-// ── 날짜 포맷 ─────────────────────────────────────────────────────────────
+// ── 날짜 포맷 (로컬) ──────────────────────────────────────────────────────
 function fmtDate(str) {
   if (!str) return '';
   const d = new Date(str);
@@ -76,7 +110,7 @@ export async function loadCommentCounts(postIds) {
   if (!postIds?.length || !state.isOwner) return;
   await Promise.all(postIds.map(async (id) => {
     try {
-      const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
+      const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${id}`);
       const data = await res.json();
       const count = (data.comments || []).length;
       const btn = document.querySelector(`[data-comment-id="${id}"]`);
@@ -93,7 +127,8 @@ export function filterCat(catId, btn) {
   btn?.classList.add('active');
   state.activeCat = catId === 'all' ? null : catId;
 
-  const cat  = catId === 'all' ? null : (state.categories || []).find(c => String(c.id) === String(catId));
+  // 이벤트 배너 처리
+  const cat = catId === 'all' ? null : (state.categories || []).find(c => String(c.id) === String(catId));
   const room = state.rooms.find(r => r.room_type === 'room');
   if (room) renderEventBanner(room, cat);
 
@@ -113,7 +148,7 @@ export async function toggleReaction(postId, btn) {
   if (!state.houseId) return;
   btn.disabled = true;
   try {
-    const res  = await fetch('/api/comment?action=react', {
+    const res = await fetch('/api/comment?action=react', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
       body: JSON.stringify({ house_id: state.houseId, target_id: postId, target_type: 'post', emoji: '❤️' })
@@ -123,13 +158,13 @@ export async function toggleReaction(postId, btn) {
     if (data.reacted) {
       btn.dataset.count = count + 1;
       btn.innerHTML = `❤️ ${count + 1}`;
-      btn.style.background   = 'rgba(255,100,100,.1)';
-      btn.style.borderColor  = 'rgba(255,100,100,.3)';
+      btn.style.background = 'rgba(255,100,100,.1)';
+      btn.style.borderColor = 'rgba(255,100,100,.3)';
     } else {
       const newCount = Math.max(0, count - 1);
       btn.dataset.count = newCount;
       btn.innerHTML = newCount > 0 ? `🤍 ${newCount}` : '🤍';
-      btn.style.background  = 'none';
+      btn.style.background = 'none';
       btn.style.borderColor = 'rgba(139,94,60,.15)';
     }
   } catch (e) { console.error('reaction 실패', e); }
@@ -141,15 +176,15 @@ export async function loadReactions(postIds) {
   if (!postIds?.length) return;
   await Promise.all(postIds.map(async (id) => {
     try {
-      const res  = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`,
+      const res = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`,
         { headers: { 'x-device-id': DEVICE_ID } });
       const data = await res.json();
-      const btn  = document.querySelector(`[data-reaction-id="${id}"]`);
+      const btn = document.querySelector(`[data-reaction-id="${id}"]`);
       if (!btn) return;
       btn.dataset.count = data.count || 0;
       if (data.reacted) {
         btn.innerHTML = `❤️ ${data.count > 0 ? data.count : ''}`;
-        btn.style.background  = 'rgba(255,100,100,.1)';
+        btn.style.background = 'rgba(255,100,100,.1)';
         btn.style.borderColor = 'rgba(255,100,100,.3)';
       } else {
         btn.innerHTML = data.count > 0 ? `🤍 ${data.count}` : '🤍';
@@ -158,28 +193,25 @@ export async function loadReactions(postIds) {
   }));
 }
 
-// ── 포스트 댓글 열기 (인라인) ────────────────────────────────────────────
+// ── 포스트 댓글 열기 (인스타 방식 인라인) ────────────────────────────────
 export async function openPostComment(postId) {
   const existing = document.getElementById(`comments-${postId}`);
   if (existing) { existing.remove(); return; }
 
-  const btn  = document.querySelector(`[data-comment-id="${postId}"]`);
+  const btn = document.querySelector(`[data-comment-id="${postId}"]`);
   const card = btn?.closest('.post-item');
   if (!card) return;
 
   const wrap = document.createElement('div');
   wrap.id = `comments-${postId}`;
   wrap.style.cssText = 'border-top:1px solid rgba(139,94,60,.1);padding:12px 16px;background:rgba(247,238,227,.4);';
-  wrap.innerHTML = `
-    <div id="clist-${postId}" style="margin-bottom:10px;"></div>
+  wrap.innerHTML = `<div id="clist-${postId}" style="margin-bottom:10px;"></div>
     <div style="display:flex;gap:8px;align-items:center;">
       <input id="cinput-${postId}" placeholder="댓글 달기..."
-        style="flex:1;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:8px 14px;
-               font-size:13px;font-family:'Gowun Dodum',serif;background:white;outline:none;"
+        style="flex:1;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:8px 14px;font-size:13px;font-family:'Gowun Dodum',serif;background:white;outline:none;"
         onkeydown="if(event.key==='Enter')submitPostComment('${postId}')">
       <button onclick="submitPostComment('${postId}')"
-        style="background:var(--brown);color:white;border:none;border-radius:20px;
-               padding:8px 16px;font-size:12px;cursor:pointer;font-family:'Gowun Dodum',serif;">게시</button>
+        style="background:var(--brown);color:white;border:none;border-radius:20px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:'Gowun Dodum',serif;">게시</button>
     </div>`;
   card.appendChild(wrap);
   await loadPostComments(postId);
@@ -190,7 +222,7 @@ async function loadPostComments(postId) {
   const el = document.getElementById(`clist-${postId}`);
   if (!el) return;
   try {
-    const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
+    const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`);
     const data = await res.json();
     const comments = data.comments || [];
     if (!comments.length) {
@@ -199,9 +231,7 @@ async function loadPostComments(postId) {
     }
     el.innerHTML = comments.map(c => `
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;">
-        <div style="width:30px;height:30px;border-radius:50%;
-                    background:linear-gradient(135deg,var(--pink),var(--peach));
-                    display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--peach));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
           ${c.author_name?.charAt(0) || '?'}
         </div>
         <div style="flex:1;background:white;border-radius:14px;padding:8px 12px;">
@@ -217,14 +247,14 @@ async function loadPostComments(postId) {
 
 // ── 댓글 작성 ─────────────────────────────────────────────────────────────
 export async function submitPostComment(postId) {
-  const input   = document.getElementById(`cinput-${postId}`);
+  const input = document.getElementById(`cinput-${postId}`);
   const content = input?.value.trim();
   if (!content) return;
   const author = localStorage.getItem('cn_author_name') || '익명';
   input.value = '';
   input.disabled = true;
   try {
-    const res  = await fetch('/api/comment', {
+    const res = await fetch('/api/comment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ house_id: state.houseId, author_name: author, content, post_id: postId })
@@ -246,7 +276,7 @@ export async function submitPostComment(postId) {
 // ── 댓글 삭제 ─────────────────────────────────────────────────────────────
 export async function deletePostComment(commentId, postId) {
   try {
-    const res  = await fetch('/api/comment', {
+    const res = await fetch('/api/comment', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ comment_id: commentId, house_id: state.houseId })
