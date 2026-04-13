@@ -1047,3 +1047,25 @@
   line-height: 1.4;
   border: 1px solid rgba(139,94,60,0.15);
 }
+
+/* 이벤트 모드 */
+.event-banner {
+  background: linear-gradient(135deg, rgba(196,120,75,.15), rgba(196,120,75,.05));
+  border: 1px solid rgba(196,120,75,.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  animation: fadeUp .3s ease;
+}
+.event-banner-dday {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--room-event);
+  min-width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
