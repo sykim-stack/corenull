@@ -1,5 +1,5 @@
 // public/tabs/room.js
-import { state, DEVICE_ID, showToast, apiFetch, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
+import { state, DEVICE_ID, showToast, renderPost, renderPostList, timeAgo, escHtml } from '/public/js/common.js';
 
 // ── 방 렌더 ───────────────────────────────────────────────────────────────
 export function renderRoom(container, room) {
@@ -93,83 +93,19 @@ export function filterCat(catId, btn) {
   btn?.classList.add('active');
   state.activeCat = catId === 'all' ? null : catId;
 
-  const opts = state._currentRoomOpts;
-  if (!opts) return;
+  const cat  = catId === 'all' ? null : (state.categories || []).find(c => String(c.id) === String(catId));
+  const room = state.rooms.find(r => r.room_type === 'room');
+  if (room) renderEventBanner(room, cat);
 
-  // event-mode 처리
-  const cat = catId !== 'all' ? (state.categories || []).find(c => String(c.id) === String(catId)) : null;
-  if (cat?.is_event) {
-    activateEventMode(cat, opts);
-  } else {
-    deactivateEventMode(opts);
-  }
+  if (!room) return;
+  const posts = catId === 'all'
+    ? state.allPosts.filter(p => p.room_id === room.id)
+    : state.allPosts.filter(p => p.room_id === room.id && (p.category_ids || []).includes(catId));
 
-  const posts = _getFilteredPosts(opts, catId === 'all' ? null : catId);
-  renderPostList(posts, `roomPostList-${opts.meta.roomId}`);
+  renderPostList(posts, `roomPostList-${room.id}`);
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
   if (postIds.length) loadCommentCounts(postIds);
-}
-
-// ── 이벤트 모드 활성화 ────────────────────────────────────────────────────
-function activateEventMode(cat, opts) {
-  const container = document.getElementById(`tab-${opts.meta.roomId}`);
-  if (!container) return;
-  container.classList.add('event-mode');
-
-  const existing = container.querySelector('.event-banner');
-  if (existing) existing.remove();
-
-  const banner = _buildEventBanner(cat);
-  const section = container.querySelector('.section');
-  if (section) section.insertBefore(banner, section.firstChild);
-
-  // 글쓰기 시 이벤트 카테고리 자동 선택
-  state._eventCatId = cat.id;
-}
-
-// ── 이벤트 모드 비활성화 ─────────────────────────────────────────────────
-function deactivateEventMode(opts) {
-  const container = document.getElementById(`tab-${opts.meta.roomId}`);
-  if (!container) return;
-  container.classList.remove('event-mode');
-  container.querySelector('.event-banner')?.remove();
-  state._eventCatId = null;
-}
-
-// ── 이벤트 배너 빌드 ─────────────────────────────────────────────────────
-function _buildEventBanner(cat) {
-  const banner = document.createElement('div');
-  banner.className = 'event-banner';
-
-  let ddayHtml = '';
-  if (cat.event_date) {
-    const diff = Math.ceil((new Date(cat.event_date) - new Date()) / 86400000);
-    let ddayStr, ddayClass;
-    if (diff > 0)       { ddayStr = diff; ddayClass = 'dday-num'; }
-    else if (diff === 0){ ddayStr = 'DAY'; ddayClass = 'dday-today'; }
-    else                { ddayStr = Math.abs(diff); ddayClass = 'dday-past'; }
-
-    const dateStr = new Date(cat.event_date).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' });
-
-    ddayHtml = `
-      <div class="event-banner-dday">
-        <span class="event-banner-dday-label">${diff <= 0 ? 'D+' : 'D-'}</span>
-        <span class="event-banner-dday-num ${ddayClass}">${ddayStr}</span>
-      </div>
-      <div class="event-banner-date">${dateStr}</div>`;
-  }
-
-  banner.innerHTML = `
-    <div class="event-banner-inner">
-      <div class="event-banner-left">
-        <div class="event-banner-chip">🎂 이벤트</div>
-        <div class="event-banner-title">${escHtml(cat.name)}</div>
-        ${ddayHtml}
-      </div>
-    </div>`;
-
-  return banner;
 }
 
 // ── Reaction 토글 ─────────────────────────────────────────────────────────
