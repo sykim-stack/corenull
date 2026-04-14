@@ -104,23 +104,6 @@
   </div>
 </div>
 
-    <!-- ── 감정 칩 ── -->
-    <div class="compose-section">
-    <div class="compose-section-label">감정 선택 <span class="compose-hint">(선택 안 하면 AI가 분석해요)</span></div>
-
-    <div class="compose-section">
-    <div class="compose-section-label">분류 선택</div>
-
-    <div style="display:flex;gap:8px;margin-top:10px;">
-      <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;"
-        onclick="document.getElementById('composePhotoInput').click()">📷</button>
-      <input type="file" id="composePhotoInput" accept="image/*" multiple style="display:none"
-        onchange="handleWritePhoto(this)">
-      <button class="modal-submit" style="margin-top:0;" onclick="submitWrite()">등록</button>
-    </div>
-  </div>
-</div>
-
 <!-- ── 사진 설명 수정 모달 ── -->
 <div class="modal-overlay" id="editModal" onclick="closeModal('editModal',event)">
   <div class="modal-box" style="border-radius:20px;">
