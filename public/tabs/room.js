@@ -10,8 +10,11 @@ export function filterCat(catId, btn) {
   const opts = state._currentRoomOpts;
   if (!opts) return;
 
-  // event-mode 처리
-  const cat = catId !== 'all' ? (state.categories || []).find(c => String(c.id) === String(catId)) : null;
+  // event-mode 분기
+  const cat = catId !== 'all'
+    ? (state.categories || []).find(c => String(c.id) === String(catId))
+    : null;
+
   if (cat?.is_event) {
     activateEventMode(cat, opts);
   } else {
@@ -20,6 +23,7 @@ export function filterCat(catId, btn) {
 
   const posts = _getFilteredPosts(opts, catId === 'all' ? null : catId);
   renderPostList(posts, `roomPostList-${opts.meta.roomId}`);
+
   const postIds = posts.map(p => p.id).filter(Boolean);
   if (postIds.length) loadReactions(postIds);
   if (postIds.length) loadCommentCounts(postIds);
@@ -31,10 +35,10 @@ function activateEventMode(cat, opts) {
   if (!container) return;
   container.classList.add('event-mode');
 
-  const existing = container.querySelector('.event-banner');
-  if (existing) existing.remove();
+  // 기존 배너 제거 후 재삽입
+  container.querySelector('.event-banner')?.remove();
 
-  const banner = _buildEventBanner(cat);
+  const banner  = _buildEventBanner(cat);
   const section = container.querySelector('.section');
   if (section) section.insertBefore(banner, section.firstChild);
 
@@ -58,18 +62,18 @@ function _buildEventBanner(cat) {
 
   let ddayHtml = '';
   if (cat.event_date) {
-    const diff = Math.ceil((new Date(cat.event_date) - new Date()) / 86400000);
-    let ddayStr, ddayClass;
-    if (diff > 0)       { ddayStr = diff; ddayClass = 'dday-num'; }
-    else if (diff === 0){ ddayStr = 'DAY'; ddayClass = 'dday-today'; }
-    else                { ddayStr = Math.abs(diff); ddayClass = 'dday-past'; }
-
-    const dateStr = new Date(cat.event_date).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' });
+    const diff    = Math.ceil((new Date(cat.event_date) - new Date()) / 86400000);
+    const numStr  = diff > 0 ? diff : Math.abs(diff);
+    const prefix  = diff <= 0 ? 'D+' : 'D-';
+    const numCls  = diff === 0 ? 'dday-today' : diff < 0 ? 'dday-past' : '';
+    const dateStr = new Date(cat.event_date).toLocaleDateString('ko-KR', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
 
     ddayHtml = `
       <div class="event-banner-dday">
-        <span class="event-banner-dday-label">${diff <= 0 ? 'D+' : 'D-'}</span>
-        <span class="event-banner-dday-num ${ddayClass}">${ddayStr}</span>
+        <span class="event-banner-dday-label">${prefix}</span>
+        <span class="event-banner-dday-num ${numCls}">${diff === 0 ? 'DAY' : numStr}</span>
       </div>
       <div class="event-banner-date">${dateStr}</div>`;
   }
@@ -113,7 +117,9 @@ export function renderRoom(container, room, opts = {}) {
   };
 
   const makeEventChip = c => {
-    const diff    = c.event_date ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000) : null;
+    const diff = c.event_date
+      ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000)
+      : null;
     const ddayBadge = diff === null ? '' :
       diff > 0  ? `<span class="cat-chip-dday">D-${diff}</span>` :
       diff === 0 ? `<span class="cat-chip-dday today">D-DAY</span>` :
@@ -129,7 +135,9 @@ export function renderRoom(container, room, opts = {}) {
     <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
       <button class="cat-chip${!filter.categoryId ? ' active' : ''}" data-cat="all" onclick="filterCat('all',this)">전체</button>
       ${normal.map(makeNormalChip).join('')}
-      ${events.length ? `<span style="color:var(--muted);font-size:11px;align-self:center;">|</span>${events.map(makeEventChip).join('')}` : ''}
+      ${events.length
+        ? `<span style="color:var(--muted);font-size:11px;align-self:center;">|</span>${events.map(makeEventChip).join('')}`
+        : ''}
     </div>` : '';
 
   container.innerHTML = `
@@ -252,7 +260,7 @@ async function loadPostComments(postId) {
   const el = document.getElementById(`clist-${postId}`);
   if (!el) return;
 
-  const data = await apiFetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`, { silent: true });
+  const data     = await apiFetch(`/api/comment?house_id=${state.houseId}&post_id=${postId}`, { silent: true });
   const comments = data?.comments || [];
 
   if (!comments.length) {
@@ -281,7 +289,7 @@ export async function submitPostComment(postId) {
   const input   = document.getElementById(`cinput-${postId}`);
   const content = input?.value.trim();
   if (!content) return;
-  const author = localStorage.getItem('cn_author_name') || '익명';
+  const author   = localStorage.getItem('cn_author_name') || '익명';
   input.value    = '';
   input.disabled = true;
 
@@ -312,7 +320,7 @@ export async function deletePostComment(commentId, postId) {
   if (data) await loadPostComments(postId);
 }
 
-// ── 공유 모달 ────────────────────────────────────────────────────────────
+// ── 공유 모달 ─────────────────────────────────────────────────────────────
 export function openShareModal(roomId) {
   const url = `${location.origin}${location.pathname}?room=${roomId}`;
   if (navigator.share) {
@@ -322,7 +330,7 @@ export function openShareModal(roomId) {
   }
 }
 
-// ── window 노출 ───────────────────────────────────────────────────────────
+// ── window 노출 (인라인 onclick용) ────────────────────────────────────────
 window.state             = state;
 window.filterCat         = filterCat;
 window.toggleReaction    = toggleReaction;
