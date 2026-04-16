@@ -278,9 +278,9 @@ const buildVM = {
         ['pvAuthorName', state.houseData?.name || state.slug],
         ['pvAv', (CAT_META[state.houseData?.category] || CAT_META['daily']).ph],
         ['pvDate', s.date ? new Date(s.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''],
-        ['pvText', s.content]
+        ['pvText', s.content],
+        ['pvTags', cats.map(c => `<span class="post-tag" style="background:${c.color || 'var(--mint)'}">${escHtml(c.name)}</span>`).join('')]
       ],
-      tagsHtml: cats.map(c => `<span class="post-tag" style="background:${c.color || 'var(--mint)'}">${escHtml(c.name)}</span>`).join(''),
       mediaHtml: s.urls.length ? `<img id="pvMainImg" src="${s.urls[0]}">${s.urls.length > 1 ? `<button class="pv-media-nav prev" onclick="pvNav(-1)">‹</button><button class="pv-media-nav next" onclick="pvNav(1)">›</button><div class="pv-media-counter" id="pvCounter">1 / ${s.urls.length}</div>` : ''}` : ''
     };
   },
@@ -353,8 +353,13 @@ const render = {
     const vm = buildVM.post(typeof raw === 'string' ? JSON.parse(raw) : raw);
     pvState = { postId: vm.id, images: vm.urls, idx: 0 };
     const me = document.getElementById('pvMedia'); me.innerHTML = vm.mediaHtml; me.style.display = vm.mediaHtml ? '' : 'none';
-    vm.fields.forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.textContent = v; });
-    document.getElementById('pvTags').innerHTML = vm.tagsHtml;
+    
+    // RENDER: 유일한 필드 출력 구조 (하드코딩 제거)
+    vm.fields.forEach(([id, v]) => { 
+      const el = document.getElementById(id);
+      if (el) id.endsWith('Tags') ? el.innerHTML = v : el.textContent = v;
+    });
+
     document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오는 중...</div>';
     if (pvState.postId) pvLoadComments();
     document.getElementById('postModal').classList.add('open'); document.body.style.overflow = 'hidden';
