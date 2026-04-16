@@ -249,49 +249,10 @@ import { toggleInterest, goStepHouse, joinCurrentHouse, skipOnboarding, uploadCo
 // ── STATE ──
 let pvState = { postId: null, images: [], idx: 0 };
 
-// ── NORMALIZE (절대 관문) ──
-const normalize = {
-  house:   (h) => ({ name: h?.name ?? '-', description: h?.description ?? '', category: h?.category ?? 'daily', cover_url: h?.cover_url ?? null, profile_url: h?.profile_url ?? null, birth_date: h?.birth_date ?? null, hundred_date: h?.hundred_date ?? null }),
-  room:    (r) => ({ id: r?.id ?? null, type: r?.room_type ?? 'room', name: r?.room_name ?? '-' }),
-  post:    (p) => ({ id: p?.postId ?? null, content: p?.content ?? '', date: p?.date ?? null, urls: Array.isArray(p?.urls) ? p.urls : [], cats: Array.isArray(p?.category_ids) ? p.category_ids : [] }),
-  comment: (c) => ({ id: c?.id ?? '', author: c?.author_name ?? '익명', content: c?.content ?? '', date: c?.created_at ?? null })
-};
-
-<<<<<<< HEAD
-function normalizeRoom(raw) {
-  if (!raw || typeof raw !== 'object') raw = {};
-  return {
-    id:        raw.id        || null,
-    room_type: raw.room_type || 'room',
-    room_name: raw.room_name || '',
-  };
-}
-
-function normalizePost(raw) {
-  if (!raw || typeof raw !== 'object') raw = {};
-  return {
-    postId:       raw.postId       || null,
-    content:      raw.content      || '',
-    date:         raw.date         || null,
-    urls:         Array.isArray(raw.urls) ? raw.urls : [],
-    category_ids: Array.isArray(raw.category_ids) ? raw.category_ids : [],
-  };
-}
-
-function normalizeComment(raw) {
-  if (!raw || typeof raw !== 'object') raw = {};
-  return {
-    id:          raw.id          || '',
-    author_name: raw.author_name || '?',
-    content:     raw.content     || '',
-    created_at:  raw.created_at  || null,
-  };
-}
+// ── NORMALIZE ──
+// (API 데이터를 UI에 맞게 정규화하는 로직이 필요한 경우 이곳에 배치합니다)
 
 // ── VIEW MODEL ──
-// render 함수가 사용하는 모든 계산·map·포맷 로직은 이 섹션에 위치한다.
-// render는 오직 innerHTML 대입과 DOM 조작만 수행한다.
-
 function buildRoomOpts(room) {
   return {
     mode: 'normal',
@@ -299,99 +260,6 @@ function buildRoomOpts(room) {
     meta: { roomId: room.id, source: 'house' }
   };
 }
-
-// 탭 순서 정렬 (living → room → library)
-function buildSpaceRooms(rooms) {
-  const safe = Array.isArray(rooms) ? rooms : [];
-  return [
-    ...safe.filter(r => r.room_type === 'living'),
-    ...safe.filter(r => r.room_type === 'room'),
-    ...safe.filter(r => r.room_type === 'library'),
-  ].map(normalizeRoom);
-}
-
-// D-day 계산 결과 객체 반환
-function buildDdayVM(house) {
-  const h = normalizeHouse(house);
-  if (!h.birth_date && !h.start_date) return null;
-  const start   = new Date(h.birth_date || h.start_date);
-  const now     = new Date();
-  const elapsed = Math.floor((now - start) / 86400000);
-  if (h.category === 'baby' && h.hundred_date) {
-    const diff = Math.ceil((new Date(h.hundred_date) - now) / 86400000);
-    return [
-      { num: elapsed + '일', label: '태어난 지' },
-      { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
-      { num: '100', label: '기념일' },
-    ];
-  }
-  return [{ num: elapsed + '일', label: '지난 날' }];
-}
-
-// 포스트 뷰어 뷰모델
-function buildPostVM(rawItem) {
-  const item = normalizePost(rawItem);
-  const dateStr = item.date
-    ? new Date(item.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
-    : '';
-  const tags = item.category_ids.map(cid => {
-    const c = (state.categories || []).find(x => String(x.id) === String(cid));
-    return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'}">${escHtml(c.name)}</span>` : '';
-  }).join('');
-  return { item, dateStr, tags };
-}
-
-// 댓글 목록 HTML 생성
-function buildCommentsHTML(rawList, isOwner) {
-  const list = Array.isArray(rawList) ? rawList : [];
-  if (!list.length) return '<div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>';
-  return list.map(raw => {
-    const c = normalizeComment(raw);
-    return `
-=======
-// ── VIEW MODEL (초압축) ──
-const buildVM = {
-  dday: (h) => {
-    const s = normalize.house(h); if (!s.birth_date) return '';
-    const elapsed = Math.floor((new Date() - new Date(s.birth_date)) / 86400000);
-    const fields  = (s.category === 'baby' && s.hundred_date) ? [
-      ['태어난 지', elapsed + '일'],
-      ['백일까지', Math.ceil((new Date(s.hundred_date) - new Date()) / 86400000).let(d => d > 0 ? `D-${d}` : d === 0 ? 'D-DAY' : '완료 🎂')],
-      ['기념일', '100']
-    ] : [['지난 날', elapsed + '일']];
-    return fields.map(([k, v]) => `<div class="dday-box"><div class="dday-num">${v}</div><div class="dday-label">${k}</div></div>`).join('');
-  },
-  post: (p) => {
-    const s = normalize.post(p);
-    const cats = s.cats.map(cid => (state.categories || []).find(x => String(x.id) === String(cid))).filter(Boolean);
-    return {
-      id: s.id, urls: s.urls,
-      fields: [
-        ['pvAuthorName', state.houseData?.name || state.slug],
-        ['pvAv', (CAT_META[state.houseData?.category] || CAT_META['daily']).ph],
-        ['pvDate', s.date ? new Date(s.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''],
-        ['pvText', s.content],
-        ['pvTags', cats.map(c => `<span class="post-tag" style="background:${c.color || 'var(--mint)'}">${escHtml(c.name)}</span>`).join('')]
-      ],
-      mediaHtml: s.urls.length ? `<img id="pvMainImg" src="${s.urls[0]}">${s.urls.length > 1 ? `<button class="pv-media-nav prev" onclick="pvNav(-1)">‹</button><button class="pv-media-nav next" onclick="pvNav(1)">›</button><div class="pv-media-counter" id="pvCounter">1 / ${s.urls.length}</div>` : ''}` : ''
-    };
-  },
-  comments: (list) => {
-    if (!list?.length) return '<div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>';
-    return list.map(normalize.comment).map(c => `
->>>>>>> ed697b2e5bd676fed17ee6b28bde7ef0e03106f1
-      <div class="pv-comment-item">
-        <div class="pv-comment-av">${escHtml(c.author.charAt(0))}</div>
-        <div class="pv-comment-bubble">
-          <div class="pv-comment-name">${escHtml(c.author)}</div>
-          <div class="pv-comment-text">${escHtml(c.content)}</div>
-          <div class="pv-comment-time">${timeAgo(c.date)}</div>
-        </div>
-        ${state.isOwner ? `<button class="pv-comment-del" onclick="pvDeleteComment('${c.id}')">🗑️</button>` : ''}
-      </div>`).join('');
-  }
-};
-Object.defineProperty(Object.prototype, 'let', { value: function(f) { return f(this); } });
 
 function parseVideoUrl(url) {
   if (!url) return null;
@@ -404,112 +272,151 @@ function parseVideoUrl(url) {
   return null;
 }
 
-<<<<<<< HEAD
-// ── RENDER ──
 function initDday(house) {
-  const items = buildDdayVM(house);
-  if (!items) return;
-  document.getElementById('ddayWrap').innerHTML = items
-    .map(i => `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`)
-    .join('');
-}
-=======
-// ── RENDER (초압축) ──
-const render = {
-  dday: (h) => document.getElementById('ddayWrap').innerHTML = buildVM.dday(h),
-  hero: (h) => {
-    const s = normalize.house(h); const cat = CAT_META[s.category] || CAT_META['daily'];
-    document.title = `${s.name} · CoreNull`;
-    // RENDER 초압축: 필드 순회 대입만 남김
-    [['heroName', s.name], ['heroSub', s.description], ['footerName', s.name], ['footerEi', cat.emoji], ['profilePlaceholder', cat.ph]].forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.textContent = v; });
-    
-    const cvImg = document.getElementById('coverImg'), cvWrap = document.getElementById('coverWrap');
-    cvWrap.querySelector('.cover-empty')?.remove();
-    if (s.cover_url) cvImg.style.backgroundImage = `url(${s.cover_url})`;
-    else cvWrap.insertAdjacentHTML('beforeend', `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`);
-    
-    const ph = document.getElementById('profilePhoto');
-    if (s.profile_url) ph.innerHTML = `<img src="${s.profile_url}" alt="${s.name}"><div class="profile-photo-hint">변경</div>`;
-    if (state.isOwner) { 
-      ph.classList.add('is-owner'); ph.onclick = () => document.getElementById('profileInput').click();
-      if (!cvWrap.querySelector('.cover-edit-btn')) cvWrap.insertAdjacentHTML('beforeend', `<button class="cover-edit-btn" onclick="document.getElementById('coverInput').click()">📷 커버 수정</button>`);
-    }
-  },
-  tabs: (h, rooms, miles, comms) => {
-    const top = document.getElementById('topTabs'), cnt = document.getElementById('tabContents'), active = document.querySelector('.top-tab-btn.active')?.dataset?.tab;
-    top.innerHTML = ''; cnt.innerHTML = '';
-    const spaceRooms = [
-      ...rooms.filter(r => r.room_type === 'living'),
-      ...rooms.filter(r => r.room_type === 'room'),
-      ...rooms.filter(r => r.room_type === 'library'),
-    ].map(normalize.room);
-    spaceRooms.forEach(r => {
-      const id = `tab-${r.id}`, meta = ROOM_META[r.type] || { icon: '🚪', label: r.name };
-      const btn = document.createElement('button'); btn.className = 'top-tab-btn'; btn.innerHTML = `<span class="ti">${meta.icon}</span>${meta.label || r.name}`; btn.dataset.tab = id; btn.onclick = () => switchTab(id); top.appendChild(btn);
-      const div = document.createElement('div'); div.className = 'tab-content'; div.id = id; cnt.appendChild(div);
-      if (r.type === 'living') renderLobby(div, h, miles, comms, spaceRooms);
-      else if (r.type === 'library') renderLibrary(div);
-      else renderRoom(div, r, { mode: 'normal', filter: { categoryId: null }, meta: { roomId: r.id, source: 'house' } });
-    });
-    const restore = active && document.getElementById(active) ? active : document.querySelector('.top-tab-btn')?.dataset?.tab;
-    if (restore) switchTab(restore);
-  },
-  post: (raw) => {
-    const vm = buildVM.post(typeof raw === 'string' ? JSON.parse(raw) : raw);
-    pvState = { postId: vm.id, images: vm.urls, idx: 0 };
-    const me = document.getElementById('pvMedia'); me.innerHTML = vm.mediaHtml; me.style.display = vm.mediaHtml ? '' : 'none';
-    
-    // RENDER: 유일한 필드 출력 구조 (하드코딩 제거)
-    vm.fields.forEach(([id, v]) => { 
-      const el = document.getElementById(id);
-      if (el) id.endsWith('Tags') ? el.innerHTML = v : el.textContent = v;
-    });
->>>>>>> ed697b2e5bd676fed17ee6b28bde7ef0e03106f1
-
-    document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오는 중...</div>';
-    if (pvState.postId) pvLoadComments();
-    document.getElementById('postModal').classList.add('open'); document.body.style.overflow = 'hidden';
+  if (!house.birth_date && !house.start_date) return;
+  const start   = new Date(house.birth_date || house.start_date);
+  const now     = new Date();
+  const elapsed = Math.floor((now - start) / 86400000);
+  let items = [{ num: elapsed + '일', label: '지난 날' }];
+  if (house.category === 'baby' && house.hundred_date) {
+    const diff = Math.ceil((new Date(house.hundred_date) - now) / 86400000);
+    items = [
+      { num: elapsed + '일', label: '태어난 지' },
+      { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
+      { num: '100', label: '기념일' }
+    ];
   }
-};
-const initDday = render.dday, applyHero = render.hero, buildTabs = render.tabs, openPostModal = render.post;
+  document.getElementById('ddayWrap').innerHTML = items.map(i =>
+    `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`
+  ).join('');
+}
+
+// ── RENDER ──
+function applyHero(house) {
+  const cat  = CAT_META[house.category] || CAT_META['daily'];
+  const name = house.name || state.slug;
+  document.title = `${name} · CoreNull`;
+
+  document.getElementById('heroName').textContent = name;
+  document.getElementById('heroSub').textContent  = house.description || '';
+  document.getElementById('footerName').textContent = name;
+  document.getElementById('footerEi').textContent   = cat.emoji;
+
+  const coverImg  = document.getElementById('coverImg');
+  const coverWrap = document.getElementById('coverWrap');
+  coverWrap.querySelector('.cover-empty')?.remove();
+
+  if (house.cover_url) {
+    coverImg.style.backgroundImage = `url(${house.cover_url})`;
+  } else {
+    coverWrap.insertAdjacentHTML('beforeend',
+      `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`);
+  }
+
+  if (state.isOwner && !coverWrap.querySelector('.cover-edit-btn')) {
+    const btn = document.createElement('button');
+    btn.className   = 'cover-edit-btn';
+    btn.textContent = '📷 커버 수정';
+    btn.onclick     = () => document.getElementById('coverInput').click();
+    coverWrap.appendChild(btn);
+  }
+
+  const photo = document.getElementById('profilePhoto');
+  if (house.profile_url) {
+    photo.innerHTML = `<img src="${house.profile_url}" alt="${name}"><div class="profile-photo-hint">변경</div>`;
+  } else {
+    document.getElementById('profilePlaceholder').textContent = cat.ph;
+  }
+  if (state.isOwner) {
+    photo.classList.add('is-owner');
+    photo.onclick = () => document.getElementById('profileInput').click();
+  }
+}
+
+function buildTabs(house, rooms, milestones, comments) {
+  const topTabs     = document.getElementById('topTabs');
+  const tabContents = document.getElementById('tabContents');
+  const activeTabId = document.querySelector('.top-tab-btn.active')?.dataset?.tab || null;
+  topTabs.innerHTML    = '';
+  tabContents.innerHTML = '';
+
+  const spaceRooms = [
+    ...rooms.filter(r => r.room_type === 'living'),
+    ...rooms.filter(r => r.room_type === 'room'),
+    ...rooms.filter(r => r.room_type === 'library'),
+  ];
+
+  spaceRooms.forEach((room) => {
+    const id    = `tab-${room.id}`;
+    const meta  = ROOM_META[room.room_type] || { icon: '🚪', label: room.room_name };
+    const label = meta.label || room.room_name;
+
+    const btn = document.createElement('button');
+    btn.className   = 'top-tab-btn';
+    btn.innerHTML   = `<span class="ti">${meta.icon}</span>${label}`;
+    btn.dataset.tab = id;
+    btn.onclick     = () => switchTab(id);
+    topTabs.appendChild(btn);
+
+    const div = document.createElement('div');
+    div.className = 'tab-content';
+    div.id = id;
+    tabContents.appendChild(div);
+
+    if (room.room_type === 'living')       renderLobby(div, house, milestones, comments, spaceRooms);
+    else if (room.room_type === 'library') renderLibrary(div);
+    else                                   renderRoom(div, room, buildRoomOpts(room));
+  });
+
+  const restoreId = activeTabId && document.getElementById(activeTabId)
+    ? activeTabId
+    : document.querySelector('.top-tab-btn')?.dataset?.tab;
+  if (restoreId) switchTab(restoreId);
+}
 
 function switchTab(tabId) {
-  document.querySelectorAll('.tab-content, .top-tab-btn').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.top-tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById(tabId)?.classList.add('active');
   const btn = [...document.querySelectorAll('.top-tab-btn')].find(b => b.dataset.tab === tabId);
   if (btn) btn.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-<<<<<<< HEAD
 
 function switchToRoomType(type) {
   const r = state.rooms.find(r => r.room_type === type);
   if (r) switchTab(`tab-${r.id}`);
 }
 
-function openPostModal(rawItem) {
-  if (typeof rawItem === 'string') rawItem = JSON.parse(rawItem);
-  const { item, dateStr, tags } = buildPostVM(rawItem);
-  pvState = { postId: item.postId, images: item.urls, idx: 0 };
+function openPostModal(item) {
+  if (typeof item === 'string') item = JSON.parse(item);
+  const urls = item.urls || [];
+  pvState = { postId: item.postId || null, images: urls, idx: 0 };
 
   const media = document.getElementById('pvMedia');
-  if (item.urls.length) {
+  if (urls.length) {
     media.innerHTML = `
-      <img id="pvMainImg" src="${item.urls[0]}">
-      ${item.urls.length > 1 ? `
+      <img id="pvMainImg" src="${urls[0]}">
+      ${urls.length > 1 ? `
         <button class="pv-media-nav prev" onclick="pvNav(-1)">‹</button>
         <button class="pv-media-nav next" onclick="pvNav(1)">›</button>
-        <div class="pv-media-counter" id="pvCounter">1 / ${item.urls.length}</div>` : ''}`;
+        <div class="pv-media-counter" id="pvCounter">1 / ${urls.length}</div>` : ''}`;
     media.style.display = '';
   } else {
     media.style.display = 'none';
   }
 
   document.getElementById('pvAuthorName').textContent = state.houseData?.name || state.slug;
-  document.getElementById('pvAv').textContent         = (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
-  document.getElementById('pvDate').textContent       = dateStr;
-  document.getElementById('pvText').textContent       = item.content;
-  document.getElementById('pvTags').innerHTML         = tags;
+  document.getElementById('pvAv').textContent = (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
+  document.getElementById('pvDate').textContent = item.date
+    ? new Date(item.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  document.getElementById('pvText').textContent = item.content || '';
+
+  const tags = (item.category_ids || []).map(cid => {
+    const c = state.categories.find(x => String(x.id) === String(cid));
+    return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${c.name}</span>` : '';
+  }).join('');
+  document.getElementById('pvTags').innerHTML = tags;
 
   document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오는 중...</div>';
   if (pvState.postId) pvLoadComments();
@@ -531,13 +438,27 @@ function pvNav(dir) {
   if (c) c.textContent = `${pvState.idx + 1} / ${pvState.images.length}`;
 }
 
-=======
-function switchToRoomType(type) { const r = state.rooms.find(r => r.room_type === type); if (r) switchTab(`tab-${r.id}`); }
-function closePvModal(e) { if (e && e.target !== document.getElementById('postModal')) return; document.getElementById('postModal').classList.remove('open'); document.body.style.overflow = ''; }
-function pvNav(dir) { pvState.idx = Math.max(0, Math.min(pvState.images.length - 1, pvState.idx + dir)); document.getElementById('pvMainImg').src = pvState.images[pvState.idx]; const c = document.getElementById('pvCounter'); if (c) c.textContent = `${pvState.idx + 1} / ${pvState.images.length}`; }
->>>>>>> ed697b2e5bd676fed17ee6b28bde7ef0e03106f1
 function pvFocusComment() { document.getElementById('pvCommentInput')?.focus(); }
-async function pvLoadComments() { try { const res = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${pvState.postId}`); const data = await res.json(); document.getElementById('pvComments').innerHTML = buildVM.comments(data.comments); } catch(e) { document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오기 실패</div>'; } }
+
+async function pvLoadComments() {
+  const el = document.getElementById('pvComments');
+  try {
+    const res  = await fetch(`/api/comment?house_id=${state.houseId}&post_id=${pvState.postId}`);
+    const data = await res.json();
+    const list = data.comments || [];
+    if (!list.length) { el.innerHTML = '<div class="pv-comments-empty">첫 댓글을 남겨보세요 💬</div>'; return; }
+    el.innerHTML = list.map(c => `
+      <div class="pv-comment-item">
+        <div class="pv-comment-av">${(c.author_name || '?').charAt(0)}</div>
+        <div class="pv-comment-bubble">
+          <div class="pv-comment-name">${escHtml(c.author_name)}</div>
+          <div class="pv-comment-text">${escHtml(c.content)}</div>
+          <div class="pv-comment-time">${timeAgo(c.created_at)}</div>
+        </div>
+        ${state.isOwner ? `<button class="pv-comment-del" onclick="pvDeleteComment('${c.id}')">🗑️</button>` : ''}
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="pv-comments-empty">불러오기 실패</div>'; }
+}
 
 function openLightbox(images, startIdx = 0) {
   state.lbImages = images; state.lbIndex = startIdx;
