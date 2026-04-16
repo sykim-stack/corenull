@@ -318,18 +318,20 @@ const render = {
   hero: (h) => {
     const s = normalize.house(h); const cat = CAT_META[s.category] || CAT_META['daily'];
     document.title = `${s.name} · CoreNull`;
-    [['heroName', s.name], ['heroSub', s.description], ['footerName', s.name], ['footerEi', cat.emoji]].forEach(([id, v]) => document.getElementById(id).textContent = v);
+    // RENDER 초압축: 필드 순회 대입만 남김
+    [['heroName', s.name], ['heroSub', s.description], ['footerName', s.name], ['footerEi', cat.emoji], ['profilePlaceholder', cat.ph]].forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.textContent = v; });
+    
     const cvImg = document.getElementById('coverImg'), cvWrap = document.getElementById('coverWrap');
     cvWrap.querySelector('.cover-empty')?.remove();
     if (s.cover_url) cvImg.style.backgroundImage = `url(${s.cover_url})`;
     else cvWrap.insertAdjacentHTML('beforeend', `<div class="cover-empty"><span style="font-size:36px;">${cat.ph}</span><span>커버 사진을 추가해보세요</span></div>`);
-    if (state.isOwner && !cvWrap.querySelector('.cover-edit-btn')) {
-      const btn = document.createElement('button'); btn.className = 'cover-edit-btn'; btn.textContent = '📷 커버 수정'; btn.onclick = () => document.getElementById('coverInput').click(); cvWrap.appendChild(btn);
-    }
+    
     const ph = document.getElementById('profilePhoto');
     if (s.profile_url) ph.innerHTML = `<img src="${s.profile_url}" alt="${s.name}"><div class="profile-photo-hint">변경</div>`;
-    else document.getElementById('profilePlaceholder').textContent = cat.ph;
-    if (state.isOwner) { ph.classList.add('is-owner'); ph.onclick = () => document.getElementById('profileInput').click(); }
+    if (state.isOwner) { 
+      ph.classList.add('is-owner'); ph.onclick = () => document.getElementById('profileInput').click();
+      if (!cvWrap.querySelector('.cover-edit-btn')) cvWrap.insertAdjacentHTML('beforeend', `<button class="cover-edit-btn" onclick="document.getElementById('coverInput').click()">📷 커버 수정</button>`);
+    }
   },
   tabs: (h, rooms, miles, comms) => {
     const top = document.getElementById('topTabs'), cnt = document.getElementById('tabContents'), active = document.querySelector('.top-tab-btn.active')?.dataset?.tab;
