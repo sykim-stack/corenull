@@ -320,44 +320,55 @@ function buildSpaceRooms(rooms) {
   ].map(normalizeRoom);
 }
 
-// D-day 계산 및 HTML 조립까지 완료하여 반환
+// D-day 뷰모델 필드화 및 HTML 압축 생성
 function buildDdayHTML(house) {
   const h = normalizeHouse(house);
   if (!h.birth_date && !h.start_date) return '';
   const start   = new Date(h.birth_date || h.start_date);
   const now     = new Date();
   const elapsed = Math.floor((now - start) / 86400000);
-  let items = [];
-  if (h.category === 'baby' && h.hundred_date) {
-    const diff = Math.ceil((new Date(h.hundred_date) - now) / 86400000);
-    items = [
-      { num: elapsed + '일', label: '태어난 지' },
-      { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
-      { num: '100', label: '기념일' },
-    ];
-  } else {
-    items = [{ num: elapsed + '일', label: '지난 날' }];
-  }
-  return items.map(i => `<div class="dday-box"><div class="dday-num">${i.num}</div><div class="dday-label">${i.label}</div></div>`).join('');
+  
+  // VIEW MODEL 필드화: 데이터 구조화
+  const fields = (h.category === 'baby' && h.hundred_date) 
+    ? [
+        { num: elapsed + '일', label: '태어난 지' },
+        { num: Math.ceil((new Date(h.hundred_date) - now) / 86400000).let(d => d > 0 ? `D-${d}` : d === 0 ? 'D-DAY' : '완료 🎂'), label: '백일까지' },
+        { num: '100', label: '기념일' }
+      ]
+    : [{ num: elapsed + '일', label: '지난 날' }];
+
+  // RENDER 압축: 필드 기반 자동 출력
+  return fields.map(f => `<div class="dday-box"><div class="dday-num">${f.num}</div><div class="dday-label">${f.label}</div></div>`).join('');
 }
 
-// 포스트 뷰어 뷰모델 (HTML 조립까지 포함)
+// 헬퍼: JS에 없는 .let 구현 (가독성용)
+Object.defineProperty(Object.prototype, 'let', { value: function(f) { return f(this); } });
+
+// 포스트 뷰어 뷰모델 (필드화 및 압축)
 function buildPostVM(rawItem) {
   const item = normalizePost(rawItem);
-  const dateStr = item.date
-    ? new Date(item.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
-    : '';
+  
+  // VIEW MODEL 필드화
+  const infoFields = [
+    { id: 'pvAuthorName', value: state.houseData?.name || state.slug },
+    { id: 'pvAv',         value: (CAT_META[state.houseData?.category] || CAT_META['daily']).ph },
+    { id: 'pvDate',       value: item.date ? new Date(item.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : '' },
+    { id: 'pvText',       value: item.content }
+  ];
+
   const tagsHtml = item.category_ids.map(cid => {
     const c = (state.categories || []).find(x => String(x.id) === String(cid));
     return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'}">${escHtml(c.name)}</span>` : '';
   }).join('');
+
   const mediaHtml = item.urls.length ? `
     <img id="pvMainImg" src="${item.urls[0]}">
     ${item.urls.length > 1 ? `
       <button class="pv-media-nav prev" onclick="pvNav(-1)">‹</button>
       <button class="pv-media-nav next" onclick="pvNav(1)">›</button>
       <div class="pv-media-counter" id="pvCounter">1 / ${item.urls.length}</div>` : ''}` : '';
-  return { item, dateStr, tagsHtml, mediaHtml };
+
+  return { item, infoFields, tagsHtml, mediaHtml };
 }
 
 // 댓글 목록 HTML 생성
@@ -491,18 +502,20 @@ function switchToRoomType(type) {
 
 function openPostModal(rawItem) {
   if (typeof rawItem === 'string') rawItem = JSON.parse(rawItem);
-  const { item, dateStr, tagsHtml, mediaHtml } = buildPostVM(rawItem);
+  const { item, infoFields, tagsHtml, mediaHtml } = buildPostVM(rawItem);
   pvState = { postId: item.postId, images: item.urls, idx: 0 };
 
+  // RENDER 압축: 미디어 영역
   const mediaEl = document.getElementById('pvMedia');
   mediaEl.innerHTML     = mediaHtml;
   mediaEl.style.display = mediaHtml ? '' : 'none';
 
-  document.getElementById('pvAuthorName').textContent = state.houseData?.name || state.slug;
-  document.getElementById('pvAv').textContent         = (CAT_META[state.houseData?.category] || CAT_META['daily']).ph;
-  document.getElementById('pvDate').textContent       = dateStr;
-  document.getElementById('pvText').textContent       = item.content;
-  document.getElementById('pvTags').innerHTML         = tagsHtml;
+  // RENDER 압축: 필드 기반 자동 대입 (하드코딩 제거)
+  infoFields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) el.textContent = f.value;
+  });
+  document.getElementById('pvTags').innerHTML = tagsHtml;
 
   document.getElementById('pvComments').innerHTML = '<div class="pv-comments-empty">불러오는 중...</div>';
   if (pvState.postId) pvLoadComments();
