@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이벤트 · CoreNull</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="이벤트 · CoreNull" />
+  <meta property="og:description" content="소중한 순간을 함께 기록해요" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
+
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --cream: #FDF8F3;
+      --warm:  #F7EEE3;
+      --peach: #F2C4A0;
+      --brown: #8B5E3C;
+      --dark:  #2C1A0E;
+      --mint:  #8FBFAB;
+      --gold:  #C9A84C;
+      --text:  #3D2B1F;
+      --muted: #9B8B7E;
+      --ev-accent: #C4784B;
+      --ev-light:  rgba(196,120,75,.1);
+      --cb-bg:     #1a1a1a;
+      --cb-surface:#242424;
+      --cb-border: rgba(255,255,255,.08);
+      --cb-text:   #f0f0f0;
+      --cb-accent: #C9A84C;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Gowun Dodum', serif;
+      min-height: 100svh;
+      overflow-x: hidden;
+    }
+
+    /* ── Hero ── */
+    .ev-hero {
+      position: relative;
+      min-height: 56vw;
+      max-height: 480px;
+      overflow: hidden;
+      background: var(--cb-bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .ev-hero-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform .4s ease;
+      transform-origin: center;
+    }
+    .ev-hero:hover .ev-hero-bg { transform: scale(1.02); }
+    .ev-hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 30%, rgba(20,10,5,.7) 100%);
+    }
+    .ev-hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 32px 28px 28px;
+      color: white;
+    }
+    .ev-hero-badge {
+      display: inline-block;
+      background: var(--ev-accent);
+      color: white;
+      font-size: 10px;
+      letter-spacing: 3px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      font-family: 'Noto Serif KR', serif;
+    }
+    .ev-hero-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: clamp(22px, 5vw, 36px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .ev-hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: rgba(255,255,255,.7);
+    }
+    .ev-dday {
+      background: var(--gold);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-family: 'Noto Serif KR', serif;
+    }
+
+    /* ── 공유 바 ── */
+    .ev-share-bar {
+      background: white;
+      border-bottom: 1px solid rgba(139,94,60,.1);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .ev-share-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      border-radius: 20px;
+      padding: 7px 16px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity .2s;
+    }
+    .ev-share-btn:hover { opacity: .85; }
+    .ev-share-btn.kakao { background: #FEE500; color: #3C1E1E; }
+    .ev-share-btn.link  { background: var(--cb-bg); color: var(--cb-text); }
+    .ev-owner-btn {
+      margin-left: auto;
+      background: var(--ev-accent);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 7px 16px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* ── 메인 레이아웃 ── */
+    .ev-body {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* ── 섹션 타이틀 ── */
+    .ev-sec-label {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ev-sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(139,94,60,.12);
+    }
+
+    /* ── 타임라인 ── */
+    .ev-timeline { display: flex; flex-direction: column; gap: 32px; }
+
+    .ev-day-group { display: block; }
+    .ev-day-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .ev-day-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--ev-accent);
+      flex-shrink: 0;
+    }
+    .ev-day-label {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .ev-day-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(139,94,60,.1);
+    }
+
+    /* ── 포스트 카드 ── */
+    .ev-post {
+      background: white;
+      border: 1px solid rgba(139,94,60,.1);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      animation: fadeUp .35s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 사진 그리드 */
+    .ev-imgs { overflow: hidden; }
+    .ev-imgs.one img      { width: 100%; max-height: 400px; object-fit: cover; display: block; }
+    .ev-imgs.two          { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .ev-imgs.two img      { aspect-ratio: 1; object-fit: cover; width: 100%; }
+    .ev-imgs.three        { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .ev-imgs.three img:first-child { grid-column: span 2; width: 100%; max-height: 240px; object-fit: cover; }
+    .ev-imgs.three img:not(:first-child) { aspect-ratio: 1; object-fit: cover; width: 100%; }
+    .ev-imgs.four         { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .ev-imgs.four img     { aspect-ratio: 1; object-fit: cover; width: 100%; }
+    .ev-imgs.many .row-t  { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .ev-imgs.many .row-t img { aspect-ratio: 1; object-fit: cover; width: 100%; }
+    .ev-imgs.many .row-b  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; margin-top: 2px; }
+    .ev-imgs.many .row-b img { aspect-ratio: 1; object-fit: cover; width: 100%; }
+    .ev-more-cell         { position: relative; }
+    .ev-more-cell img     { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+    .ev-more-badge {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.55);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 22px; font-weight: 700; cursor: pointer;
+    }
+    .ev-imgs img { cursor: zoom-in; display: block; }
+
+    /* 포스트 바디 */
+    .ev-post-body { padding: 14px 16px 4px; }
+    .ev-post-content {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+    .ev-post-author {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* 포스트 액션 */
+    .ev-post-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px 12px;
+    }
+    .ev-act-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: 1px solid rgba(139,94,60,.15);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--brown);
+      font-family: 'Gowun Dodum', serif;
+      transition: all .2s;
+    }
+    .ev-act-btn:hover { background: var(--warm); }
+    .ev-act-btn.reacted { background: rgba(255,100,100,.1); border-color: rgba(255,100,100,.3); }
+    .ev-post-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    .ev-del-btn {
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 2px;
+    }
+
+    /* ── 댓글 ── */
+    .ev-comments { display: none; border-top: 1px solid rgba(139,94,60,.08); }
+    .ev-comments.open { display: block; }
+    .ev-comment-list { padding: 10px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .ev-comment-item { display: flex; gap: 8px; align-items: flex-start; }
+    .ev-comment-av {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #F2C4A0, #E8A0A8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; color: white; font-weight: 700;
+    }
+    .ev-comment-bubble {
+      flex: 1; background: var(--warm); border-radius: 12px; padding: 7px 11px;
+    }
+    .ev-comment-name { font-size: 11px; font-weight: 600; color: var(--dark); }
+    .ev-comment-text { font-size: 13px; color: var(--text); margin-top: 1px; line-height: 1.6; }
+    .ev-comment-empty {
+      font-size: 12px; color: var(--muted);
+      text-align: center; padding: 10px 0;
+    }
+    .ev-comment-form {
+      display: flex; gap: 8px;
+      padding: 8px 14px 14px;
+    }
+    .ev-comment-input {
+      flex: 1;
+      border: 1px solid rgba(139,94,60,.2);
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-family: 'Gowun Dodum', serif;
+      background: white;
+      outline: none;
+      color: var(--dark);
+    }
+    .ev-comment-input:focus { border-color: var(--brown); }
+    .ev-comment-submit {
+      background: var(--brown);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Gowun Dodum', serif;
+    }
+
+    /* ── 게스트 업로드 ── */
+    .ev-upload-section {
+      background: white;
+      border: 1px solid rgba(139,94,60,.1);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .ev-upload-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 14px;
+    }
+    .ev-upload-input {
+      width: 100%;
+      background: var(--warm);
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 13px;
+      color: var(--dark);
+      outline: none;
+      margin-bottom: 10px;
+    }
+    .ev-drop-zone {
+      width: 100%;
+      border: 2px dashed rgba(139,94,60,.2);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      background: var(--warm);
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 10px;
+      transition: border-color .2s;
+    }
+    .ev-drop-zone:hover { border-color: var(--brown); }
+    .ev-drop-zone .dz-icon { font-size: 28px; margin-bottom: 6px; }
+    .ev-drop-zone .dz-label { font-size: 13px; }
+    .ev-drop-zone .dz-hint  { font-size: 11px; opacity: .6; margin-top: 3px; }
+    .ev-prev-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .ev-prev-cell {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #EDE3D5;
+    }
+    .ev-prev-cell img { width: 100%; height: 100%; object-fit: cover; }
+    .ev-prev-rm {
+      position: absolute; top: 4px; right: 4px;
+      width: 22px; height: 22px;
+      background: rgba(44,26,14,.7);
+      color: white; border: none; border-radius: 50%;
+      font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ev-upload-btn {
+      display: none;
+      width: 100%;
+      background: var(--cb-bg);
+      color: var(--cb-text);
+      border: 1px solid var(--cb-border);
+      border-radius: 14px;
+      padding: 14px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .ev-upload-btn:hover { background: var(--cb-surface); }
+    .ev-upload-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .ev-prog-wrap { display: none; margin-bottom: 8px; }
+    .ev-prog-bar { height: 4px; background: var(--warm); border-radius: 2px; overflow: hidden; }
+    .ev-prog-fill { height: 100%; background: var(--ev-accent); border-radius: 2px; width: 0; transition: width .3s; }
+    .ev-prog-text { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+    /* ── 오너 글쓰기 ── */
+    .ev-owner-compose {
+      display: none;
+      background: white;
+      border: 1px solid rgba(196,120,75,.2);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .ev-owner-compose.show { display: block; }
+    .ev-owner-compose-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+    .ev-compose-textarea {
+      width: 100%;
+      background: var(--warm);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 13px;
+      color: var(--dark);
+      outline: none;
+      resize: none;
+      height: 80px;
+      margin-bottom: 10px;
+    }
+    .ev-compose-actions { display: flex; gap: 8px; }
+    .ev-compose-photo-btn {
+      background: var(--warm);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .ev-compose-submit {
+      flex: 1;
+      background: var(--ev-accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'Gowun Dodum', serif;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .ev-compose-prev-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    /* ── 빈 상태 ── */
+    .ev-empty {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .ev-empty .ei { font-size: 36px; margin-bottom: 10px; }
+    .ev-empty p   { font-size: 13px; line-height: 1.7; }
+
+    /* ── 라이트박스 ── */
+    .ev-lightbox {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.95);
+      z-index: 900;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ev-lightbox.open { display: flex; }
+    .ev-lb-img {
+      max-width: 100%;
+      max-height: 90svh;
+      object-fit: contain;
+      border-radius: 8px;
+      user-select: none;
+    }
+    .ev-lb-close {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(255,255,255,.12);
+      border: none; color: white;
+      width: 38px; height: 38px; border-radius: 50%;
+      font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ev-lb-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.12); border: none; color: white;
+      width: 44px; height: 44px; border-radius: 50%; font-size: 22px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .ev-lb-nav.prev { left: 12px; }
+    .ev-lb-nav.next { right: 12px; }
+    .ev-lb-counter {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,.6); font-size: 12px;
+      background: rgba(0,0,0,.4); padding: 4px 14px; border-radius: 20px;
+    }
+    @media(max-width:480px) { .ev-lb-nav { display: none; } }
+
+    /* ── Confirm ── */
+    .ev-confirm-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.75); z-index: 800;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .ev-confirm-overlay.open { display: flex; }
+    .ev-confirm-box {
+      background: var(--cream); border-radius: 20px;
+      padding: 28px 24px; max-width: 300px; width: 100%; text-align: center;
+    }
+    .ev-confirm-title { font-family: 'Noto Serif KR', serif; font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+    .ev-confirm-sub   { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .ev-confirm-btns  { display: flex; gap: 10px; }
+    .ev-confirm-cancel { flex: 1; background: var(--warm); border: none; border-radius: 12px; padding: 12px; font-family: 'Gowun Dodum', serif; font-size: 13px; cursor: pointer; }
+    .ev-confirm-ok     { flex: 1; background: #E05555; color: white; border: none; border-radius: 12px; padding: 12px; font-family: 'Gowun Dodum', serif; font-size: 13px; cursor: pointer; }
+
+    /* ── Toast ── */
+    .ev-toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--cb-bg); color: var(--cb-text);
+      border: 1px solid var(--cb-border);
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; opacity: 0;
+      transition: all .3s; z-index: 999; white-space: nowrap;
+      pointer-events: none;
+    }
+    .ev-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Footer ── */
+    .ev-footer {
+      background: var(--cb-bg); color: var(--cb-text);
+      text-align: center; padding: 40px 24px;
+      border-top: 1px solid var(--cb-border);
+      font-size: 12px; opacity: .6; letter-spacing: 1px;
+    }
+
+    @media(max-width:480px) {
+      .ev-body { padding: 24px 14px 80px; }
+      .ev-hero-content { padding: 20px 18px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── 라이트박스 ── -->
+<div class="ev-lightbox" id="evLightbox">
+  <button class="ev-lb-close" onclick="lbClose()">✕</button>
+  <button class="ev-lb-nav prev" onclick="lbNav(-1)">‹</button>
+  <img class="ev-lb-img" id="evLbImg" src="" alt="">
+  <button class="ev-lb-nav next" onclick="lbNav(1)">›</button>
+  <div class="ev-lb-counter" id="evLbCounter"></div>
+</div>
+
+<!-- ── Confirm ── -->
+<div class="ev-confirm-overlay" id="evConfirm">
+  <div class="ev-confirm-box">
+    <div class="ev-confirm-title" id="evConfirmTitle">삭제할까요?</div>
+    <div class="ev-confirm-sub" id="evConfirmSub">삭제하면 되돌릴 수 없어요.</div>
+    <div class="ev-confirm-btns">
+      <button class="ev-confirm-cancel" onclick="closeConfirm()">취소</button>
+      <button class="ev-confirm-ok" id="evConfirmOk">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="ev-toast" id="evToast"></div>
+
+<!-- ── Hero ── -->
+<div class="ev-hero" id="evHero">
+  <div class="ev-hero-bg" id="evHeroBg"></div>
+  <div class="ev-hero-gradient"></div>
+  <div class="ev-hero-content">
+    <div class="ev-hero-badge" id="evBadge">EVENT</div>
+    <div class="ev-hero-title" id="evTitle">불러오는 중…</div>
+    <div class="ev-hero-meta">
+      <span id="evDate"></span>
+      <span class="ev-dday" id="evDday" style="display:none;"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── 공유 바 ── -->
+<div class="ev-share-bar">
+  <button class="ev-share-btn kakao" onclick="shareKakao()">💬 카카오</button>
+  <button class="ev-share-btn link"  onclick="copyLink()">🔗 링크 복사</button>
+  <button class="ev-owner-btn" id="evOwnerToggle" onclick="toggleOwnerCompose()">✏️ 글쓰기</button>
+</div>
+
+<!-- ── 본문 ── -->
+<div class="ev-body">
+
+  <!-- 오너 글쓰기 -->
+  <div class="ev-owner-compose" id="evOwnerCompose">
+    <div class="ev-owner-compose-title">기록 추가 ✏️</div>
+    <textarea class="ev-compose-textarea" id="evComposeContent" placeholder="이 순간을 기록해요…"></textarea>
+    <div id="evComposePrevWrap" style="display:none;">
+      <div class="ev-compose-prev-grid" id="evComposePrevGrid"></div>
+    </div>
+    <div class="ev-prog-wrap" id="evOwnerProgWrap">
+      <div class="ev-prog-bar"><div class="ev-prog-fill" id="evOwnerProgFill"></div></div>
+      <div class="ev-prog-text" id="evOwnerProgText"></div>
+    </div>
+    <div class="ev-compose-actions">
+      <button class="ev-compose-photo-btn" onclick="document.getElementById('evOwnerPhotoInput').click()">📷</button>
+      <input type="file" id="evOwnerPhotoInput" accept="image/*" multiple style="display:none" onchange="handleOwnerPhoto(this)">
+      <button class="ev-compose-submit" onclick="submitOwnerPost()">등록</button>
+    </div>
+  </div>
+
+  <!-- 게스트 업로드 -->
+  <div class="ev-upload-section" id="evUploadSection">
+    <div class="ev-upload-title">📷 사진 올리기</div>
+    <input class="ev-upload-input" id="evGuestName" placeholder="이름 (예: 할머니, 큰아빠)" maxlength="20">
+    <input type="file" id="evGuestFileInput" accept="image/*" multiple style="display:none" onchange="onGuestFileSelect(this)">
+    <div id="evPrevWrap" style="display:none; margin-bottom:10px;">
+      <div class="ev-prev-grid" id="evPrevGrid"></div>
+    </div>
+    <div class="ev-drop-zone" onclick="document.getElementById('evGuestFileInput').click()" id="evDropZone">
+      <div class="dz-icon">📷</div>
+      <div class="dz-label">사진 선택하기</div>
+      <div class="dz-hint">여러 장 동시 선택 가능</div>
+    </div>
+    <div class="ev-prog-wrap" id="evGuestProgWrap">
+      <div class="ev-prog-bar"><div class="ev-prog-fill" id="evGuestProgFill"></div></div>
+      <div class="ev-prog-text" id="evGuestProgText"></div>
+    </div>
+    <button class="ev-upload-btn" id="evUploadBtn" onclick="submitGuestUpload()">올리기 ✨</button>
+  </div>
+
+  <!-- 타임라인 -->
+  <div class="ev-sec-label">TIMELINE</div>
+  <div class="ev-timeline" id="evTimeline">
+    <div class="ev-empty"><div class="ei">⏳</div><p>불러오는 중…</p></div>
+  </div>
+
+</div>
+
+<!-- ── Footer ── -->
+<div class="ev-footer">CoreNull · BRAINPOOL</div>
+
+<script>
+// ── 파라미터 ──────────────────────────────────────────────────
+const params     = new URLSearchParams(location.search);
+const SLUG       = params.get('house') || params.get('slug') || '';
+const CAT_ID     = params.get('cat')   || '';
+const OWNER_KEY  = params.get('owner') || '';
+const DEVICE_ID  = (() => {
+  let id = localStorage.getItem('cn_device_id');
+  if (!id) { id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2,9); localStorage.setItem('cn_device_id', id); }
+  return id;
+})();
+
+const CLOUDINARY_URL    = 'https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload';
+const CLOUDINARY_PRESET = 'corenull';
+
+let HOUSE_ID     = null;
+let IS_OWNER     = false;
+let EVENT_DATE   = null;
+let lbUrls       = [];
+let lbIdx        = 0;
+let guestFiles   = [];
+let ownerFiles   = [];
+let _confirmCb   = null;
+
+// ── Toast ─────────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('evToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Confirm ───────────────────────────────────────────────────
+function openConfirm(title, sub, cb) {
+  document.getElementById('evConfirmTitle').textContent = title;
+  document.getElementById('evConfirmSub').textContent   = sub;
+  document.getElementById('evConfirmOk').onclick = () => { closeConfirm(); cb(); };
+  document.getElementById('evConfirm').classList.add('open');
+}
+function closeConfirm() {
+  document.getElementById('evConfirm').classList.remove('open');
+}
+
+// ── Lightbox ──────────────────────────────────────────────────
+function lbOpen(urls, idx) {
+  lbUrls = urls; lbIdx = idx;
+  _lbRender();
+  document.getElementById('evLightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function _lbRender() {
+  document.getElementById('evLbImg').src = lbUrls[lbIdx] || '';
+  document.getElementById('evLbCounter').textContent =
+    lbUrls.length > 1 ? `${lbIdx + 1} / ${lbUrls.length}` : '';
+}
+function lbNav(dir) {
+  lbIdx = Math.max(0, Math.min(lbUrls.length - 1, lbIdx + dir));
+  _lbRender();
+}
+function lbClose() {
+  document.getElementById('evLightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('evLightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('evLightbox')) lbClose();
+});
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('evLightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+  if (e.key === 'Escape')     lbClose();
+});
+
+// ── 날짜 포맷 ─────────────────────────────────────────────────
+function fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
+function fmtDay(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── 날짜 그룹화 ───────────────────────────────────────────────
+function groupByDate(posts) {
+  const map = {};
+  posts.forEach(p => {
+    const d = (p.created_at || '').split('T')[0];
+    if (!map[d]) map[d] = [];
+    map[d].push(p);
+  });
+  return map;
+}
+
+// ── 이미지 그리드 렌더 ───────────────────────────────────────
+function renderImgs(urls, postId) {
+  if (!urls.length) return '';
+  const cnt = urls.length;
+  const img = (u, i) => `<img src="${u}" loading="lazy" onclick="lbOpen(${JSON.stringify(urls)},${i})">`;
+
+  if (cnt === 1) return `<div class="ev-imgs one">${img(urls[0],0)}</div>`;
+  if (cnt === 2) return `<div class="ev-imgs two">${img(urls[0],0)}${img(urls[1],1)}</div>`;
+  if (cnt === 3) return `<div class="ev-imgs three">${img(urls[0],0)}${img(urls[1],1)}${img(urls[2],2)}</div>`;
+  if (cnt === 4) return `<div class="ev-imgs four">${urls.map((u,i)=>img(u,i)).join('')}</div>`;
+
+  const show = urls.slice(0,5);
+  const rest = cnt - 5;
+  const topHtml = show.slice(0,2).map((u,i)=>img(u,i)).join('');
+  const botImgs = show.slice(2,4).map((u,i)=>img(u,i+2)).join('');
+  const lastCell = rest > 0
+    ? `<div class="ev-more-cell">${img(show[4],4)}<div class="ev-more-badge" onclick="event.stopPropagation();lbOpen(${JSON.stringify(urls)},4)">+${rest+1}</div></div>`
+    : img(show[4],4);
+  return `<div class="ev-imgs many"><div class="row-t">${topHtml}</div><div class="row-b">${botImgs}${lastCell}</div></div>`;
+}
+
+// ── 포스트 카드 렌더 ──────────────────────────────────────────
+function renderPost(p, delay = 0) {
+  const imgs   = p.media_urls || [];
+  const isGuest = !!p.is_guest;
+  const authorLabel = isGuest
+    ? `<span class="ev-post-author">📷 ${escHtml(p.author_name || '게스트')}</span>`
+    : '';
+
+  const delBtn = IS_OWNER
+    ? `<button class="ev-del-btn" onclick="deletePost('${p.id}')">🗑️</button>`
+    : '';
+
+  return `
+    <div class="ev-post" id="post-${p.id}" style="animation-delay:${delay*.06}s;">
+      ${imgs.length ? renderImgs(imgs, p.id) : ''}
+      ${p.content || isGuest ? `
+        <div class="ev-post-body">
+          ${p.content ? `<div class="ev-post-content">${escHtml(p.content)}</div>` : ''}
+          ${authorLabel}
+        </div>` : ''}
+      <div class="ev-post-actions">
+        <button class="ev-act-btn" id="react-${p.id}" data-count="0"
+          onclick="toggleReact('${p.id}', this)">🤍</button>
+        <button class="ev-act-btn" onclick="toggleComments('${p.id}')">💬</button>
+        <span class="ev-post-time">${timeAgo(p.created_at)}</span>
+        ${delBtn}
+      </div>
+      <div class="ev-comments" id="comments-${p.id}">
+        <div class="ev-comment-list" id="clist-${p.id}"></div>
+        <div class="ev-comment-form">
+          <input class="ev-comment-input" id="cinput-${p.id}"
+            placeholder="댓글 달기…"
+            onkeydown="if(event.key==='Enter')submitComment('${p.id}')">
+          <button class="ev-comment-submit" onclick="submitComment('${p.id}')">게시</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function timeAgo(str) {
+  const diff = Date.now() - new Date(str).getTime();
+  const m = Math.floor(diff/60000), h = Math.floor(m/60), d = Math.floor(h/24);
+  if (d > 0) return `${d}일 전`;
+  if (h > 0) return `${h}시간 전`;
+  if (m > 0) return `${m}분 전`;
+  return '방금';
+}
+
+// ── 타임라인 렌더 ────────────────────────────────────────────
+function renderTimeline(posts) {
+  const tl = document.getElementById('evTimeline');
+  if (!posts.length) {
+    tl.innerHTML = `<div class="ev-empty"><div class="ei">📷</div><p>아직 기록이 없어요<br>첫 번째 사진을 올려보세요!</p></div>`;
+    return;
+  }
+
+  const grouped = groupByDate(posts);
+  const dates   = Object.keys(grouped).sort((a,b) => new Date(a)-new Date(b));
+
+  tl.innerHTML = dates.map(date => {
+    const dayPosts = grouped[date];
+    const postsHtml = dayPosts.map((p, i) => renderPost(p, i)).join('');
+    return `
+      <div class="ev-day-group">
+        <div class="ev-day-header">
+          <div class="ev-day-dot"></div>
+          <div class="ev-day-label">${fmtDay(date)}</div>
+          <div class="ev-day-line"></div>
+        </div>
+        ${postsHtml}
+      </div>`;
+  }).join('');
+
+  // 리액션 로드
+  const ids = posts.map(p=>p.id).filter(Boolean);
+  if (ids.length) loadReactions(ids);
+}
+
+// ── 리액션 ───────────────────────────────────────────────────
+async function toggleReact(postId, btn) {
+  btn.disabled = true;
+  try {
+    const res  = await fetch('/api/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
+      body: JSON.stringify({ action:'react', house_id: HOUSE_ID, target_id: postId, target_type:'post', emoji:'❤️' })
+    });
+    const data = await res.json();
+    if (!data.success) return;
+    const cnt = data.count || 0;
+    if (data.reacted) {
+      btn.innerHTML = `❤️ ${cnt > 0 ? cnt : ''}`;
+      btn.classList.add('reacted');
+    } else {
+      btn.innerHTML = cnt > 0 ? `🤍 ${cnt}` : '🤍';
+      btn.classList.remove('reacted');
+    }
+    btn.dataset.count = cnt;
+  } finally { btn.disabled = false; }
+}
+
+async function loadReactions(postIds) {
+  await Promise.all(postIds.map(async id => {
+    try {
+      const res  = await fetch(`/api/comment?action=react&target_id=${id}&target_type=post`, {
+        headers: { 'x-device-id': DEVICE_ID }
+      });
+      const data = await res.json();
+      const btn  = document.getElementById(`react-${id}`);
+      if (!btn || !data.success) return;
+      const cnt = data.count || 0;
+      btn.dataset.count = cnt;
+      if (data.reacted) {
+        btn.innerHTML = `❤️ ${cnt > 0 ? cnt : ''}`;
+        btn.classList.add('reacted');
+      } else {
+        btn.innerHTML = cnt > 0 ? `🤍 ${cnt}` : '🤍';
+      }
+    } catch {}
+  }));
+}
+
+// ── 댓글 ─────────────────────────────────────────────────────
+function toggleComments(postId) {
+  const el = document.getElementById(`comments-${postId}`);
+  if (el.classList.toggle('open')) loadComments(postId);
+}
+
+async function loadComments(postId) {
+  const el = document.getElementById(`clist-${postId}`);
+  if (!el) return;
+  try {
+    const res  = await fetch(`/api/comment?house_id=${HOUSE_ID}&post_id=${postId}`);
+    const data = await res.json();
+    const list = data.comments || [];
+    if (!list.length) {
+      el.innerHTML = `<div class="ev-comment-empty">첫 댓글을 남겨보세요 💬</div>`;
+      return;
+    }
+    el.innerHTML = list.map(c => `
+      <div class="ev-comment-item">
+        <div class="ev-comment-av">${(c.author_name||'?').charAt(0)}</div>
+        <div class="ev-comment-bubble">
+          <div class="ev-comment-name">${escHtml(c.author_name)}</div>
+          <div class="ev-comment-text">${escHtml(c.content)}</div>
+        </div>
+        ${IS_OWNER ? `<button class="ev-del-btn" onclick="deleteComment('${c.id}','${postId}')">🗑️</button>` : ''}
+      </div>`).join('');
+  } catch { el.innerHTML = `<div class="ev-comment-empty">불러오기 실패</div>`; }
+}
+
+async function submitComment(postId) {
+  const input   = document.getElementById(`cinput-${postId}`);
+  const content = input?.value.trim();
+  if (!content) return;
+  const author = localStorage.getItem('cn_author_name') || '익명';
+  input.value    = '';
+  input.disabled = true;
+  try {
+    const res  = await fetch('/api/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ house_id: HOUSE_ID, author_name: author, content, post_id: postId })
+    });
+    const data = await res.json();
+    if (data.success) await loadComments(postId);
+    else showToast(data.error || '댓글 등록 실패');
+  } catch { showToast('댓글 등록 실패'); }
+  finally { input.disabled = false; input?.focus(); }
+}
+
+async function deleteComment(commentId, postId) {
+  openConfirm('댓글을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
+    const res  = await fetch('/api/comment', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comment_id: commentId, house_id: HOUSE_ID })
+    });
+    const data = await res.json();
+    if (data.success) await loadComments(postId);
+    else showToast(data.error || '삭제 실패');
+  });
+}
+
+// ── 포스트 삭제 (오너) ───────────────────────────────────────
+async function deletePost(postId) {
+  openConfirm('기록을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
+    const res  = await fetch('/api/posts', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post_id: postId, house_id: HOUSE_ID, owner_key: OWNER_KEY })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById(`post-${postId}`)?.remove();
+      showToast('삭제됐어요 🗑️');
+    } else showToast(data.error || '삭제 실패');
+  });
+}
+
+// ── 오너 글쓰기 ──────────────────────────────────────────────
+function toggleOwnerCompose() {
+  document.getElementById('evOwnerCompose').classList.toggle('show');
+}
+
+async function handleOwnerPhoto(input) {
+  const files = [...input.files];
+  ownerFiles  = [...ownerFiles, ...files].slice(0, 10);
+  const grid  = document.getElementById('evComposePrevGrid');
+  for (const f of files) {
+    const url  = URL.createObjectURL(f);
+    const cell = document.createElement('div');
+    cell.className = 'ev-prev-cell';
+    cell.innerHTML = `<img src="${url}"><button class="ev-prev-rm" onclick="this.parentElement.remove()">✕</button>`;
+    grid.appendChild(cell);
+  }
+  document.getElementById('evComposePrevWrap').style.display = 'block';
+  input.value = '';
+}
+
+async function submitOwnerPost() {
+  const content = document.getElementById('evComposeContent').value.trim();
+  if (!content && !ownerFiles.length) { showToast('내용이나 사진을 추가해주세요'); return; }
+
+  const btn = document.querySelector('.ev-compose-submit');
+  btn.disabled = true;
+
+  let mediaUrls = [];
+  if (ownerFiles.length) {
+    const prog  = document.getElementById('evOwnerProgWrap');
+    const fill  = document.getElementById('evOwnerProgFill');
+    const txt   = document.getElementById('evOwnerProgText');
+    prog.style.display = 'block';
+    for (let i = 0; i < ownerFiles.length; i++) {
+      txt.textContent = `업로드 중… (${i+1}/${ownerFiles.length})`;
+      const fd = new FormData();
+      fd.append('file', ownerFiles[i]);
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      const r  = await fetch(CLOUDINARY_URL, { method:'POST', body:fd });
+      const d  = await r.json();
+      if (d.secure_url) mediaUrls.push(d.secure_url);
+      fill.style.width = `${Math.round(((i+1)/ownerFiles.length)*100)}%`;
+    }
+    prog.style.display = 'none';
+  }
+
+  const res  = await fetch('/api/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      house_id:     HOUSE_ID,
+      owner_key:    OWNER_KEY,
+      content:      content || null,
+      media_urls:   mediaUrls,
+      category_ids: [CAT_ID].filter(Boolean),
+    })
+  });
+  const data = await res.json();
+
+  if (data.id) {
+    showToast('등록됐어요 ✅');
+    document.getElementById('evComposeContent').value = '';
+    document.getElementById('evComposePrevGrid').innerHTML = '';
+    document.getElementById('evComposePrevWrap').style.display = 'none';
+    ownerFiles = [];
+    document.getElementById('evOwnerCompose').classList.remove('show');
+    await loadPosts();
+  } else {
+    showToast(data.error || '등록 실패');
+  }
+  btn.disabled = false;
+}
+
+// ── 게스트 업로드 ────────────────────────────────────────────
+function onGuestFileSelect(input) {
+  guestFiles = [...input.files];
+  if (!guestFiles.length) return;
+
+  const grid = document.getElementById('evPrevGrid');
+  grid.innerHTML = guestFiles.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="ev-prev-cell"><img src="${url}"><span style="position:absolute;bottom:4px;right:6px;font-size:10px;color:white;text-shadow:0 1px 2px rgba(0,0,0,.6)">${i+1}</span></div>`;
+  }).join('');
+
+  document.getElementById('evPrevWrap').style.display = 'block';
+  document.getElementById('evDropZone').querySelector('.dz-label').textContent = `${guestFiles.length}장 선택됨 · 다시 선택하려면 클릭`;
+  document.getElementById('evUploadBtn').style.display = 'block';
+}
+
+async function submitGuestUpload() {
+  const name = document.getElementById('evGuestName').value.trim();
+  if (!name) { showToast('이름을 입력해주세요'); document.getElementById('evGuestName').focus(); return; }
+  if (!guestFiles.length) { showToast('사진을 선택해주세요'); return; }
+
+  const btn  = document.getElementById('evUploadBtn');
+  const prog = document.getElementById('evGuestProgWrap');
+  const fill = document.getElementById('evGuestProgFill');
+  const txt  = document.getElementById('evGuestProgText');
+
+  btn.disabled = true;
+  prog.style.display = 'block';
+  localStorage.setItem('cn_author_name', name);
+
+  const uploaded = [];
+  for (let i = 0; i < guestFiles.length; i++) {
+    txt.textContent = `사진 업로드 중… (${i+1}/${guestFiles.length})`;
+    const fd = new FormData();
+    fd.append('file', guestFiles[i]);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    const r  = await fetch(CLOUDINARY_URL, { method:'POST', body:fd });
+    const d  = await r.json();
+    if (d.secure_url) uploaded.push(d.secure_url);
+    fill.style.width = `${Math.round(((i+1)/guestFiles.length)*100)}%`;
+  }
+
+  if (!uploaded.length) { showToast('업로드 실패'); btn.disabled = false; return; }
+
+  txt.textContent = '저장 중…';
+  const res  = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action:      'guest_post',
+      house_id:    HOUSE_ID,
+      category_id: CAT_ID || null,
+      media_urls:  uploaded,
+      author_name: name,
+    })
+  });
+  const data = await res.json();
+
+  prog.style.display = 'none';
+  if (data.success) {
+    showToast('🎉 사진이 올라갔어요!');
+    guestFiles = [];
+    document.getElementById('evPrevWrap').style.display   = 'none';
+    document.getElementById('evPrevGrid').innerHTML       = '';
+    document.getElementById('evUploadBtn').style.display  = 'none';
+    document.getElementById('evDropZone').querySelector('.dz-label').textContent = '사진 선택하기';
+    await loadPosts();
+  } else {
+    showToast(data.error || '저장 실패');
+  }
+  btn.disabled = false;
+}
+
+// ── 포스트 로드 ───────────────────────────────────────────────
+async function loadPosts() {
+  try {
+    let url = `/api/posts?house_id=${HOUSE_ID}`;
+    if (CAT_ID) url += `&category_id=${CAT_ID}`;
+    const res   = await fetch(url);
+    const posts = await res.json();
+    renderTimeline(Array.isArray(posts) ? posts : []);
+  } catch { renderTimeline([]); }
+}
+
+// ── 공유 ─────────────────────────────────────────────────────
+function shareKakao() {
+  if (!window.Kakao?.isInitialized()) { copyLink(); return; }
+  const title = document.getElementById('evTitle').textContent;
+  const url   = location.href;
+  Kakao.Share.sendDefault({
+    objectType: 'feed',
+    content: {
+      title,
+      description: '소중한 순간을 함께 기록해요',
+      imageUrl: document.getElementById('evHeroBg').style.backgroundImage.replace(/url\(["']?|["']?\)/g,'') || '',
+      link: { mobileWebUrl: url, webUrl: url }
+    },
+    buttons: [{ title: '앨범 보기', link: { mobileWebUrl: url, webUrl: url } }]
+  });
+}
+function copyLink() {
+  navigator.clipboard.writeText(location.href)
+    .then(() => showToast('링크가 복사됐어요 🔗'))
+    .catch(() => showToast('복사 실패'));
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function init() {
+  if (!SLUG) { document.getElementById('evTitle').textContent = '잘못된 주소예요'; return; }
+
+  try {
+    const ownerParam = OWNER_KEY ? `&owner=${encodeURIComponent(OWNER_KEY)}` : '';
+    const res  = await fetch(`/api/house?slug=${SLUG}${ownerParam}`);
+    const data = await res.json();
+
+    if (!data.house) { document.getElementById('evTitle').textContent = '페이지를 찾을 수 없어요'; return; }
+
+    HOUSE_ID = data.house.id;
+    IS_OWNER = !!data.house.is_owner;
+
+    // 카카오 초기화
+    if (!Kakao.isInitialized()) Kakao.init('deff4cdd41db40e09d6a4ca2a3c9f628');
+
+    // 이벤트 카테고리 찾기
+    const cat = CAT_ID
+      ? (data.categories || []).find(c => String(c.id) === String(CAT_ID))
+      : null;
+
+    const evName = cat?.name || data.house.name || 'EVENT';
+    const evDate = cat?.event_date || null;
+    EVENT_DATE   = evDate ? new Date(evDate) : null;
+
+    // Hero
+    document.title = `${evName} · CoreNull`;
+    document.getElementById('evBadge').textContent = data.house.name || 'CoreNull';
+    document.getElementById('evTitle').textContent = evName;
+
+    if (evDate) {
+      document.getElementById('evDate').textContent = fmtDate(evDate);
+      const diff = Math.ceil((new Date(evDate) - new Date()) / 86400000);
+      const ddayEl = document.getElementById('evDday');
+      ddayEl.style.display = 'inline-block';
+      ddayEl.textContent = diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY 🎉' : '완료 🎂';
+    }
+
+    if (data.house.cover_url) {
+      document.getElementById('evHeroBg').style.backgroundImage = `url(${data.house.cover_url})`;
+    }
+
+    // OG 메타 동적 업데이트
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${evName} · CoreNull`);
+
+    // 오너 UI
+    if (IS_OWNER) {
+      document.getElementById('evOwnerToggle').style.display = 'block';
+    }
+
+    // 이름 자동완성
+    const savedName = localStorage.getItem('cn_author_name') || '';
+    if (savedName) document.getElementById('evGuestName').value = savedName;
+
+    await loadPosts();
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('evTitle').textContent = '불러오기 실패';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
