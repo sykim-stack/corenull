@@ -180,6 +180,7 @@
 <body>
 
 <div id="app"><div class="loading">불러오는 중...</div></div>
+
 <!-- ① FAB 그룹 (기존 <button class="fab" ...> 한 줄을 아래로 교체) -->
 <div id="fabGroup" style="display:none;position:fixed;bottom:28px;right:28px;z-index:200;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:12px;">
   <!-- 랜덤 이동 -->
@@ -217,6 +218,7 @@ async function loadData() {
   try {
     const res = await fetch(`/api/house?slug=${encodeURIComponent(slug)}`);
     if (!res.ok) throw new Error(await res.text());
+    if (IS_OWNER) showFab();
     const data = await res.json();
 
     state.house      = data.house      || null;
@@ -672,5 +674,6 @@ function showFab() {
 }
  
 </script>
+<script src="https://hajunai-v2.vercel.app/js/brainpool-debug.js"></script>
 </body>
 </html>
