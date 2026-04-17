@@ -4,30 +4,44 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>House</title>
+
 <style>
 body{font-family:sans-serif;background:#111;color:#eee}
 .card{padding:12px;margin:10px;border-radius:8px;background:#1c1c1c}
 h3{margin:0 0 6px}
 .row{font-size:14px;opacity:.9}
-/* 번역 버튼 스타일 추가 */
-.pv-trans-btn { background:none; border:none; font-size:10px; color:#8b5e3c; cursor:pointer; padding:2px 0; opacity:.7; }
-.pv-comment-trans { font-size:11px; color:#888; margin-top:4px; font-style:italic; }
-/* 랜덤 이동 버튼 스타일 추가 */
-.random-house-btn { position:fixed; bottom:20px; right:20px; background:#8b5e3c; color:white; border:none; border-radius:50%; width:50px; height:50px; font-size:24px; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:100; display:flex; align-items:center; justify-content:center; }
+
+.pv-comment-trans{font-size:11px;color:#888;margin-top:4px;font-style:italic}
+
+.random-house-btn{
+  position:fixed;bottom:20px;right:20px;
+  background:#8b5e3c;color:#fff;border:none;
+  border-radius:50%;width:50px;height:50px;
+  font-size:24px;cursor:pointer;
+}
 </style>
 </head>
+
 <body>
+
 <div id="app"></div>
 
-<!-- 랜덤 이동 플로팅 버튼 (v2 기준) -->
-<button class="random-house-btn" onclick="goRandomHouse()" title="다른 집 가기">🎲</button>
+<button class="random-house-btn" onclick="goRandomHouse()">🎲</button>
 
 <script>
-// ── STATE ──
+const escapeHtml = str => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+};
+
 const raw = window.HOUSE_DATA || { rooms: [], slug: '' }
 const state = { slug: raw.slug || location.pathname.replace(/^\//, '') };
 
-// ── NORMALIZE ──
 const normalize = d => ({
   rooms: Array.isArray(d.rooms)
     ? d.rooms.map(r => ({
@@ -40,7 +54,6 @@ const normalize = d => ({
     : []
 })
 
-// ── VIEW MODEL ──
 const vmBuild = d => ({
   rooms: d.rooms.map(r => ({
     id: r.id,
@@ -53,101 +66,87 @@ const vmBuild = d => ({
   }))
 })
 
-// ── RENDER ──
 const render = vm => {
   document.getElementById('app').innerHTML =
     vm.rooms.map(r => `
-      <div class="card" id="room-${r.id}">
-        <h3>${r.name}</h3>
-        ${r.fields.map(([k,v])=>`<div class="row">${k}: ${v}</div>`).join('')}
-        
-        <!-- 댓글 영역 (v2 기준 통합) -->
-        <div class="pv-comments" style="margin-top:12px; border-top:1px solid #333; padding-top:8px;">
-          ${r.comments.length > 0 ? r.comments.map(c => `
+      <div class="card">
+        <h3>${escapeHtml(r.name)}</h3>
+        ${r.fields.map(([k,v])=>`
+          <div class="row">${escapeHtml(k)}: ${escapeHtml(v)}</div>
+        `).join('')}
+        <div class="pv-comments" style="margin-top:12px;border-top:1px solid #333;padding-top:8px;">
+          ${r.comments.length > 0 ? r.comments.map(c => {
+            const safeContent = escapeHtml(c.content);
+            const safeAuthor = escapeHtml(c.author_name || '익명');
+            return `
             <div class="pv-comment-item" id="pvc-${c.id}" style="margin-bottom:8px;">
-              <div style="font-size:12px; font-weight:bold; color:#aaa;">${c.author_name || '익명'}</div>
-              <div class="pv-comment-text" id="pvc-text-${c.id}" style="font-size:13px;">${c.content}</div>
-              ${c.translated_text
-                ? `<div class="pv-comment-trans" id="pvc-trans-${c.id}" style="display:none;">${c.translated_text}</div>
-                   <button class="pv-trans-btn" onclick="pvToggleTrans('${c.id}')">🌐 번역 보기</button>`
-                : `<button class="pv-trans-btn"
-  data-id="${c.id}"
-  data-content="${encodeURIComponent(c.content)}"
-  onclick="pvTranslate(this)">
-  🌐 번역
-</button>`
+              <div style="font-size:12px;color:#aaa;">${safeAuthor}</div>
+              <div style="font-size:13px;">${safeContent}</div>
+              ${
+                c.translated_text
+                ? `<div class="pv-comment-trans">${escapeHtml(c.translated_text)}</div>`
+                : `<div class="pv-comment-trans" id="trans-${c.id}">번역 중...</div>`
               }
-            </div>
-          `).join('') : '<div style="font-size:12px; color:#666;">댓글이 없습니다.</div>'}
+            </div>`;
+          }).join('')
+          : '<div style="font-size:12px;color:#666;">댓글이 없습니다.</div>'}
         </div>
       </div>
-    `).join('')
-}
+    `).join('');
 
-// ── NEW FEATURES (v2 기준 통합) ──
+  runBackgroundTranslate(vm);
+};
 
-// ── 댓글 번역 (on-demand fallback) ──
-async function pvTranslate(commentId, content) {
-  const btn = document.querySelector(`#pvc-${commentId} .pv-trans-btn`);
-  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
-  try {
-    const res = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'translate', context: { text: content } })
-    });
-    const data = await res.json();
-    if (data.translated) {
-      const item = document.getElementById(`pvc-${commentId}`);
-      if (item) {
-        const transDiv = document.createElement('div');
-        transDiv.id = `pvc-trans-${commentId}`;
-        transDiv.className = 'pv-comment-trans';
-        transDiv.textContent = data.translated;
-        if (btn) btn.replaceWith(transDiv);
-        item.appendChild(transDiv);
+async function runBackgroundTranslate(vm) {
+  const targets = [];
+  vm.rooms.forEach(r => {
+    r.comments.forEach(c => {
+      if (!c.translated_text && c.content) {
+        targets.push(c);
       }
-    } else {
-      if (btn) { btn.textContent = '🌐 번역'; btn.disabled = false; }
-      alert('번역 실패');
+    });
+  });
+
+  for (const c of targets) {
+    try {
+      const res = await fetch('/api/gemini', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          type:'translate',
+          context:{ text:c.content }
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.translated) {
+        const el = document.getElementById(`trans-${c.id}`);
+        if (el) el.textContent = data.translated;
+      }
+
+    } catch(e) {
+      const el = document.getElementById(`trans-${c.id}`);
+      if (el) el.textContent = '';
     }
-  } catch(e) {
-    if (btn) { btn.textContent = '🌐 번역'; btn.disabled = false; }
   }
 }
 
-// ── 번역 토글 (cached) ──
-function pvToggleTrans(commentId) {
-  const transEl = document.getElementById(`pvc-trans-${commentId}`);
-  const btn     = document.querySelector(`#pvc-${commentId} .pv-trans-btn`);
-  if (!transEl) return;
-  const showing = transEl.style.display !== 'none';
-  transEl.style.display = showing ? 'none' : 'block';
-  if (btn) btn.textContent = showing ? '🌐 번역 보기' : '🌐 원문 보기';
-}
-
-// ── 랜덤 공개 집으로 이동 ──
 async function goRandomHouse() {
   try {
     const res = await fetch('/api/house?action=random');
     const data = await res.json();
     if (data.slug && data.slug !== state.slug) {
-      window.location.href = `/${data.slug}`;
+      location.href = `/${data.slug}`;
     } else {
-      alert('아직 다른 집이 없어요 🏠');
+      alert('다른 집 없음');
     }
   } catch(e) {
     alert('이동 실패');
   }
 }
 
-// ── window 노출 ──
-window.pvTranslate = pvTranslate;
-window.pvToggleTrans = pvToggleTrans;
-window.goRandomHouse = goRandomHouse;
-
-// ── INIT ──
-(() => render(vmBuild(normalize(raw))))()
+render(vmBuild(normalize(raw)));
 </script>
 
 </body>
