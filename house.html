@@ -105,7 +105,14 @@ async function load() {
     const data = await res.json();
 
     house = data.house;
-    posts = data.posts || [];
+
+    // 🔥 핵심: comments 합치기
+    posts = (data.posts || []).map(p => ({
+      ...p,
+      comments: (data.comments || []).filter(c => c.post_id === p.id)
+    }));
+
+    console.log('posts:', posts); // 확인용
 
     render();
 
@@ -177,15 +184,19 @@ async function addComment(postId, input) {
 
   const data = await res.json();
 
+  console.log('응답:', data); // 🔥 무조건 찍힘
+
   if (data.success) {
-    const p = posts.find(p=>p.id===postId);
+    const p = posts.find(p => p.id === postId);
     p.comments = p.comments || [];
     p.comments.push(data.comment);
 
     input.value = '';
+    input.disabled = false;
+
     render();
   } else {
-    alert('실패');
+    alert(JSON.stringify(data)); // 🔥 실패 이유 바로 보임
     input.disabled = false;
   }
 }
