@@ -1,225 +1,200 @@
-// api/comment.js
-// ✅ fetch 직접 방식 통일
-// ✅ action=react GET/POST 통합
-// ✅ post_id 기반 GET 지원
-// ✅ { success, data/comments, error, debug } 응답 통일
+// ============================================================
+// CoreNull | api/gemini.js
+// Gemini 2.5 Flash - 문구 자동생성 + 감정 분석 + 스토리 생성 + 번역
+// ============================================================
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-device-id');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).end();
 
-  const BASE = process.env.SUPABASE_URL;
-  const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const H = {
-    'apikey': KEY,
-    'Authorization': `Bearer ${KEY}`,
-    'Content-Type': 'application/json',
-    'Accept-Profile': 'corenull',
-    'Content-Profile': 'corenull',
-    'Prefer': 'return=representation',
-  };
+  const { type, context } = req.body;
+  if (!type) return res.status(400).json({ error: 'type 필수' });
 
-  // 공통 에러 응답
-  const fail = (status, error, debug = null) =>
-    res.status(status).json({ success: false, error, ...(debug ? { debug } : {}) });
+  let prompt = '';
 
-  const ok = (data) =>
-    res.status(200).json({ success: true, ...data });
+  if (type === 'caption') {
+    prompt = `당신은 갓 태어난 아기 김하준(Mango)의 100일 기념 앨범 작성자입니다.
+사진 ${context?.count || 1}장을 업로드할 때 쓸 짧고 따뜻한 설명 문구를 3가지 제안해주세요.
+날짜: ${context?.date || '오늘'}
+조건:
+- 한국어로 작성
+- 각 문구는 1~2문장, 이모지 포함
+- 아기의 성장과 가족의 사랑이 느껴지게
+- 반드시 JSON 배열만 반환 (다른 텍스트 없이): ["문구1", "문구2", "문구3"]`;
 
-  // ────────────────────────────────────────────────────────────
-  // GET
-  // ────────────────────────────────────────────────────────────
-  if (req.method === 'GET') {
-    const { action, house_id, post_id, target_id, target_type } = req.query;
-    const deviceId = req.headers['x-device-id'] || '';
-
-    // ── GET reaction 상태 ──
-    if (action === 'react') {
-      if (!target_id || !target_type)
-        return fail(400, 'target_id, target_type required');
-
-      try {
-        // 전체 카운트
-        const countRes = await fetch(
-          `${BASE}/rest/v1/reactions?target_id=eq.${target_id}&target_type=eq.${target_type}&select=id`,
-          { headers: H }
-        );
-        const countRaw = await countRes.text();
-        const countData = JSON.parse(countRaw);
-        if (!Array.isArray(countData))
-          return fail(500, 'reaction 조회 실패', countRaw);
-
-        const count = countData.length;
-
-        // 내 reaction 여부
-        let reacted = false;
-        if (deviceId) {
-          const myRes = await fetch(
-            `${BASE}/rest/v1/reactions?target_id=eq.${target_id}&target_type=eq.${target_type}&device_id=eq.${deviceId}&select=id&limit=1`,
-            { headers: H }
-          );
-          const myData = JSON.parse(await myRes.text());
-          reacted = Array.isArray(myData) && myData.length > 0;
-        }
-
-        return ok({ count, reacted });
-      } catch (e) {
-        return fail(500, 'reaction 조회 실패', e.message);
-      }
+  } else if (type === 'message') {
+    const lang = context?.lang || 'ko';
+    if (lang === 'vi') {
+      prompt = `Bạn đang giúp viết lời chúc mừng 100 ngày tuổi cho bé Kim Ha Jun (Mango).
+Hãy đề xuất 3 lời chúc ngắn gọn, ấm áp bằng tiếng Việt.
+Điều kiện:
+- Mỗi lời chúc 1-2 câu, có emoji
+- Thể hiện tình yêu thương gia đình
+- Chỉ trả về JSON array (không có text khác): ["lời chúc 1", "lời chúc 2", "lời chúc 3"]`;
+    } else {
+      prompt = `당신은 아기 김하준(Mango) 100일을 축하하는 메시지 작성을 돕습니다.
+따뜻하고 짧은 축하 메시지 3가지를 제안해주세요.
+조건:
+- 한국어로 작성
+- 각 메시지 1~2문장, 이모지 포함
+- 가족의 사랑과 축하가 담기게
+- 반드시 JSON 배열만 반환 (다른 텍스트 없이): ["메시지1", "메시지2", "메시지3"]`;
     }
 
-    // ── GET 댓글 ──
-    if (!house_id) return fail(400, 'house_id required');
+  } else if (type === 'emotion') {
+    const content = context?.content || '';
+    prompt = `다음 텍스트를 읽고 가장 적합한 감정 태그 하나를 반환하세요.
 
-    try {
-      let url = `${BASE}/rest/v1/comments?house_id=eq.${house_id}&order=created_at.asc`;
-      if (post_id) {
-        url += `&post_id=eq.${post_id}`;
-      } else {
-        url += `&post_id=is.null`;
-      }
+텍스트: "${content}"
 
-      const r = await fetch(url, { headers: H });
-      const raw = await r.text();
-      const data = JSON.parse(raw);
-      if (!Array.isArray(data)) return fail(500, '댓글 조회 실패', raw);
-      return ok({ comments: data });
-    } catch (e) {
-      return fail(500, '댓글 조회 실패', e.message);
-    }
+선택 가능한 감정 태그:
+- happy (행복, 기쁨, 설렘)
+- sad (슬픔, 아쉬움)
+- love (사랑, 애정, 그리움)
+- funny (웃김, 유머)
+- touching (뭉클함, 감동)
+
+조건:
+- 반드시 위 5개 중 하나만 반환
+- JSON 형식: {"emotion": "happy"}
+- 다른 텍스트 없이 JSON만 반환`;
+
+  } else if (type === 'story') {
+    const { category_name, house_name, posts_summary } = context || {};
+    if (!posts_summary) return res.status(400).json({ error: 'posts_summary 필수' });
+
+    prompt = `당신은 "${house_name || '우리 집'}"의 "${category_name || '기록'}" 스토리 작가입니다.
+아래 기록들을 바탕으로 따뜻하고 감성적인 스토리를 작성해주세요.
+
+기록 목록:
+${posts_summary}
+
+조건:
+- 한국어로 작성
+- 제목(title): 15자 이내, 감성적으로
+- 내용(content): 200~400자, 1인칭 시점, 따뜻한 어조
+- 이모지 1~2개 포함
+- 반드시 JSON만 반환 (다른 텍스트 없이): {"title":"제목","content":"내용"}`;
+
+  } else if (type === 'translate') {
+    // ── 번역: 자동 언어 감지 → 반대 언어로 변환 ──
+    const { text } = context || {};
+    if (!text) return res.status(400).json({ error: 'context.text 필수' });
+
+    prompt = `다음 텍스트의 언어를 감지하고 반대 언어로 번역해주세요.
+- 한국어 → 베트남어
+- 베트남어 → 한국어
+- 그 외 언어 → 한국어
+
+원문: "${text}"
+
+조건:
+- 번역문만 반환 (설명, 언어 표기 없이)
+- 이모지는 그대로 유지
+- JSON 형식으로만 반환: {"translated":"번역문","source_lang":"ko|vi|other","target_lang":"ko|vi"}`;
+
+  } else {
+    return res.status(400).json({ error: 'type은 caption, message, emotion, story, translate 중 하나' });
   }
 
-  // ────────────────────────────────────────────────────────────
-  // POST
-  // ────────────────────────────────────────────────────────────
-  if (req.method === 'POST') {
-    const body = req.body;
-    const { action } = body;
-    const deviceId = req.headers['x-device-id'] || '';
-
-    // ── POST reaction 토글 ──
-    if (action === 'react') {
-      const { house_id, target_id, target_type, emoji } = body;
-      if (!target_id || !target_type)
-        return fail(400, 'target_id, target_type required');
-      if (!deviceId)
-        return fail(400, 'x-device-id 헤더가 필요해요');
-
-      try {
-        // 기존 reaction 확인
-        const checkRes = await fetch(
-          `${BASE}/rest/v1/reactions?target_id=eq.${target_id}&target_type=eq.${target_type}&device_id=eq.${deviceId}&select=id&limit=1`,
-          { headers: H }
-        );
-        const existing = JSON.parse(await checkRes.text());
-
-        if (Array.isArray(existing) && existing.length > 0) {
-          // 취소
-          await fetch(
-            `${BASE}/rest/v1/reactions?target_id=eq.${target_id}&target_type=eq.${target_type}&device_id=eq.${deviceId}`,
-            { method: 'DELETE', headers: H }
-          );
-        } else {
-          // 추가
-          const insertRes = await fetch(`${BASE}/rest/v1/reactions`, {
-            method: 'POST',
-            headers: H,
-            body: JSON.stringify({
-              target_id,
-              target_type,
-              device_id: deviceId,
-              house_id: house_id || null,
-              emoji: emoji || '❤️',
-              action_type: 'react',
-            })
-          });
-          if (!insertRes.ok) {
-            const raw = await insertRes.text();
-            return fail(500, 'reaction 저장 실패', raw);
-          }
-        }
-
-        // 최신 카운트
-        const countRes = await fetch(
-          `${BASE}/rest/v1/reactions?target_id=eq.${target_id}&target_type=eq.${target_type}&select=id`,
-          { headers: H }
-        );
-        const countData = JSON.parse(await countRes.text());
-        const reacted = !(Array.isArray(existing) && existing.length > 0);
-        return ok({ reacted, count: Array.isArray(countData) ? countData.length : 0 });
-      } catch (e) {
-        return fail(500, 'reaction 처리 실패', e.message);
-      }
-    }
-
-    // ── POST 댓글 ──
-    let { house_id, slug, author_name, content, media_url, post_id } = body;
-
-    if (!house_id && slug) {
-      try {
-        const hRes = await fetch(`${BASE}/rest/v1/houses?slug=eq.${slug}&select=id&limit=1`, { headers: H });
-        const hData = JSON.parse(await hRes.text());
-        house_id = hData[0]?.id;
-        if (!house_id) return fail(404, '집을 찾을 수 없어요');
-      } catch (e) {
-        return fail(500, '집 조회 실패', e.message);
-      }
-    }
-
-    if (!house_id || !author_name || !content)
-      return fail(400, 'house_id(또는 slug), author_name, content required');
-    if (content.length > 500)
-      return fail(400, '댓글은 500자 이내로 작성해주세요');
-
-    const isKo = /[ㄱ-ㅎ가-힣]/.test(content);
-    const isVi = /[àáảãạăắặằẳẵâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i.test(content);
-    const lang = isKo ? 'ko' : isVi ? 'vi' : 'other';
-
-    try {
-      const r = await fetch(`${BASE}/rest/v1/comments`, {
+  try {
+    const apiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
         method: 'POST',
-        headers: H,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          house_id,
-          author_name,
-          content,
-          lang,
-          media_url: media_url || null,
-          post_id: post_id || null,
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: (type === 'emotion' || type === 'story' || type === 'translate') ? 0.2 : 0.8,
+            maxOutputTokens: 1024
+          }
         })
-      });
-      const raw = await r.text();
-      let data;
-      try { data = JSON.parse(raw); } catch { return fail(500, 'parse error', raw); }
-      const comment = Array.isArray(data) ? data[0] : data;
-      if (!comment?.id) return fail(500, '댓글 등록 실패', raw);
-      return ok({ comment });
-    } catch (e) {
-      return fail(500, '댓글 등록 실패', e.message);
+      }
+    );
+
+    const data = await apiRes.json();
+
+    if (!apiRes.ok) {
+      return res.status(500).json({ error: 'Gemini API 오류', detail: data });
     }
-  }
 
-  // ────────────────────────────────────────────────────────────
-  // DELETE
-  // ────────────────────────────────────────────────────────────
-  if (req.method === 'DELETE') {
-    const { comment_id, house_id } = req.body;
-    if (!comment_id || !house_id)
-      return fail(400, 'comment_id, house_id required');
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let clean = raw.replace(/```json|```/gi, '').trim();
 
+    // ── translate 타입: 단일 객체 반환 ──
+    if (type === 'translate') {
+      try {
+        const match = clean.match(/\{[\s\S]*?\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          if (!parsed.translated) throw new Error('translated 필드 없음');
+          return res.status(200).json({
+            translated: parsed.translated,
+            source_lang: parsed.source_lang || 'other',
+            target_lang: parsed.target_lang || 'ko',
+          });
+        }
+        throw new Error('파싱 불가');
+      } catch(e) {
+        // 파싱 실패 시 raw 텍스트를 그대로 반환
+        return res.status(200).json({ translated: clean, source_lang: 'other', target_lang: 'ko' });
+      }
+    }
+
+    // ── story 타입: 단일 객체 반환 ──
+    if (type === 'story') {
+      try {
+        const match = clean.match(/\{[\s\S]*?\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          if (!parsed.title || !parsed.content) throw new Error('필드 누락');
+          return res.status(200).json({ story: parsed });
+        }
+        throw new Error('파싱 불가');
+      } catch(e) {
+        return res.status(500).json({ error: 'story 파싱 실패', raw });
+      }
+    }
+
+    // ── emotion 타입: 단일 객체 반환 ──
+    if (type === 'emotion') {
+      try {
+        const match = clean.match(/\{[\s\S]*?\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          return res.status(200).json({ emotion: parsed.emotion || null });
+        }
+        const emotions = ['happy', 'sad', 'love', 'funny', 'touching'];
+        const found = emotions.find(e => clean.toLowerCase().includes(e));
+        return res.status(200).json({ emotion: found || null });
+      } catch(e) {
+        return res.status(200).json({ emotion: null });
+      }
+    }
+
+    // ── caption / message 타입: 배열 반환 ──
     try {
-      const r = await fetch(
-        `${BASE}/rest/v1/comments?id=eq.${comment_id}&house_id=eq.${house_id}`,
-        { method: 'DELETE', headers: H }
-      );
-      if (!r.ok) return fail(500, '삭제 실패', await r.text());
-      return ok({});
-    } catch (e) {
-      return fail(500, '삭제 실패', e.message);
+      const match = clean.match(/\[[\s\S]*?\]/);
+      if (match) {
+        const suggestions = JSON.parse(match[0]);
+        return res.status(200).json({ suggestions });
+      }
+      const lines = raw.split('\n')
+        .map(l => l.replace(/^[\s\d\.\-\*\"]+|[\s\"\,]+$/g, '').trim())
+        .filter(l => l.length > 5);
+      if (lines.length >= 1) {
+        return res.status(200).json({ suggestions: lines.slice(0, 3) });
+      }
+      throw new Error('파싱 불가');
+    } catch(e) {
+      return res.status(500).json({ error: 'Gemini 응답 파싱 실패', raw });
     }
-  }
 
-  return fail(405, 'Method not allowed');
+  } catch(e) {
+    return res.status(500).json({ error: 'Gemini 요청 실패', message: e.message });
+  }
 }

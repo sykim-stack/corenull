@@ -1,6 +1,6 @@
 // ============================================================
 // CoreNull | api/gemini.js
-// Gemini 2.5 Flash - 문구 자동생성 + 감정 분석 + 스토리 생성
+// Gemini 2.5 Flash - 문구 자동생성 + 감정 분석 + 스토리 생성 + 번역
 // ============================================================
 
 export default async function handler(req, res) {
@@ -79,8 +79,25 @@ ${posts_summary}
 - 이모지 1~2개 포함
 - 반드시 JSON만 반환 (다른 텍스트 없이): {"title":"제목","content":"내용"}`;
 
+  } else if (type === 'translate') {
+    // ── 번역: 자동 언어 감지 → 반대 언어로 변환 ──
+    const { text } = context || {};
+    if (!text) return res.status(400).json({ error: 'context.text 필수' });
+
+    prompt = `다음 텍스트의 언어를 감지하고 반대 언어로 번역해주세요.
+- 한국어 → 베트남어
+- 베트남어 → 한국어
+- 그 외 언어 → 한국어
+
+원문: "${text}"
+
+조건:
+- 번역문만 반환 (설명, 언어 표기 없이)
+- 이모지는 그대로 유지
+- JSON 형식으로만 반환: {"translated":"번역문","source_lang":"ko|vi|other","target_lang":"ko|vi"}`;
+
   } else {
-    return res.status(400).json({ error: 'type은 caption, message, emotion, story 중 하나' });
+    return res.status(400).json({ error: 'type은 caption, message, emotion, story, translate 중 하나' });
   }
 
   try {
@@ -92,7 +109,7 @@ ${posts_summary}
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: (type === 'emotion' || type === 'story') ? 0.2 : 0.8,
+            temperature: (type === 'emotion' || type === 'story' || type === 'translate') ? 0.2 : 0.8,
             maxOutputTokens: 1024
           }
         })
@@ -107,6 +124,26 @@ ${posts_summary}
 
     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     let clean = raw.replace(/```json|```/gi, '').trim();
+
+    // ── translate 타입: 단일 객체 반환 ──
+    if (type === 'translate') {
+      try {
+        const match = clean.match(/\{[\s\S]*?\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          if (!parsed.translated) throw new Error('translated 필드 없음');
+          return res.status(200).json({
+            translated: parsed.translated,
+            source_lang: parsed.source_lang || 'other',
+            target_lang: parsed.target_lang || 'ko',
+          });
+        }
+        throw new Error('파싱 불가');
+      } catch(e) {
+        // 파싱 실패 시 raw 텍스트를 그대로 반환
+        return res.status(200).json({ translated: clean, source_lang: 'other', target_lang: 'ko' });
+      }
+    }
 
     // ── story 타입: 단일 객체 반환 ──
     if (type === 'story') {
