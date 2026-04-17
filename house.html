@@ -114,6 +114,8 @@ async function load() {
 
     console.log('posts:', posts); // 확인용
 
+    const scrollY = window.scrollY;
+
     render();
 
   } catch(e) {
@@ -245,7 +247,7 @@ async function submitPost(){
 
     document.getElementById('writeInput').value='';
     document.getElementById('writeBox').style.display='none';
-
+    window.scrollTo(0, scrollY);  
     render();
   } else {
     alert('실패');
