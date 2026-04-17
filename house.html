@@ -177,9 +177,11 @@ async function addComment(postId, input) {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      post_id: postId,
-      content: text
-    })
+  house_id: house.id,
+  post_id: postId,
+  content: text
+})
+
   });
 
   const data = await res.json();
