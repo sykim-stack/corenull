@@ -329,6 +329,12 @@ const tags = showTags
                border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
         🔗
       </button>
+      <button class="random-house-btn"
+        onclick="event.stopPropagation();goRandomHouse()"
+        style="display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(139,94,60,.15);
+               border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--brown);transition:all .2s;">
+        🎲
+      </button>
       <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
       ${showDel ? `
         <button class="post-edit" data-post-id="${p.id}" onclick="event.stopPropagation();editPostById(this.dataset.postId)"

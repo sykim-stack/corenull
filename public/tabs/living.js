@@ -25,6 +25,7 @@ export async function renderLobby(container, house, milestones, comments, rooms)
   const roomCardsHtml = navRooms.length ? `
     <div class="sec-head" style="margin-bottom:14px;">
       <div><div class="sec-label">ROOMS</div><div class="sec-title">방 둘러보기</div></div>
+      <button class="more-btn" onclick="goRandomHouse()" style="background:var(--warm);padding:6px 12px;border-radius:20px;border:1px solid rgba(139,94,60,.15);font-size:12px;">🎲 다른 집 가기</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:36px;">
       ${navRooms.map(r => {

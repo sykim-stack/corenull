@@ -30,6 +30,19 @@ export default async function handler(req, res) {
       return res.status(200).json({ stories: Array.isArray(data) ? data : [] });
     }
 
+    // ── GET action=random ──
+    if (action === 'random') {
+      const r = await fetch(
+        `${baseUrl}/rest/v1/houses?is_public=eq.true&select=slug&limit=50`,
+        { headers }
+      );
+      const data = await r.json();
+      const list = Array.isArray(data) ? data : [];
+      if (list.length === 0) return res.status(200).json({ slug: null });
+      const randomItem = list[Math.floor(Math.random() * list.length)];
+      return res.status(200).json({ slug: randomItem.slug });
+    }
+
     if (!slug) return res.status(400).json({ error: 'slug required' });
 
     const houseRes = await fetch(
