@@ -4,676 +4,211 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>House</title>
+
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:#111; color:#eee; margin:0;
+}
+.header {
+  padding:20px 16px;
+  border-bottom:1px solid #222;
+}
+.title { font-size:18px; font-weight:700; }
+.desc { font-size:12px; color:#666; }
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #111;
-    color: #eee;
-    margin: 0;
-    padding: 0 0 80px;
-  }
+.post-list { padding:12px; }
 
-  /* ── 헤더 ── */
-  .house-header {
-    padding: 24px 16px 12px;
-    border-bottom: 1px solid #222;
-  }
-  .house-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0 0 4px;
-  }
-  .house-meta {
-    font-size: 12px;
-    color: #666;
-  }
+.card {
+  background:#1c1c1c;
+  border-radius:12px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
 
-  /* ── 카테고리 탭 ── */
-  .cat-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    overflow-x: auto;
-    border-bottom: 1px solid #1e1e1e;
-    scrollbar-width: none;
-  }
-  .cat-tabs::-webkit-scrollbar { display: none; }
-  .cat-tab {
-    flex-shrink: 0;
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid #333;
-    background: transparent;
-    color: #aaa;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .cat-tab.active {
-    background: #8b5e3c;
-    border-color: #8b5e3c;
-    color: #fff;
-  }
+.content {
+  padding:14px;
+  line-height:1.6;
+}
 
-  /* ── 포스트 카드 ── */
-  .posts-list {
-    padding: 12px 16px;
-  }
-  .post-card {
-    background: #1c1c1c;
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 10px;
-  }
-  .post-content {
-    font-size: 14px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .post-images {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-  }
-  .post-images img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .post-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid #2a2a2a;
-    font-size: 11px;
-    color: #555;
-  }
-  .post-cats {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  .post-cat-badge {
-    background: #2a2a2a;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 10px;
-    color: #888;
-  }
+.images {
+  display:flex; gap:6px; padding:0 14px 10px;
+}
+.images img {
+  width:80px; height:80px;
+  object-fit:cover; border-radius:6px;
+}
 
-  /* ── 댓글 ── */
-  .comments-block {
-    margin-top: 10px;
-    border-top: 1px solid #222;
-    padding-top: 8px;
-  }
-  .comment-item {
-    margin-bottom: 8px;
-  }
-  .comment-author {
-    font-size: 11px;
-    color: #666;
-    margin-bottom: 2px;
-  }
-  .comment-text {
-    font-size: 13px;
-    color: #ccc;
-  }
-  .comment-trans {
-    font-size: 11px;
-    color: #555;
-    font-style: italic;
-    margin-top: 2px;
-  }
+.meta {
+  padding:6px 14px;
+  font-size:11px; color:#777;
+}
 
-  /* ── 빈 상태 ── */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #444;
-    font-size: 14px;
-  }
+.comments {
+  border-top:1px solid #222;
+  padding:10px 14px;
+}
 
-  /* ── 로딩 ── */
-  .loading {
-    text-align: center;
-    padding: 60px 20px;
-    color: #555;
-    font-size: 14px;
-  }
+.comment {
+  font-size:13px;
+  margin-bottom:6px;
+}
 
-  /* ── 에러 ── */
-  .error-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #c0392b;
-    font-size: 14px;
-  }
+.input-row {
+  display:flex; gap:6px; margin-top:6px;
+}
+.input-row input {
+  flex:1;
+  padding:8px;
+  border-radius:8px;
+  border:none;
+}
+.input-row button {
+  padding:8px 10px;
+  border:none;
+  background:#8b5e3c;
+  color:#fff;
+  border-radius:8px;
+}
 
-  /* ── FAB ── */
-  .fab-random {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #8b5e3c;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 22px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,.4);
-    z-index: 100;
-  }
+.fab {
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:#8b5e3c;
+  color:#fff;
+  border:none;
+}
 </style>
 </head>
 
 <body>
 
-<div id="app"><div class="loading">불러오는 중...</div></div>
+<div id="app">로딩중...</div>
 
-<!-- ① FAB 그룹 (기존 <button class="fab" ...> 한 줄을 아래로 교체) -->
-<div id="fabGroup" style="display:none;position:fixed;bottom:28px;right:28px;z-index:200;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:12px;">
-  <!-- 랜덤 이동 -->
-  <button onclick="goRandom()"
-    style="width:56px;height:56px;background:var(--mint);color:white;border:none;border-radius:50%;font-size:22px;cursor:pointer;box-shadow:0 6px 24px rgba(143,191,171,.5);transition:transform .2s;"
-    onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🎲</button>
-  <!-- 글쓰기 -->
-  <button onclick="openWriteModal()"
-    style="width:56px;height:56px;background:var(--brown);color:white;border:none;border-radius:50%;font-size:22px;cursor:pointer;box-shadow:0 6px 24px rgba(139,94,60,.4);transition:transform .2s;"
-    onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✏️</button>
-</div>
+<button class="fab" onclick="goRandom()">🎲</button>
 
 <script>
-// ── 유틸 ─────────────────────────────────────────────
-const esc = str => {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-};
 
-const slug = location.pathname.replace(/^\//, '') || 'hajun';
+let posts = [];
+let house = null;
 
-// ── 상태 ─────────────────────────────────────────────
-let state = {
-  house: null,
-  categories: [],
-  posts: [],
-  comments: [],
-  activeCat: 'all',   // 'all' | category.id
-};
+// ── 데이터 로드 ─────────────────
+async function load() {
+  const slug = location.pathname.replace('/','') || 'hajun';
 
-// ── 데이터 로드 ───────────────────────────────────────
-async function loadData() {
   try {
-    const res = await fetch(`/api/house?slug=${encodeURIComponent(slug)}`);
-    if (!res.ok) throw new Error(await res.text());
-    if (IS_OWNER) showFab();
+    const res = await fetch('/api/house?slug='+slug);
     const data = await res.json();
 
-    state.house      = data.house      || null;
-    state.categories = Array.isArray(data.categories) ? data.categories : [];
-    state.posts      = Array.isArray(data.posts)      ? data.posts      : [];
-    state.comments   = Array.isArray(data.comments)   ? data.comments   : [];
+    house = data.house;
+    posts = data.posts || [];
 
-    renderAll();
-    runBackgroundTranslate();
-  } catch (e) {
-    document.getElementById('app').innerHTML =
-      `<div class="error-state">데이터를 불러올 수 없습니다.<br><small>${esc(e.message)}</small></div>`;
+    render();
+
+  } catch(e) {
+    document.getElementById('app').innerHTML = '로드 실패';
   }
 }
 
-// ── 필터링 ────────────────────────────────────────────
-function filteredPosts() {
-  if (state.activeCat === 'all') return state.posts;
-  return state.posts.filter(p =>
-    Array.isArray(p.category_ids) &&
-    p.category_ids.some(id => String(id) === String(state.activeCat))
-  );
+// ── 렌더 ─────────────────
+function render() {
+  let html = '';
+
+  html += `
+    <div class="header">
+      <div class="title">${house?.name || ''}</div>
+      <div class="desc">${house?.description || ''}</div>
+    </div>
+  `;
+
+  html += `<div class="post-list">`;
+  html += posts.map(renderCard).join('');
+  html += `</div>`;
+
+  document.getElementById('app').innerHTML = html;
 }
 
-// ── 댓글 조회 ─────────────────────────────────────────
-function commentsFor(postId) {
-  return state.comments.filter(c => c.post_id === postId || c.parent_id === postId);
-}
+// ── 카드 ─────────────────
+function renderCard(p) {
 
-// ── 렌더: 카테고리 탭 ────────────────────────────────
-function renderTabs() {
-  const cats = state.categories;
-  const active = state.activeCat;
+  const imgs = (p.media_urls || []).map(u =>
+    `<img src="${u}">`
+  ).join('');
+
+  const comments = (p.comments || []).map(c =>
+    `<div class="comment">${c.content}</div>`
+  ).join('');
+
   return `
-    <div class="cat-tabs">
-      <button class="cat-tab ${active === 'all' ? 'active' : ''}"
-              onclick="setActiveCat('all')">전체</button>
-      ${cats.map(c => `
-        <button class="cat-tab ${String(active) === String(c.id) ? 'active' : ''}"
-                onclick="setActiveCat('${esc(String(c.id))}')">
-          ${esc(c.name)}
-        </button>
-      `).join('')}
+    <div class="card">
+      <div class="content">${p.content}</div>
+      ${imgs ? `<div class="images">${imgs}</div>` : ''}
+      <div class="meta">${time(p.created_at)}</div>
+      <div class="comments">
+        ${comments}
+        <div class="input-row">
+          <input placeholder="댓글..." onkeydown="if(event.key==='Enter') addComment('${p.id}',this)">
+          <button onclick="addComment('${p.id}',this.previousElementSibling)">등록</button>
+        </div>
+      </div>
     </div>
   `;
 }
 
-// ── 렌더: 포스트 카드 ────────────────────────────────
-function renderPost(post) {
-  const comments = commentsFor(post.id);
+// ── 댓글 ─────────────────
+async function addComment(postId, input) {
+  const text = input.value.trim();
+  if (!text) return;
 
-  // 이미지
-  const images = Array.isArray(post.media_urls) && post.media_urls.length
-    ? `<div class="post-images">
-        ${post.media_urls.map(url =>
-          `<img src="${esc(url)}" alt="" loading="lazy" onclick="openImg('${esc(url)}')">`
-        ).join('')}
-       </div>`
-    : '';
+  input.disabled = true;
 
-  // 카테고리 뱃지
-  const catNames = (post.category_ids || [])
-    .map(id => state.categories.find(c => String(c.id) === String(id)))
-    .filter(Boolean)
-    .map(c => `<span class="post-cat-badge">${esc(c.name)}</span>`)
-    .join('');
+  const res = await fetch('/api/house?action=add_comment', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      post_id: postId,
+      content: text
+    })
+  });
 
-  // 댓글
-  const commentsHtml = comments.length
-    ? `<div class="comments-block">
-        ${comments.map(c => `
-          <div class="comment-item">
-            <div class="comment-author">${esc(c.author_name || '익명')}</div>
-            <div class="comment-text">${esc(c.content)}</div>
-            ${c.translated_text
-              ? `<div class="comment-trans">${esc(c.translated_text)}</div>`
-              : `<div class="comment-trans" id="trans-${c.id}"></div>`
-            }
-          </div>
-        `).join('')}
-       </div>`
-    : '';
+  const data = await res.json();
 
-  const date = post.created_at
-    ? new Date(post.created_at).toLocaleDateString('ko-KR', { month:'short', day:'numeric' })
-    : '';
+  if (data.success) {
+    const p = posts.find(p=>p.id===postId);
+    p.comments = p.comments || [];
+    p.comments.push(data.comment);
 
-  return `
-    <div class="post-card" data-post-id="${post.id}">
-      <div class="post-content">${esc(post.content)}</div>
-      ${images}
-      <div class="post-footer">
-        <div class="post-cats">${catNames}</div>
-        <span>${date}</span>
-      </div>
-      ${commentsHtml}
-    </div>
-  `;
-}
-
-// ── 렌더: 전체 ───────────────────────────────────────
-function renderAll() {
-  const h = state.house;
-  const posts = filteredPosts();
-
-  const header = h ? `
-    <div class="house-header">
-      <div class="house-title">${esc(h.name || slug)}</div>
-      <div class="house-meta">${esc(h.description || '')}</div>
-    </div>
-  ` : '';
-
-  const tabs = renderTabs();
-
-  const postsList = posts.length
-    ? `<div class="posts-list">${posts.map(renderPost).join('')}</div>`
-    : `<div class="empty-state">아직 게시물이 없어요</div>`;
-
-  document.getElementById('app').innerHTML = header + tabs + postsList;
-}
-
-// ── 카테고리 전환 ────────────────────────────────────
-function setActiveCat(id) {
-  state.activeCat = id;
-  renderAll();
-}
-
-// ── 이미지 뷰어 (간단) ───────────────────────────────
-function openImg(url) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:999;cursor:pointer;';
-  overlay.innerHTML = `<img src="${esc(url)}" style="max-width:95vw;max-height:95vh;border-radius:8px;">`;
-  overlay.onclick = () => overlay.remove();
-  document.body.appendChild(overlay);
-}
-
-// ── 백그라운드 번역 ───────────────────────────────────
-async function runBackgroundTranslate() {
-  const targets = state.comments.filter(c => !c.translated_text && c.content);
-  for (const c of targets) {
-    try {
-      const res = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'translate', context: { text: c.content } })
-      });
-      const data = await res.json();
-      if (data.translated) {
-        const el = document.getElementById(`trans-${c.id}`);
-        if (el) el.textContent = data.translated;
-        c.translated_text = data.translated; // 캐시
-      }
-    } catch (_) {}
+    input.value = '';
+    render();
+  } else {
+    alert('실패');
+    input.disabled = false;
   }
 }
 
-// ── 랜덤 하우스 ─────────────────────────────────────
-async function goRandomHouse() {
-  try {
-    const res = await fetch('/api/house?action=random');
-    const data = await res.json();
-    if (data.slug && data.slug !== slug) {
-      location.href = `/${data.slug}`;
-    } else {
-      alert('다른 집이 없어요');
-    }
-  } catch (_) {
-    alert('이동 실패');
-  }
-}
-
-// ── 초기 실행 ─────────────────────────────────────────
-loadData();
-</script>
-<!-- ③ <script> 안에 교체/추가할 함수들 -->
-<script id="new-logic">
- 
-/* ── 스토리 카드 렌더러 (댓글 포함) ─────────────────────────────────────── */
-function renderStoryCard(p, idx) {
-  const tags = (p.categories || [])
-    .map(c => `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${c.name}</span>`)
-    .join('');
- 
-  const imgs = p.media_urls || [];
-  const media = imgs.length ? renderStoryImgs(imgs, p) : '';
- 
-  // 댓글 목록
-  const commentListHtml = (p.comments || [])
-    .map(c => `
-      <div style="padding:8px 0;border-top:1px solid rgba(139,94,60,.08);font-size:13px;line-height:1.7;color:var(--text);">
-        ${c.content.replace(/\n/g,'<br>')}
-        <span style="font-size:10px;color:var(--muted);margin-left:8px;">${timeAgo(c.created_at)}</span>
-        ${IS_OWNER ? `<button onclick="event.stopPropagation();deletePost('${c.id}')"
-          style="background:none;border:none;font-size:12px;cursor:pointer;color:var(--muted);margin-left:4px;">🗑️</button>` : ''}
-      </div>`).join('');
- 
-  const commentSection = `
-    <div style="padding:0 16px 4px;">
-      ${commentListHtml
-        ? `<div style="margin-bottom:8px;">${commentListHtml}</div>`
-        : ''}
-      <div style="display:flex;gap:8px;padding:8px 0;">
-        <input id="ci-${p.id}"
-          style="flex:1;background:var(--warm);border:none;border-radius:10px;padding:9px 12px;font-family:'Gowun Dodum',serif;font-size:13px;color:var(--dark);outline:none;"
-          placeholder="댓글을 남겨요..."
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment('${p.id}',this);}">
-        <button onclick="submitComment('${p.id}',document.getElementById('ci-${p.id}'))"
-          style="background:var(--brown);color:white;border:none;border-radius:10px;padding:9px 14px;font-family:'Gowun Dodum',serif;font-size:12px;cursor:pointer;white-space:nowrap;">전송</button>
-      </div>
-    </div>`;
- 
-  return `
-    <div class="post-item" data-post-id="${p.id}" style="animation-delay:${idx*.05}s;border-radius:18px;overflow:hidden;padding:0;">
-      ${tags ? `<div class="post-tags" style="padding:14px 16px 0;">${tags}</div>` : ''}
-      ${p.content ? `<div class="post-body" style="padding:${tags?'8px':'14px'} 16px 8px;">${p.content.replace(/\n/g,'<br>')}</div>` : ''}
-      ${media}
-      <div class="post-foot" style="padding:8px 16px 10px;">
-        <span class="post-time">${timeAgo(p.created_at)}</span>
-        ${IS_OWNER ? `<button class="post-del" onclick="event.stopPropagation();deletePost('${p.id}')">🗑️</button>` : ''}
-      </div>
-      <div style="border-top:1px solid rgba(139,94,60,.1);">
-        ${commentSection}
-      </div>
-    </div>`;
-}
- 
-/* ── 댓글 제출 ────────────────────────────────────────────────────────────── */
-async function submitComment(postId, inputEl) {
-  const content = inputEl.value.trim();
-  if (!content) return;
-  inputEl.disabled = true;
- 
-  try {
-    const res = await fetch('/api/house?action=add_comment', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ house_id: HOUSE_ID, post_id: postId, content }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      inputEl.value = '';
-      // 즉시 반영: 해당 카드의 댓글 목록에 추가
-      const card = document.querySelector(`[data-post-id="${postId}"]`);
-      if (card) {
-        const listWrap = card.querySelector('[data-post-id="' + postId + '"] > div:last-child > div > div:first-child');
-        // 가장 간단한 방법: 해당 post를 allPosts에서 찾아 comments 배열에 push 후 카드 교체
-        const postIdx = allPosts.findIndex(p => p.id === postId);
-        if (postIdx !== -1) {
-          allPosts[postIdx].comments = [
-            ...(allPosts[postIdx].comments || []),
-            data.comment,
-          ];
-          const newCard = document.createElement('div');
-          newCard.innerHTML = renderStoryCard(allPosts[postIdx], postIdx);
-          card.replaceWith(newCard.firstElementChild);
-        }
-      }
-    } else {
-      showToast(data.error || '댓글 등록 실패');
-      inputEl.disabled = false;
-    }
-  } catch(e) {
-    showToast('오류가 발생했어요');
-    inputEl.disabled = false;
-  }
-}
- 
-<!-- ② 글쓰기 모달 (기존 writeModal 전체를 교체) -->
-<div class="modal-overlay" id="writeModal" onclick="closeModal('writeModal',event)" style="align-items:center;padding:24px;">
-  <div class="modal-box" style="border-radius:20px;">
-    <div class="modal-handle" style="display:none;"></div>
-    <div class="modal-title">글쓰기 ✏️</div>
-    <textarea class="modal-input" id="writeContent"
-      placeholder="오늘 있었던 일을 기록해요..."
-      style="height:100px;"></textarea>
-    <div id="writePrevWrap" style="display:none;margin-bottom:10px;">
-      <div class="prev-grid" id="writePrevCells"></div>
-    </div>
-    <div style="margin-bottom:12px;">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">분류 선택 (복수 가능)</div>
-      <div class="cat-sel-wrap" id="writeCatWrap"></div>
-    </div>
-    <div class="prog-wrap" id="writeProgWrap">
-      <div class="prog-bar"><div class="prog-fill" id="writeProgFill"></div></div>
-      <div class="prog-text" id="writeProgText"></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button style="background:var(--warm);border:none;border-radius:10px;padding:10px 14px;font-size:18px;cursor:pointer;"
-        onclick="document.getElementById('writePhotoInput').click()">📷</button>
-      <input type="file" id="writePhotoInput" accept="image/*" multiple
-        style="display:none" onchange="handleWritePhoto(this)">
-      <button class="modal-submit" style="margin-top:0;" onclick="submitWrite()">등록</button>
-    </div>
-  </div>
-</div>
- 
-  // 사진 업로드
-  let mediaUrls = [];
-  if (writeFiles.length > 0) {
-    document.getElementById('writeProgWrap').style.display = 'block';
-    let done = 0;
-    for (const file of writeFiles) {
-      const b64  = await resizeImg(file);
-      const blob = await b64Blob(b64);
-      const fd   = new FormData();
-      fd.append('file', blob, file.name);
-      fd.append('upload_preset', 'corenull');
-      const cr   = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method:'POST', body:fd });
-      const cl   = await cr.json();
-      if (cl.secure_url) mediaUrls.push(cl.secure_url);
-      done++;
-      const pct = Math.round(done / writeFiles.length * 100);
-      document.getElementById('writeProgFill').style.width = pct + '%';
-      document.getElementById('writeProgText').textContent = `${done}/${writeFiles.length} 업로드 중...`;
-    }
-  }
- 
-  try {
-    const res = await fetch('/api/house?action=add_post', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        house_id:     HOUSE_ID,
-        content,
-        category_ids: catIds,
-        media_urls:   mediaUrls,
-      }),
-    });
-    const data = await res.json();
- 
-    if (data.success) {
-      showToast('등록됐어요 ✅');
-      document.getElementById('writeModal').classList.remove('open');
- 
-      // 즉시 반영: allPosts 앞에 새 post 추가
-      const newPost = {
-        ...data.post,
-        categories: catIds.map(id => CATEGORIES.find(c => String(c.id) === String(id))).filter(Boolean),
-        category_ids: catIds,
-        media_urls: mediaUrls,
-        comments: [],
-      };
-      allPosts.unshift(newPost);
- 
-      // 현재 활성 방이 room 탭이면 목록 갱신
-      const roomObj = ROOMS.find(r => r.room_type === 'room');
-      if (roomObj) renderStoryList(allPosts.filter(p => p.room_id === roomObj.id || !p.room_id));
-    } else {
-      showToast(data.error || '등록 실패');
-    }
-  } catch(e) {
-    showToast('오류가 발생했어요');
-  } finally {
-    document.getElementById('writeProgWrap').style.display = 'none';
-    writeFiles = [];
-  }
-}
- 
-/* ── 스토리 목록 렌더 ────────────────────────────────────────────────────── */
-function renderStoryList(posts) {
-  const el = document.getElementById('postList');
-  if (!el) return;
-  const stories = posts.filter(p => p.type !== 'comment');
-  if (!stories.length) {
-    el.innerHTML = `<div class="empty"><div class="ei">📝</div><p>아직 글이 없어요${IS_OWNER?'<br>첫 번째 글을 써보세요!':''}</p></div>`;
-    return;
-  }
-  el.innerHTML = stories.map((p, i) => renderStoryCard(p, i)).join('');
-}
- 
-/* renderPostList 를 renderStoryList 로 교체 (기존 호출부 대응) */
-function renderPostList(posts) { renderStoryList(posts); }
- 
-/* ── renderRoom: 기존 함수 전체를 교체 ────────────────────────────────────── */
-function renderRoom(container, room) {
-  currentRoomId = room.id;
-  const chips = CATEGORIES
-    .map(c => `<span class="cat-chip" data-id="${c.id}" onclick="filterCat('${c.id}',this)">${c.name}</span>`)
-    .join('');
- 
-  container.innerHTML = `
-    <div class="section">
-      <div class="sec-head">
-        <div><div class="sec-label">ROOM</div><div class="sec-title">방 📝</div></div>
-        ${IS_OWNER ? `<button class="more-btn" onclick="openWriteModal()">+ 글쓰기</button>` : ''}
-      </div>
-      <div class="cat-bar">
-        <span class="cat-chip active" data-id="all" onclick="filterCat('all',this)">전체</span>${chips}
-      </div>
-      <div class="post-list" id="postList"></div>
-    </div>`;
- 
-  const roomPosts = allPosts.filter(p => p.type !== 'comment' && (p.room_id === room.id || !p.room_id));
-  renderStoryList(roomPosts);
-}
- 
-/* ── 카테고리 필터 (renderStoryList 사용으로 교체) ─────────────────────── */
-function filterCat(catId, el) {
-  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  activeCat = catId === 'all' ? null : catId;
- 
-  const roomObj  = ROOMS.find(r => r.room_type === 'room');
-  const roomPosts = roomObj
-    ? allPosts.filter(p => p.type !== 'comment' && (p.room_id === roomObj.id || !p.room_id))
-    : allPosts.filter(p => p.type !== 'comment');
- 
-  const filtered = activeCat
-    ? roomPosts.filter(p => Array.isArray(p.category_ids) && p.category_ids.some(id => String(id) === String(activeCat)))
-    : roomPosts;
- 
-  renderStoryList(filtered);
-}
- 
-/* ── openWriteModal 교체 (cat 선택 초기화) ─────────────────────────────── */
-function openWriteModal() {
-  writeFiles = [];
-  document.getElementById('writeContent').value = '';
-  document.getElementById('writePrevWrap').style.display  = 'none';
-  document.getElementById('writePrevCells').innerHTML     = '';
-  document.getElementById('writeProgWrap').style.display  = 'none';
- 
-  // 카테고리 칩 렌더
-  const wrap = document.getElementById('writeCatWrap');
-  if (wrap) {
-    wrap.innerHTML = CATEGORIES.map(c =>
-      `<span class="cat-sel" data-id="${c.id}"
-        onclick="this.classList.toggle('on')"
-        style="--cat-color:${c.color||'var(--mint)'};">${c.name}</span>`
-    ).join('');
-  }
- 
-  document.getElementById('writeModal').classList.add('open');
-  setTimeout(() => document.getElementById('writeContent').focus(), 120);
-}
- 
-/* ── 랜덤 이동 ─────────────────────────────────────────────────────────── */
+// ── 랜덤 이동 ─────────────────
 async function goRandom() {
-  try {
-    const res  = await fetch('/api/house?slug=__random__');
-    const data = await res.json();
-    if (data.house?.slug) location.href = '/' + data.house.slug;
-    else showToast('이동할 집을 찾지 못했어요');
-  } catch(e) {
-    showToast('오류가 발생했어요');
+  const res = await fetch('/api/house?slug=__random__');
+  const data = await res.json();
+
+  if (data.house?.slug) {
+    location.href = '/'+data.house.slug;
   }
 }
- 
-/* ── FAB 표시 (IS_OWNER일 때만) ─────────────────────────────────────────── */
-function showFab() {
-  const fab = document.getElementById('fabGroup');
-  if (fab) fab.style.display = 'flex';
+
+// ── 시간 포맷 ─────────────────
+function time(t) {
+  return new Date(t).toLocaleDateString('ko-KR');
 }
- 
+
+// ── 시작 ─────────────────
+load();
+
 </script>
-<script src="https://hajunai-v2.vercel.app/js/brainpool-debug.js"></script>
+
 </body>
 </html>
