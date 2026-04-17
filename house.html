@@ -4,149 +4,382 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>House</title>
-
 <style>
-body{font-family:sans-serif;background:#111;color:#eee}
-.card{padding:12px;margin:10px;border-radius:8px;background:#1c1c1c}
-h3{margin:0 0 6px}
-.row{font-size:14px;opacity:.9}
+  *, *::before, *::after { box-sizing: border-box; }
 
-.pv-comment-trans{font-size:11px;color:#888;margin-top:4px;font-style:italic}
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #111;
+    color: #eee;
+    margin: 0;
+    padding: 0 0 80px;
+  }
 
-.random-house-btn{
-  position:fixed;bottom:20px;right:20px;
-  background:#8b5e3c;color:#fff;border:none;
-  border-radius:50%;width:50px;height:50px;
-  font-size:24px;cursor:pointer;
-}
+  /* ── 헤더 ── */
+  .house-header {
+    padding: 24px 16px 12px;
+    border-bottom: 1px solid #222;
+  }
+  .house-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .house-meta {
+    font-size: 12px;
+    color: #666;
+  }
+
+  /* ── 카테고리 탭 ── */
+  .cat-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    border-bottom: 1px solid #1e1e1e;
+    scrollbar-width: none;
+  }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    background: transparent;
+    color: #aaa;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .cat-tab.active {
+    background: #8b5e3c;
+    border-color: #8b5e3c;
+    color: #fff;
+  }
+
+  /* ── 포스트 카드 ── */
+  .posts-list {
+    padding: 12px 16px;
+  }
+  .post-card {
+    background: #1c1c1c;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .post-content {
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .post-images {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .post-images img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .post-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #2a2a2a;
+    font-size: 11px;
+    color: #555;
+  }
+  .post-cats {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .post-cat-badge {
+    background: #2a2a2a;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    color: #888;
+  }
+
+  /* ── 댓글 ── */
+  .comments-block {
+    margin-top: 10px;
+    border-top: 1px solid #222;
+    padding-top: 8px;
+  }
+  .comment-item {
+    margin-bottom: 8px;
+  }
+  .comment-author {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 2px;
+  }
+  .comment-text {
+    font-size: 13px;
+    color: #ccc;
+  }
+  .comment-trans {
+    font-size: 11px;
+    color: #555;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* ── 빈 상태 ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #444;
+    font-size: 14px;
+  }
+
+  /* ── 로딩 ── */
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 14px;
+  }
+
+  /* ── 에러 ── */
+  .error-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #c0392b;
+    font-size: 14px;
+  }
+
+  /* ── FAB ── */
+  .fab-random {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #8b5e3c;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.4);
+    z-index: 100;
+  }
 </style>
 </head>
 
 <body>
 
-<div id="app"></div>
-
-<button class="random-house-btn" onclick="goRandomHouse()">🎲</button>
+<div id="app"><div class="loading">불러오는 중...</div></div>
+<button class="fab-random" onclick="goRandomHouse()" title="랜덤 하우스">🎲</button>
 
 <script>
-const escapeHtml = str => {
-  if (!str) return '';
+// ── 유틸 ─────────────────────────────────────────────
+const esc = str => {
+  if (str == null) return '';
   return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#39;");
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 };
 
-const raw = window.HOUSE_DATA || { rooms: [], slug: '' }
-const state = { slug: raw.slug || location.pathname.replace(/^\//, '') };
+const slug = location.pathname.replace(/^\//, '') || 'hajun';
 
-const normalize = d => ({
-  rooms: Array.isArray(d.rooms)
-    ? d.rooms.map(r => ({
-        id: r.id,
-        name: r.name ?? '-',
-        price: Number(r.price) || 0,
-        status: r.status ?? '정보없음',
-        comments: Array.isArray(r.comments) ? r.comments : []
-      }))
-    : []
-})
-
-const vmBuild = d => ({
-  rooms: d.rooms.map(r => ({
-    id: r.id,
-    name: r.name,
-    fields: [
-      ['가격', r.price],
-      ['상태', r.status]
-    ],
-    comments: r.comments
-  }))
-})
-
-const render = vm => {
-  document.getElementById('app').innerHTML =
-    vm.rooms.map(r => `
-      <div class="card">
-        <h3>${escapeHtml(r.name)}</h3>
-        ${r.fields.map(([k,v])=>`
-          <div class="row">${escapeHtml(k)}: ${escapeHtml(v)}</div>
-        `).join('')}
-        <div class="pv-comments" style="margin-top:12px;border-top:1px solid #333;padding-top:8px;">
-          ${r.comments.length > 0 ? r.comments.map(c => {
-            const safeContent = escapeHtml(c.content);
-            const safeAuthor = escapeHtml(c.author_name || '익명');
-            return `
-            <div class="pv-comment-item" id="pvc-${c.id}" style="margin-bottom:8px;">
-              <div style="font-size:12px;color:#aaa;">${safeAuthor}</div>
-              <div style="font-size:13px;">${safeContent}</div>
-              ${
-                c.translated_text
-                ? `<div class="pv-comment-trans">${escapeHtml(c.translated_text)}</div>`
-                : `<div class="pv-comment-trans" id="trans-${c.id}">번역 중...</div>`
-              }
-            </div>`;
-          }).join('')
-          : '<div style="font-size:12px;color:#666;">댓글이 없습니다.</div>'}
-        </div>
-      </div>
-    `).join('');
-
-  runBackgroundTranslate(vm);
+// ── 상태 ─────────────────────────────────────────────
+let state = {
+  house: null,
+  categories: [],
+  posts: [],
+  comments: [],
+  activeCat: 'all',   // 'all' | category.id
 };
 
-async function runBackgroundTranslate(vm) {
-  const targets = [];
-  vm.rooms.forEach(r => {
-    r.comments.forEach(c => {
-      if (!c.translated_text && c.content) {
-        targets.push(c);
-      }
-    });
-  });
+// ── 데이터 로드 ───────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch(`/api/house?slug=${encodeURIComponent(slug)}`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
 
-  for (const c of targets) {
-    try {
-      const res = await fetch('/api/gemini', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          type:'translate',
-          context:{ text:c.content }
-        })
-      });
+    state.house      = data.house      || null;
+    state.categories = Array.isArray(data.categories) ? data.categories : [];
+    state.posts      = Array.isArray(data.posts)      ? data.posts      : [];
+    state.comments   = Array.isArray(data.comments)   ? data.comments   : [];
 
-      const data = await res.json();
-
-      if (data.translated) {
-        const el = document.getElementById(`trans-${c.id}`);
-        if (el) el.textContent = data.translated;
-      }
-
-    } catch(e) {
-      const el = document.getElementById(`trans-${c.id}`);
-      if (el) el.textContent = '';
-    }
+    renderAll();
+    runBackgroundTranslate();
+  } catch (e) {
+    document.getElementById('app').innerHTML =
+      `<div class="error-state">데이터를 불러올 수 없습니다.<br><small>${esc(e.message)}</small></div>`;
   }
 }
 
+// ── 필터링 ────────────────────────────────────────────
+function filteredPosts() {
+  if (state.activeCat === 'all') return state.posts;
+  return state.posts.filter(p =>
+    Array.isArray(p.category_ids) &&
+    p.category_ids.some(id => String(id) === String(state.activeCat))
+  );
+}
+
+// ── 댓글 조회 ─────────────────────────────────────────
+function commentsFor(postId) {
+  return state.comments.filter(c => c.post_id === postId || c.parent_id === postId);
+}
+
+// ── 렌더: 카테고리 탭 ────────────────────────────────
+function renderTabs() {
+  const cats = state.categories;
+  const active = state.activeCat;
+  return `
+    <div class="cat-tabs">
+      <button class="cat-tab ${active === 'all' ? 'active' : ''}"
+              onclick="setActiveCat('all')">전체</button>
+      ${cats.map(c => `
+        <button class="cat-tab ${String(active) === String(c.id) ? 'active' : ''}"
+                onclick="setActiveCat('${esc(String(c.id))}')">
+          ${esc(c.name)}
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ── 렌더: 포스트 카드 ────────────────────────────────
+function renderPost(post) {
+  const comments = commentsFor(post.id);
+
+  // 이미지
+  const images = Array.isArray(post.media_urls) && post.media_urls.length
+    ? `<div class="post-images">
+        ${post.media_urls.map(url =>
+          `<img src="${esc(url)}" alt="" loading="lazy" onclick="openImg('${esc(url)}')">`
+        ).join('')}
+       </div>`
+    : '';
+
+  // 카테고리 뱃지
+  const catNames = (post.category_ids || [])
+    .map(id => state.categories.find(c => String(c.id) === String(id)))
+    .filter(Boolean)
+    .map(c => `<span class="post-cat-badge">${esc(c.name)}</span>`)
+    .join('');
+
+  // 댓글
+  const commentsHtml = comments.length
+    ? `<div class="comments-block">
+        ${comments.map(c => `
+          <div class="comment-item">
+            <div class="comment-author">${esc(c.author_name || '익명')}</div>
+            <div class="comment-text">${esc(c.content)}</div>
+            ${c.translated_text
+              ? `<div class="comment-trans">${esc(c.translated_text)}</div>`
+              : `<div class="comment-trans" id="trans-${c.id}"></div>`
+            }
+          </div>
+        `).join('')}
+       </div>`
+    : '';
+
+  const date = post.created_at
+    ? new Date(post.created_at).toLocaleDateString('ko-KR', { month:'short', day:'numeric' })
+    : '';
+
+  return `
+    <div class="post-card" data-post-id="${post.id}">
+      <div class="post-content">${esc(post.content)}</div>
+      ${images}
+      <div class="post-footer">
+        <div class="post-cats">${catNames}</div>
+        <span>${date}</span>
+      </div>
+      ${commentsHtml}
+    </div>
+  `;
+}
+
+// ── 렌더: 전체 ───────────────────────────────────────
+function renderAll() {
+  const h = state.house;
+  const posts = filteredPosts();
+
+  const header = h ? `
+    <div class="house-header">
+      <div class="house-title">${esc(h.name || slug)}</div>
+      <div class="house-meta">${esc(h.description || '')}</div>
+    </div>
+  ` : '';
+
+  const tabs = renderTabs();
+
+  const postsList = posts.length
+    ? `<div class="posts-list">${posts.map(renderPost).join('')}</div>`
+    : `<div class="empty-state">아직 게시물이 없어요</div>`;
+
+  document.getElementById('app').innerHTML = header + tabs + postsList;
+}
+
+// ── 카테고리 전환 ────────────────────────────────────
+function setActiveCat(id) {
+  state.activeCat = id;
+  renderAll();
+}
+
+// ── 이미지 뷰어 (간단) ───────────────────────────────
+function openImg(url) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:999;cursor:pointer;';
+  overlay.innerHTML = `<img src="${esc(url)}" style="max-width:95vw;max-height:95vh;border-radius:8px;">`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+}
+
+// ── 백그라운드 번역 ───────────────────────────────────
+async function runBackgroundTranslate() {
+  const targets = state.comments.filter(c => !c.translated_text && c.content);
+  for (const c of targets) {
+    try {
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'translate', context: { text: c.content } })
+      });
+      const data = await res.json();
+      if (data.translated) {
+        const el = document.getElementById(`trans-${c.id}`);
+        if (el) el.textContent = data.translated;
+        c.translated_text = data.translated; // 캐시
+      }
+    } catch (_) {}
+  }
+}
+
+// ── 랜덤 하우스 ─────────────────────────────────────
 async function goRandomHouse() {
   try {
     const res = await fetch('/api/house?action=random');
     const data = await res.json();
-    if (data.slug && data.slug !== state.slug) {
+    if (data.slug && data.slug !== slug) {
       location.href = `/${data.slug}`;
     } else {
-      alert('다른 집 없음');
+      alert('다른 집이 없어요');
     }
-  } catch(e) {
+  } catch (_) {
     alert('이동 실패');
   }
 }
 
-render(vmBuild(normalize(raw)));
+// ── 초기 실행 ─────────────────────────────────────────
+loadData();
 </script>
 
 </body>
