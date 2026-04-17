@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     if (action === 'stories') {
       if (!house_id) return res.status(400).json({ error: 'house_id required' });
       const r = await fetch(
-        `${baseUrl}/rest/v1/posts?house_id=eq.${house_id}&ai_generated=eq.true&type=eq.post&order=created_at.desc`,
+        `${baseUrl}/rest/v1/posts?house_id=eq.${house_id}&ai_generated=eq.true&type=eq.story&order=created_at.desc`,
         { headers }
       );
       const data = await r.json();
@@ -60,26 +60,27 @@ export default async function handler(req, res) {
     const { owner_key: _removed, ...houseSafe } = house;
     houseSafe.is_owner = is_owner;
 
-    // ── categories + posts(type=post) 병렬 fetch ──
+    // ── categories + posts(type=story) 병렬 fetch ──
     const [categoriesRes, postsRes] = await Promise.all([
       fetch(
         `${baseUrl}/rest/v1/categories?house_id=eq.${house.id}&order=order_num.asc`,
         { headers }
       ),
       fetch(
-        `${baseUrl}/rest/v1/posts?house_id=eq.${house.id}&type=eq.post&ai_generated=neq.true&order=created_at.desc&limit=50`,
+        `${baseUrl}/rest/v1/posts?house_id=eq.${house.id}&type=eq.story&ai_generated=neq.true&order=created_at.desc&limit=50`,
         { headers }
       ),
     ]);
 
-    const [categories, postsRaw] = await Promise.all([
+    const [categoriesRaw, postsRaw] = await Promise.all([
       categoriesRes.json(),
       postsRes.json(),
     ]);
 
-    // ── post_categories 조인 ──
-    let posts = Array.isArray(postsRaw) ? postsRaw : [];
+    const categories = Array.isArray(categoriesRaw) ? categoriesRaw : [];
+    let posts        = Array.isArray(postsRaw)      ? postsRaw      : [];
 
+    // ── post_categories + comments 병렬 fetch ──
     if (posts.length > 0) {
       const postIds = posts.map(p => p.id).join(',');
 
@@ -102,14 +103,19 @@ export default async function handler(req, res) {
       const pc       = Array.isArray(pcData)      ? pcData      : [];
       const comments = Array.isArray(commentsRaw) ? commentsRaw : [];
 
-      // category_ids 매핑
+      // category 객체 맵
+      const catMap = {};
+      categories.forEach(c => { catMap[c.id] = c; });
+
+      // post_id → category 객체[] 맵
       const pcMap = {};
       pc.forEach(row => {
         if (!pcMap[row.post_id]) pcMap[row.post_id] = [];
-        pcMap[row.post_id].push(row.category_id);
+        const cat = catMap[row.category_id];
+        if (cat) pcMap[row.post_id].push(cat);
       });
 
-      // comments 매핑
+      // parent_id → comment[] 맵
       const cmMap = {};
       comments.forEach(c => {
         if (!cmMap[c.parent_id]) cmMap[c.parent_id] = [];
@@ -118,14 +124,16 @@ export default async function handler(req, res) {
 
       posts = posts.map(p => ({
         ...p,
-        category_ids: pcMap[p.id] || [],
-        comments    : cmMap[p.id] || [],
+        categories: pcMap[p.id] || [],
+        comments  : cmMap[p.id] || [],
       }));
+    } else {
+      posts = posts.map(p => ({ ...p, categories: [], comments: [] }));
     }
 
     return res.status(200).json({
-      house,
-      categories: Array.isArray(categories) ? categories : [],
+      house     : houseSafe,
+      categories,
       posts,
     });
   }
@@ -155,7 +163,7 @@ export default async function handler(req, res) {
         headers: { ...headers, Prefer: 'return=representation' },
         body   : JSON.stringify({
           house_id,
-          type        : 'post',
+          type        : 'story',
           content     : `## ${title}\n\n${content}`,
           media_urls  : [],
           ai_generated: true,
@@ -225,7 +233,7 @@ export default async function handler(req, res) {
           media_urls : [],
         }),
       });
-      const data = await r.json();
+      const data    = await r.json();
       const comment = Array.isArray(data) ? data[0] : data;
       if (!comment?.id) return res.status(500).json({ error: '댓글 저장 실패' });
       return res.status(200).json({ success: true, comment });
