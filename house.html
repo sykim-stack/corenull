@@ -70,7 +70,12 @@ const render = vm => {
               ${c.translated_text
                 ? `<div class="pv-comment-trans" id="pvc-trans-${c.id}" style="display:none;">${c.translated_text}</div>
                    <button class="pv-trans-btn" onclick="pvToggleTrans('${c.id}')">🌐 번역 보기</button>`
-                : `<button class="pv-trans-btn" onclick="pvTranslate('${c.id}','${c.content}')">🌐 번역</button>`
+                : `<button class="pv-trans-btn"
+  data-id="${c.id}"
+  data-content="${encodeURIComponent(c.content)}"
+  onclick="pvTranslate(this)">
+  🌐 번역
+</button>`
               }
             </div>
           `).join('') : '<div style="font-size:12px; color:#666;">댓글이 없습니다.</div>'}
