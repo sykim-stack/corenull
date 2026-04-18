@@ -1591,8 +1591,7 @@ function shareKakao() {
   if (!window.Kakao?.isInitialized()) return;
   Kakao.Share.sendDefault({ objectType:'feed', content:{ title:S.house?.name||'우리 집', description:S.house?.description||'CoreNull에서 만든 우리 집을 방문해보세요', imageUrl:S.house?.cover_url||'', link:{ mobileWebUrl:location.href, webUrl:location.href } }, buttons:[{ title:'방문하기', link:{ mobileWebUrl:location.href, webUrl:location.href } }] });
 }
-function shareZalo() { window.open(`https://zalo.me/share/url?url=${encodeURIComponent(location.href)}&title=${encodeUR
-Component(S.house?.name||'우리 집')}`,'_blank'); }
+function shareZalo() { window.open(`https://zalo.me/share/url?url=${encodeURIComponent(location.href)}&title=${encodeURIComponent(S.house?.name||'우리 집')}`,'_blank'); }
 function copyLink() { navigator.clipboard.writeText(location.href).then(()=>showToast('링크가 복사됐어요 🔗')).catch(()=>showToast('복사 실패')); }
 window.shareKakao=shareKakao; window.shareZalo=shareZalo; window.copyLink=copyLink;
 
@@ -1681,6 +1680,5 @@ document.addEventListener('keydown',e=>{
 });
 
 </script>
-<script src="https://hajunai-v2.vercel.app/js/brainpool-debug.js"></script>
 </body>
 </html>
