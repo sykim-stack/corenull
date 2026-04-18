@@ -495,7 +495,6 @@
       <div class="pv-actions">
         <button class="pv-action-btn" id="pvReactBtn" onclick="pvToggleReact()">🤍 좋아요</button>
         <button class="pv-action-btn" onclick="focusPvInput()">💬 댓글</button>
-        ${'' /* 삭제: 오너만 */}
         <button class="pv-action-btn" id="pvDelBtn" style="display:none;color:#e55;" onclick="pvDelete()">🗑️</button>
       </div>
       <div class="pv-comments" id="pvComments"></div>
@@ -639,6 +638,12 @@ window.closeConfirm = closeConfirm;
    INIT
 ───────────────────────────────────────────────── */
 async function init() {
+  // 이벤트 바인딩 - 중복 방지를 위해 init()에서 한 번만 등록
+  document.getElementById('coverInput').addEventListener('change', handleCoverChange);
+  document.getElementById('writePhotoInput').addEventListener('change', function(){ handleWritePhoto(this); });
+  document.getElementById('uploadInput').addEventListener('change', handleUploadChange);
+  document.getElementById('gbPhotoInput').addEventListener('change', function(){ previewGbPhoto(this); });
+
   await loadData();
   applyHero();
   initDday();
@@ -665,15 +670,16 @@ async function loadData() {
     S.media      = data.media      || [];
     S.milestones = data.milestones || [];
     S.comments   = data.comments   || [];
-    trackVisit(S.houseId);
-    if (S.isOwner) { document.getElementById('fab').style.display='flex'; document.getElementById('heroFrame').classList.add('is-owner'); document.getElementById('heroFrame').onclick=()=>document.getElementById('coverInput').click(); }
+    // 방문 추적 (인라인 통합 - 별도 함수 불필요)
+    const ref = new URLSearchParams(location.search).get('ref') || 'direct';
+    const invited_by = ref.startsWith('dev_') ? ref : null;
+    fetch('/api/visit',{ method:'POST', headers:{'Content-Type':'application/json','x-device-id':DEVICE_ID}, body:JSON.stringify({house_id:S.houseId,room_id:null,ref,invited_by}) }).catch(()=>{});
+    if (S.isOwner) {
+      document.getElementById('fab').style.display='flex';
+      document.getElementById('heroFrame').classList.add('is-owner');
+      document.getElementById('heroFrame').onclick=()=>document.getElementById('coverInput').click();
+    }
   } catch(e) { console.error(e); showToast('데이터를 불러오지 못했어요'); }
-}
-
-function trackVisit(houseId) {
-  const ref = new URLSearchParams(location.search).get('ref') || 'direct';
-  const invited_by = ref.startsWith('dev_') ? ref : null;
-  fetch('/api/visit',{ method:'POST', headers:{'Content-Type':'application/json','x-device-id':DEVICE_ID}, body:JSON.stringify({house_id:houseId,room_id:null,ref,invited_by}) }).catch(()=>{});
 }
 
 /* ─────────────────────────────────────────────────
@@ -766,6 +772,8 @@ window.switchToType = switchToType;
 ───────────────────────────────────────────────── */
 function renderLiving(container) {
   const h = S.house;
+  // null 안전 처리
+  if (!h) return;
 
   // 백일 배너
   let bannerHtml = '';
@@ -903,9 +911,6 @@ function renderLiving(container) {
         </div>
       </div>
     </div>`;
-
-  // 사진 미리보기
-  document.getElementById('gbPhotoInput').onchange = function(){ previewGbPhoto(this); };
 }
 
 /* ─────────────────────────────────────────────────
@@ -964,7 +969,6 @@ function renderStoryImgs(urls, post) {
   if (count===3) return `<div class="story-imgs three">${img(urls[0])}${img(urls[1])}${img(urls[2])}</div>`;
   if (count===4) return `<div class="story-imgs four">${urls.map(img).join('')}</div>`;
   const show=urls.slice(0,5), rest=count-5;
-  const cardStr=encodeURIComponent(JSON.stringify({urls,content:post.content,date:post.created_at,category_ids:post.category_ids}));
   const lastCell=rest>0
     ?`<div class="more-cell">${img(show[4])}<div class="more-badge" onclick="event.stopPropagation();openPv('${post.id}')">+${rest+1}</div></div>`
     :img(show[4]);
@@ -1159,7 +1163,8 @@ async function pvDelete() {
       showToast('삭제됐어요');
       closePv();
       await loadData();
-      renderPostList(getRoomPosts());
+      // postList가 DOM에 있을 때만 재렌더 (room 탭이 활성화된 경우)
+      if (document.getElementById('postList')) renderPostList(getRoomPosts());
     } catch(e){ showToast('삭제 실패'); }
   });
 }
@@ -1189,7 +1194,7 @@ window.toggleReaction = toggleReaction;
    CATEGORY 관리 (오너 전용 - room 탭 내부)
 ───────────────────────────────────────────────── */
 function buildCatMgrModal(container) {
-  // 분류 관리 모달 동적 생성
+  // 분류 관리 모달 동적 생성 (기존 제거 후 재생성으로 중복 방지)
   const existing = document.getElementById('catMgrModal');
   if (existing) existing.remove();
 
@@ -1243,7 +1248,14 @@ async function createCategory() {
   try {
     const res  = await fetch('/api/categories',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({house_id:S.houseId,owner_key:S.ownerKey,name,color,is_event:isEvent}) });
     const data = await res.json();
-    if (data.success) { showToast('분류가 추가됐어요'); await loadData(); document.getElementById('catMgrModal')?.classList.remove('open'); const roomEl=document.querySelector('.tab-content.active'); const room=S.rooms.find(r=>r.room_type==='room'); if(roomEl&&room) renderRoom(roomEl,room); }
+    if (data.success) {
+      showToast('분류가 추가됐어요');
+      await loadData();
+      document.getElementById('catMgrModal')?.classList.remove('open');
+      const roomEl=document.querySelector('.tab-content.active');
+      const room=S.rooms.find(r=>r.room_type==='room');
+      if(roomEl&&room) renderRoom(roomEl,room);
+    }
     else showToast(data.error||'추가 실패');
   } catch(e){ showToast('오류가 발생했어요'); }
 }
@@ -1254,7 +1266,14 @@ async function deleteCategory(catId) {
     try {
       const res  = await fetch('/api/categories',{ method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({category_id:catId,house_id:S.houseId,owner_key:S.ownerKey}) });
       const data = await res.json();
-      if (data.success) { showToast('삭제됐어요'); await loadData(); renderCatMgrList(); const roomEl=document.querySelector('.tab-content.active'); const room=S.rooms.find(r=>r.room_type==='room'); if(roomEl&&room) renderRoom(roomEl,room); }
+      if (data.success) {
+        showToast('삭제됐어요');
+        await loadData();
+        renderCatMgrList();
+        const roomEl=document.querySelector('.tab-content.active');
+        const room=S.rooms.find(r=>r.room_type==='room');
+        if(roomEl&&room) renderRoom(roomEl,room);
+      }
       else showToast(data.error||'삭제 실패');
     } catch(e){ showToast('오류가 발생했어요'); }
   });
@@ -1276,8 +1295,6 @@ function openWriteModal() {
   document.getElementById('writeModal').classList.add('open');
 }
 window.openWriteModal = openWriteModal;
-
-document.getElementById('writePhotoInput').onchange = function(){ handleWritePhoto(this); };
 
 async function handleWritePhoto(input) {
   const files = Array.from(input.files).slice(0,10);
@@ -1330,7 +1347,12 @@ async function submitWrite() {
   try {
     const res  = await fetch('/api/posts',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({house_id:S.houseId,owner_key:S.ownerKey,room_id:roomObj.id,content,media_urls:mediaUrls,category_ids:catIds}) });
     const data = await res.json();
-    if (data.success||data.id) { showToast('등록됐어요 ✅'); document.getElementById('writeModal').classList.remove('open'); await loadData(); renderPostList(getRoomPosts()); }
+    if (data.success||data.id) {
+      showToast('등록됐어요 ✅');
+      document.getElementById('writeModal').classList.remove('open');
+      await loadData();
+      renderPostList(getRoomPosts());
+    }
     else showToast(data.error||'등록 실패');
   } catch(e){ showToast('오류가 발생했어요'); }
 }
@@ -1350,7 +1372,7 @@ function openUploadModal(roomId) {
 }
 window.openUploadModal = openUploadModal;
 
-document.getElementById('uploadInput').onchange = function(){
+function handleUploadChange() {
   S.uploadFiles = Array.from(this.files).slice(0,10);
   const wrap  = document.getElementById('uploadPrevWrap');
   const cells = document.getElementById('uploadPrevCells');
@@ -1360,10 +1382,10 @@ document.getElementById('uploadInput').onchange = function(){
     const cell=document.createElement('div'); cell.className='prev-cell';
     const img=document.createElement('img'); img.src=URL.createObjectURL(f);
     const rm=document.createElement('button'); rm.className='prev-rm'; rm.textContent='✕';
-    rm.onclick=()=>{ S.uploadFiles.splice(i,1); document.getElementById('uploadInput').onchange.call({files:S.uploadFiles}); };
+    rm.onclick=()=>{ S.uploadFiles.splice(i,1); handleUploadChange.call({files:S.uploadFiles}); };
     cell.append(img,rm); cells.appendChild(cell);
   });
-};
+}
 
 async function submitUpload() {
   if (!S.uploadFiles.length) { showToast('사진을 선택해주세요'); return; }
@@ -1392,7 +1414,13 @@ async function submitUpload() {
     const date    = document.getElementById('uploadDate').value;
     const res     = await fetch('/api/media',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({house_id:S.houseId,owner_key:S.ownerKey,room_id:roomId,file_urls:urls,content,taken_at:date}) });
     const data    = await res.json();
-    if (data.success) { showToast(`${urls.length}장 업로드됐어요 📷`); document.getElementById('uploadModal').classList.remove('open'); await loadData(); const libEl=document.querySelector(`#tab-${libRoom?.id}`); if(libEl) renderLibrary(libEl); }
+    if (data.success) {
+      showToast(`${urls.length}장 업로드됐어요 📷`);
+      document.getElementById('uploadModal').classList.remove('open');
+      await loadData();
+      const libEl=document.querySelector(`#tab-${libRoom?.id}`);
+      if(libEl) renderLibrary(libEl);
+    }
     else showToast(data.error||'업로드 실패');
   } catch(e){ showToast('오류가 발생했어요'); }
   finally { prog.style.display='none'; document.getElementById('uploadSubmit').disabled=false; }
@@ -1415,7 +1443,14 @@ async function submitEdit() {
   try {
     const res  = await fetch('/api/media',{ method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({media_id:mediaId,house_id:S.houseId,owner_key:S.ownerKey,content}) });
     const data = await res.json();
-    if (data.success) { showToast('수정됐어요 ✅'); document.getElementById('editModal').classList.remove('open'); await loadData(); const libRoom=S.rooms.find(r=>r.room_type==='library'); const libEl=document.getElementById(`tab-${libRoom?.id}`); if(libEl) renderLibrary(libEl); }
+    if (data.success) {
+      showToast('수정됐어요 ✅');
+      document.getElementById('editModal').classList.remove('open');
+      await loadData();
+      const libRoom=S.rooms.find(r=>r.room_type==='library');
+      const libEl=document.getElementById(`tab-${libRoom?.id}`);
+      if(libEl) renderLibrary(libEl);
+    }
     else showToast(data.error||'수정 실패');
   } catch(e){ showToast('오류가 발생했어요'); }
 }
@@ -1432,7 +1467,14 @@ async function submitVideo() {
   try {
     const res  = await fetch('/api/media',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({house_id:S.houseId,owner_key:S.ownerKey,room_id:libRoom.id,file_urls:[url],media_type:'video'}) });
     const data = await res.json();
-    if (data.success) { showToast('영상이 추가됐어요 🎬'); document.getElementById('videoModal').classList.remove('open'); document.getElementById('videoUrlInput').value=''; await loadData(); const libEl=document.getElementById(`tab-${libRoom.id}`); if(libEl) renderLibrary(libEl); }
+    if (data.success) {
+      showToast('영상이 추가됐어요 🎬');
+      document.getElementById('videoModal').classList.remove('open');
+      document.getElementById('videoUrlInput').value='';
+      await loadData();
+      const libEl=document.getElementById(`tab-${libRoom.id}`);
+      if(libEl) renderLibrary(libEl);
+    }
     else showToast(data.error||'추가 실패');
   } catch(e){ showToast('오류가 발생했어요'); }
 }
@@ -1445,7 +1487,9 @@ async function deletePost(postId) {
   openConfirm('글을 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
     try {
       await fetch('/api/posts',{ method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({post_id:postId,house_id:S.houseId,owner_key:S.ownerKey}) });
-      showToast('삭제됐어요'); await loadData(); renderPostList(getRoomPosts());
+      showToast('삭제됐어요');
+      await loadData();
+      renderPostList(getRoomPosts());
     } catch(e){ showToast('삭제 실패'); }
   });
 }
@@ -1455,7 +1499,11 @@ async function confirmDelMedia(mediaId) {
   openConfirm('삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
     try {
       await fetch('/api/media',{ method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({media_id:mediaId,house_id:S.houseId,owner_key:S.ownerKey}) });
-      showToast('삭제됐어요'); await loadData(); const libRoom=S.rooms.find(r=>r.room_type==='library'); const libEl=document.getElementById(`tab-${libRoom?.id}`); if(libEl) renderLibrary(libEl);
+      showToast('삭제됐어요');
+      await loadData();
+      const libRoom=S.rooms.find(r=>r.room_type==='library');
+      const libEl=document.getElementById(`tab-${libRoom?.id}`);
+      if(libEl) renderLibrary(libEl);
     } catch(e){ showToast('삭제 실패'); }
   });
 }
@@ -1464,7 +1512,12 @@ window.confirmDelMedia = confirmDelMedia;
 async function deleteComment(id) {
   openConfirm('메시지를 삭제할까요?','삭제하면 되돌릴 수 없어요.',async()=>{
     await fetch('/api/comment',{ method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({comment_id:id,house_id:S.houseId}) });
-    showToast('삭제됐어요'); await loadData(); const livingEl=document.querySelector('.tab-content:first-child'); if(livingEl) renderLiving(livingEl);
+    showToast('삭제됐어요');
+    await loadData();
+    // 올바른 living 탭 컨테이너 참조 (querySelector 대신 ID 기반)
+    const livingRoom=S.rooms.find(r=>r.room_type==='living');
+    const livingEl=document.getElementById(`tab-${livingRoom?.id}`);
+    if(livingEl) renderLiving(livingEl);
   });
 }
 window.deleteComment = deleteComment;
@@ -1494,10 +1547,15 @@ async function submitGuestbook() {
     const res  = await fetch('/api/comment',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({house_id:S.houseId,author_name:author,content,media_url}) });
     const data = await res.json();
     if (res.ok&&data.success) {
-      document.getElementById('gbAuthor').value=''; document.getElementById('gbContent').value='';
-      document.getElementById('gbPrevWrap').style.display='none'; S.gbPhotoB64=null;
-      showToast('메시지가 등록됐어요 💌'); await loadData();
-      const livingRoom=S.rooms.find(r=>r.room_type==='living'); const livingEl=document.getElementById(`tab-${livingRoom?.id}`); if(livingEl) renderLiving(livingEl);
+      document.getElementById('gbAuthor').value='';
+      document.getElementById('gbContent').value='';
+      document.getElementById('gbPrevWrap').style.display='none';
+      S.gbPhotoB64=null;
+      showToast('메시지가 등록됐어요 💌');
+      await loadData();
+      const livingRoom=S.rooms.find(r=>r.room_type==='living');
+      const livingEl=document.getElementById(`tab-${livingRoom?.id}`);
+      if(livingEl) renderLiving(livingEl);
     } else showToast(data.error||'등록 실패');
   } catch(e){ showToast('오류가 발생했어요'); }
 }
@@ -1540,7 +1598,7 @@ window.translateComment = translateComment;
 /* ─────────────────────────────────────────────────
    COVER 업로드
 ───────────────────────────────────────────────── */
-document.getElementById('coverInput').onchange = async function() {
+async function handleCoverChange() {
   const file=this.files[0]; if(!file) return;
   showToast('업로드 중...');
   try {
@@ -1552,7 +1610,7 @@ document.getElementById('coverInput').onchange = async function() {
     const data=await res.json();
     if(data.success){ showToast('사진이 변경됐어요 📷'); await loadData(); applyHero(); }
   } catch(e){ showToast('업로드 실패'); }
-};
+}
 
 /* ─────────────────────────────────────────────────
    LIGHTBOX
@@ -1694,6 +1752,7 @@ document.addEventListener('keydown',e=>{
   if (e.key!=='Escape') return;
   if (document.getElementById('lightbox').classList.contains('open')) { closeLightbox(); return; }
   if (document.getElementById('pvOverlay').classList.contains('open'))  { closePv(); return; }
+  if (document.getElementById('confirmOverlay').classList.contains('open')) { closeConfirm(); return; }
 });
 
 </script>
