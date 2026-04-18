@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>House</title>
+
+<style>
+body { font-family:-apple-system; background:#111; color:#eee; margin:0; }
+.header { padding:20px 16px; border-bottom:1px solid #222; }
+.title { font-size:18px; font-weight:700; }
+.desc { font-size:12px; color:#666; }
+
+.post-list { padding:12px; }
+.card { background:#1c1c1c; border-radius:12px; margin-bottom:12px; overflow:hidden; }
+.content { padding:14px; line-height:1.6; }
+.images { display:flex; gap:6px; padding:0 14px 10px; }
+.images img { width:80px; height:80px; object-fit:cover; border-radius:6px; }
+.meta { padding:6px 14px; font-size:11px; color:#777; }
+
+.comments { border-top:1px solid #222; padding:10px 14px; }
+.comment { font-size:13px; margin-bottom:6px; }
+
+.input-row { display:flex; gap:6px; margin-top:6px; }
+.input-row input { flex:1; padding:8px; border-radius:8px; border:none; }
+.input-row button { padding:8px 10px; border:none; background:#8b5e3c; color:#fff; border-radius:8px; }
+
+.fab { position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; background:#8b5e3c; color:#fff; border:none; }
+
+#writeBox { position:fixed; bottom:0; left:0; right:0; background:#1c1c1c; padding:14px; display:none; }
+</style>
+</head>
+
+<body>
+
+<div id="app">로딩중...</div>
+
+<button class="fab" onclick="openWrite()">✏️</button>
+
+<div id="writeBox" onclick="closeWrite(event)">
+  <textarea id="writeInput" style="width:100%;height:80px;"></textarea>
+  <input type="file" id="photoInput" accept="image/*" multiple>
+  <button onclick="submitPost()">등록</button>
+</div>
+
+<script>
+
+let posts = [];
+let house = null;
+
+// ── load ─────────────────
+async function load(){
+  const slug = location.pathname.replace('/','') || 'hajun';
+
+  const res = await fetch('/api/house?slug='+slug);
+  const data = await res.json();
+
+  house = data.house;
+
+  // 🔥 핵심: comments 합치기
+  posts = (data.posts || []).map(p => ({
+    ...p,
+    comments: (data.comments || []).filter(c => c.post_id === p.id)
+  }));
+
+  render();
+}
+
+// ── render ─────────────────
+function render(){
+  const scrollY = window.scrollY;
+
+  let html = `
+    <div class="header">
+      <div class="title">${house?.name || ''}</div>
+      <div class="desc">${house?.description || ''}</div>
+    </div>
+    <div class="post-list">
+      ${posts.map(renderCard).join('')}
+    </div>
+  `;
+
+  document.getElementById('app').innerHTML = html;
+
+  window.scrollTo(0, scrollY);
+}
+
+// ── card ─────────────────
+function renderCard(p){
+  const imgs = (p.media_urls||[]).map(u=>`<img src="${u}">`).join('');
+  const comments = (p.comments||[]).map(c=>`<div class="comment">${c.content}</div>`).join('');
+
+  return `
+    <div class="card">
+      <div class="content">${p.content||''}</div>
+      ${imgs?`<div class="images">${imgs}</div>`:''}
+      <div class="meta">${time(p.created_at)}</div>
+      <div class="comments">
+        ${comments}
+        <div class="input-row">
+          <input placeholder="댓글..." onkeydown="if(event.key==='Enter') addComment('${p.id}',this)">
+          <button onclick="addComment('${p.id}',this.previousElementSibling)">등록</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── 댓글 ─────────────────
+async function addComment(postId, input){
+  const text = input.value.trim();
+  if(!text) return;
+
+  input.disabled = true;
+
+  const res = await fetch('/api/house?action=add_comment',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      house_id: house.id,
+      post_id: postId,
+      content: text
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    const p = posts.find(p=>p.id===postId);
+    p.comments = p.comments || [];
+    p.comments.push(data.comment || { content:text });
+
+    input.value='';
+    input.disabled=false;
+    render();
+  } else {
+    alert('실패');
+    input.disabled=false;
+  }
+}
+
+// ── 글쓰기 ─────────────────
+function openWrite(){
+  document.getElementById('writeBox').style.display='block';
+}
+
+function closeWrite(e){
+  if(e.target.id==='writeBox'){
+    document.getElementById('writeBox').style.display='none';
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    document.getElementById('writeBox').style.display='none';
+  }
+});
+
+async function submitPost(){
+  const text = document.getElementById('writeInput').value.trim();
+  if(!text) return;
+
+  const res = await fetch('/api/house?action=add_post',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      house_id: house.id,
+      content: text
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    posts.unshift({
+      ...data.post,
+      comments: []
+    });
+
+    document.getElementById('writeInput').value='';
+    document.getElementById('writeBox').style.display='none';
+
+    render();
+  } else {
+    alert('실패');
+  }
+}
+
+// ── util ─────────────────
+function time(t){
+  return new Date(t).toLocaleDateString('ko-KR');
+}
+
+// ── start ─────────────────
+load();
+
+</script>
+
+</body>
+</html>
