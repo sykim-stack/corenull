@@ -638,11 +638,11 @@ window.closeConfirm = closeConfirm;
    INIT
 ───────────────────────────────────────────────── */
 async function init() {
-  // 이벤트 바인딩 - 중복 방지를 위해 init()에서 한 번만 등록
-  document.getElementById('coverInput').addEventListener('change', handleCoverChange);
-  document.getElementById('writePhotoInput').addEventListener('change', function(){ handleWritePhoto(this); });
-  document.getElementById('uploadInput').addEventListener('change', handleUploadChange);
-  document.getElementById('gbPhotoInput').addEventListener('change', function(){ previewGbPhoto(this); });
+  // 엘리먼트 존재 여부를 확인하고 이벤트를 바인딩합니다 (? 사용)
+  document.getElementById('coverInput')?.addEventListener('change', handleCoverChange);
+  document.getElementById('writePhotoInput')?.addEventListener('change', function(){ handleWritePhoto(this); });
+  document.getElementById('uploadInput')?.addEventListener('change', handleUploadChange);
+  document.getElementById('gbPhotoInput')?.addEventListener('change', function(){ previewGbPhoto(this); });
 
   await loadData();
   applyHero();
@@ -650,7 +650,6 @@ async function init() {
   buildTabs();
   checkOnboarding();
 }
-init();
 
 /* ─────────────────────────────────────────────────
    DATA
