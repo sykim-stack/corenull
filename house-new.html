@@ -11,40 +11,24 @@
 </head>
 <body>
 
-<!-- ════════════════════════════════════
-     L1 · Top Nav
-════════════════════════════════════ -->
+<!-- ════ Top Nav ════ -->
 <nav class="top-nav" id="topNav">
   <div class="top-nav-inner">
-    <a href="/" style="text-decoration:none;">
-      <span class="top-logo">CORE</span><span>NULL</span>
-    </a>
-    <div class="top-tabs" id="topTabs">
-      <button class="top-tab-btn active" data-tab="living"><span class="ti">🛋️</span>거실</button>
-      <button class="top-tab-btn"        data-tab="room">  <span class="ti">🚪</span>방</button>
-      <button class="top-tab-btn"        data-tab="library"><span class="ti">📚</span>서재</button>
-    </div>
+    <div class="top-logo">CORENULL</div>
+    <div class="top-tabs" id="topTabs"></div>
     <div class="top-actions" id="topActions"></div>
   </div>
 </nav>
 
-<!-- ════════════════════════════════════
-     L2 · Cover Banner
-════════════════════════════════════ -->
+<!-- ════ Cover Banner ════ -->
 <div class="cover-wrap" id="coverWrap">
   <div class="cover-img" id="coverImg"></div>
   <div class="cover-gradient"></div>
-  <div class="cover-empty" id="coverEmpty">
-    <span style="font-size:36px;">🏠</span>
-    <span>커버 사진을 추가해보세요</span>
-  </div>
-  <input type="file" id="coverInput" accept="image/*" style="display:none">
-  <button class="cover-edit-btn" id="coverEditBtn" style="display:none">📷 커버 수정</button>
+  <input type="file" id="coverInput"   accept="image/*" style="display:none">
+  <input type="file" id="profileInput" accept="image/*" style="display:none">
 </div>
 
-<!-- ════════════════════════════════════
-     L3 · Profile Area
-════════════════════════════════════ -->
+<!-- ════ Profile Area ════ -->
 <div class="profile-area">
   <div class="profile-inner">
     <div class="profile-left">
@@ -52,7 +36,6 @@
         <div class="profile-photo-placeholder" id="profilePlaceholder">🏠</div>
         <div class="profile-photo-hint">변경</div>
       </div>
-      <input type="file" id="profileInput" accept="image/*" style="display:none">
       <div class="profile-info">
         <div class="profile-name" id="heroName">---</div>
         <div class="profile-sub"  id="heroSub"></div>
@@ -60,112 +43,99 @@
       </div>
     </div>
     <div class="profile-right">
-      <div class="share-wrap" id="shareWrap">
-        <button class="share-btn kakao" id="shareKakaoBtn">💬 카카오</button>
-        <button class="share-btn link"  id="shareLinkBtn">🔗 링크 복사</button>
-      </div>
+      <div class="share-wrap" id="shareWrap" style="display:none;"></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     L4 · Tab Contents
-════════════════════════════════════ -->
-<div id="tabContents">
+<!-- ════ Tab Contents ════ -->
+<div id="tabContents"></div>
 
-  <!-- 거실 -->
-  <div class="tab-content active" id="tab-living">
-    <div class="section">
-      <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div>
-      </div>
-      <!-- [DATA] renderGuestbook(comments) -->
-      <div class="feed-list" id="living-guestbook-list">
-        <div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요</p></div>
-      </div>
-      <div class="gb-form">
-        <div class="gb-title" id="gbFormTitle">메시지를 남겨주세요</div>
-        <input  type="text" class="gb-input"   id="living-gb-author"  placeholder="이름">
-        <textarea class="gb-input gb-textarea" id="living-gb-content"
-          placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea>
-        <div class="gb-actions">
-          <button class="gb-photo-btn" id="living-gb-photo-btn">📷</button>
-          <input type="file" id="living-gb-photo-input" accept="image/*" style="display:none">
-          <button class="gb-submit" id="living-gb-submit">남기기</button>
-        </div>
-        <div id="living-gb-preview" style="display:none;margin-top:8px;">
-          <img id="living-gb-preview-img"
-               style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 방 -->
-  <div class="tab-content" id="tab-room">
-    <div class="section">
-      <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">ROOM</div><div class="sec-title">방 📝</div></div>
-        <!-- [OWNER] JS가 글쓰기 버튼 삽입 -->
-        <div id="room-actions"></div>
-      </div>
-      <!-- [DATA] renderCatBar(categories) -->
-      <div class="cat-bar" id="room-cat-bar">
-        <span class="cat-chip active" data-cat="all">전체</span>
-      </div>
-      <!-- [DATA] renderPosts(posts, categories) -->
-      <div class="post-list" id="room-post-list">
-        <div class="empty"><div class="ei">📝</div><p>아직 글이 없어요</p></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 서재 -->
-  <div class="tab-content" id="tab-library">
-    <div class="section">
-      <div class="sec-head" style="margin-bottom:16px;">
-        <div><div class="sec-label">GALLERY</div><div class="sec-title">사진첩 📷</div></div>
-        <!-- [OWNER] JS가 업로드 버튼 삽입 -->
-        <div id="library-actions"></div>
-      </div>
-      <!-- [DATA] renderLibrary(media) — photos -->
-      <div class="lib-grid" id="library-photo-grid">
-        <div class="empty" style="grid-column:span 3;">
-          <div class="ei">📷</div><p>아직 사진이 없어요</p>
-        </div>
-      </div>
-      <div class="sec-head" style="margin-top:40px;margin-bottom:16px;">
-        <div><div class="sec-label">VIDEO</div><div class="sec-title">영상 🎬</div></div>
-      </div>
-      <!-- [DATA] renderLibrary(media) — videos -->
-      <div class="video-list" id="library-video-list">
-        <div class="empty"><div class="ei">🎬</div><p>아직 영상이 없어요</p></div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /tabContents -->
-
-<!-- Footer -->
+<!-- ════ Footer ════ -->
 <div class="footer">
   <div class="footer-ei"   id="footerEi">🏠</div>
   <div class="footer-name" id="footerName">CoreNull</div>
   <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
 </div>
 
-<!-- Confirm -->
-<div class="confirm-overlay" id="confirmOverlay">
-  <div class="confirm-box">
-    <div class="confirm-title" id="confirmTitle">삭제할까요?</div>
-    <div class="confirm-sub"   id="confirmSub">삭제하면 되돌릴 수 없어요.</div>
-    <div class="confirm-btns">
-      <button class="confirm-cancel" id="confirmCancel">취소</button>
-      <button class="confirm-ok"     id="confirmOk">삭제</button>
+<!-- ════ FAB ════ -->
+<button class="fab" id="fab" style="display:none">✏️</button>
+<div class="fab-sheet-backdrop" id="fabBackdrop"></div>
+<div class="fab-sheet" id="fabSheet">
+  <button class="fab-sheet-btn" id="fabWriteBtn">✍️ 글쓰기</button>
+  <button class="fab-sheet-btn" id="fabPhotoBtn">📷 사진</button>
+  <button class="fab-sheet-btn" id="fabVideoBtn">🎬 영상</button>
+</div>
+
+<!-- ════ Compose Modal (글쓰기) ════ -->
+<div class="modal-overlay" id="composeModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="composeTitle">새 기록 ✏️</div>
+    <textarea class="modal-input" id="composeContent"
+      placeholder="오늘의 이야기를 들려주세요..." style="height:100px;"></textarea>
+    <div id="composeCatWrap" style="margin-bottom:12px;"></div>
+    <div id="composePrevWrap" style="display:none;margin-bottom:10px;">
+      <div id="composePrevCells" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="prog-wrap" id="composeProgWrap">
+      <div class="prog-bar"><div class="prog-fill" id="composeProgFill"></div></div>
+      <div class="prog-text" id="composeProgText"></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="gb-photo-btn" id="composePhotoBtn">📷</button>
+      <input type="file" id="composePhotoInput" accept="image/*" multiple style="display:none">
+      <button class="modal-submit" id="composeSubmitBtn">등록</button>
     </div>
   </div>
 </div>
 
-<!-- Lightbox -->
+<!-- ════ Upload Modal (서재 사진 업로드) ════ -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">사진 업로드 📷</div>
+    <input type="date" class="modal-input" id="uploadDate">
+    <textarea class="modal-input" id="uploadContent"
+      placeholder="사진 설명 (선택)" style="height:60px;"></textarea>
+    <div id="uploadPrevWrap" style="display:none;margin-bottom:10px;">
+      <div id="uploadPrevCells" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="prog-wrap" id="uploadProgWrap">
+      <div class="prog-bar"><div class="prog-fill" id="uploadProgFill"></div></div>
+      <div class="prog-text" id="uploadProgText"></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="gb-photo-btn" id="uploadSelectBtn">📷 선택</button>
+      <input type="file" id="uploadInput" accept="image/*" multiple style="display:none">
+      <button class="modal-submit" id="uploadSubmitBtn">업로드</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Video Modal ════ -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">영상 추가 🎬</div>
+    <input class="modal-input" id="videoUrlInput" placeholder="유튜브, 틱톡, 페이스북 링크">
+    <button class="modal-submit" id="videoSubmitBtn">추가</button>
+  </div>
+</div>
+
+<!-- ════ Edit Modal (사진 설명 수정) ════ -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box" style="border-radius:20px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">사진 설명 수정 ✏️</div>
+    <input type="hidden" id="editMediaId">
+    <textarea class="modal-input" id="editContent"
+      placeholder="사진 설명" style="height:80px;"></textarea>
+    <button class="modal-submit" id="editSubmitBtn">저장</button>
+  </div>
+</div>
+
+<!-- ════ Lightbox ════ -->
 <div class="lightbox" id="lightbox">
   <button class="lb-close"  id="lbClose">✕</button>
   <span   class="lb-counter" id="lbCounter"></span>
@@ -177,76 +147,110 @@
   <div class="lb-thumbs" id="lbThumbs"></div>
 </div>
 
-<!-- Toast -->
+<!-- ════ Confirm ════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">삭제할까요?</div>
+    <div class="confirm-sub"   id="confirmSub">삭제하면 되돌릴 수 없어요.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancel">취소</button>
+      <button class="confirm-ok"     id="confirmOk">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Toast ════ -->
 <div class="toast" id="toast"></div>
 
-<!-- FAB -->
-<button class="fab" id="fab" style="display:none">✏️</button>
-
-<!-- ════════════════════════════════════
-     JS · Phase 4
-     규칙:
-     - 렌더 함수는 데이터를 인자로 받는다 (window.__cn 직접 참조 금지)
-     - window.__cn 은 오케스트레이터(init/reloadData)만 갱신
-     - onclick 인라인 없음, addEventListener만 사용
-════════════════════════════════════ -->
+<!-- ════ MODULE SCRIPT ════ -->
 <script type="module">
 
-// ══════════════════════════════════════════════════════════════
-// 0. 전역 네임스페이스
-// ══════════════════════════════════════════════════════════════
-window.__cn = {
-  house:      {},
-  posts:      [],
-  comments:   [],
-  media:      [],
-  categories: [],
-  rooms:      [],
+/* ══════════════════════════════════════════
+   0. 전역 상태 (단일 네임스페이스)
+══════════════════════════════════════════ */
+const CN = {
+  slug:       location.pathname.replace(/^\//, '') || 'hajun',
+  ownerKey:   new URLSearchParams(location.search).get('owner'),
   isOwner:    false,
+  houseId:    null,
+  house:      null,
+  rooms:      [],
+  categories: [],
+  posts:      [],   // guestbook comments: []로 분리
+  comments:   [],   // guestbook 전용 (Phase 0)
+  media:      [],
+  milestones: [],
+  // 업로드 임시 상태
+  composeFiles: [],
+  uploadFiles:  [],
+  lbImages:     [],
+  lbIndex:      0,
+  gbPhotoB64:   null,
+  uploadRoomId: null,
+  activeCat:    null,
+  // 수정 모드
+  editPostId:   null,
 };
 
-// ══════════════════════════════════════════════════════════════
-// 1. 파라미터 & 기기 ID
-// ══════════════════════════════════════════════════════════════
-const slug     = location.pathname.replace(/^\//, '') || 'hajun';
-const ownerKey = new URLSearchParams(location.search).get('owner');
-
-const DEVICE_ID = (() => {
+/* ══════════════════════════════════════════
+   1. Device ID
+══════════════════════════════════════════ */
+function getDeviceId() {
   let id = localStorage.getItem('cn_device_id');
   if (!id) {
-    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('cn_device_id', id);
   }
   return id;
-})();
+}
+const DEVICE_ID = getDeviceId();
 
-// ══════════════════════════════════════════════════════════════
-// 2. 유틸
-// ══════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════
+   2. 유틸
+══════════════════════════════════════════ */
+const ROOM_META = {
+  living:  { icon: '🛋️', label: '거실' },
+  room:    { icon: '🚪', label: '방' },
+  library: { icon: '📚', label: '서재' },
+};
+
+const CAT_META = {
+  baby:    { emoji: '👶', ph: '👶' },
+  pet:     { emoji: '🐾', ph: '🐾' },
+  travel:  { emoji: '✈️', ph: '✈️' },
+  fitness: { emoji: '💪', ph: '💪' },
+  daily:   { emoji: '🏠', ph: '🏠' },
+};
+
 function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function openConfirm(title, sub, onOk) {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmSub').textContent   = sub;
-  document.getElementById('confirmOk').onclick = () => {
-    document.getElementById('confirmOverlay').classList.remove('open');
-    onOk();
-  };
-  document.getElementById('confirmCancel').onclick = () => {
-    document.getElementById('confirmOverlay').classList.remove('open');
-  };
+  document.getElementById('confirmOk').onclick = () => { closeConfirm(); onOk(); };
   document.getElementById('confirmOverlay').classList.add('open');
 }
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('open');
+}
+
+function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
 
 function esc(str) {
-  return String(str || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
 function timeAgo(str) {
@@ -275,14 +279,13 @@ async function resizeImg(file, maxW = 1200) {
 
 async function b64Blob(b64) { return await (await fetch(b64)).blob(); }
 
-async function cloudinaryUpload(blob, filename = 'photo.jpg') {
+async function cloudinaryUpload(blob, name = 'img.jpg') {
   const fd = new FormData();
-  fd.append('file', blob, filename);
+  fd.append('file', blob, name);
   fd.append('upload_preset', 'corenull');
-  const res  = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload',
-    { method: 'POST', body: fd });
-  const data = await res.json();
-  if (!data.secure_url) throw new Error('Cloudinary 실패');
+  const r    = await fetch('https://api.cloudinary.com/v1_1/dqzazs9hb/image/upload', { method: 'POST', body: fd });
+  const data = await r.json();
+  if (!data.secure_url) throw new Error('Cloudinary 업로드 실패');
   return data.secure_url;
 }
 
@@ -292,361 +295,582 @@ function parseVideoUrl(url) {
   if (yt) return { platform: 'YouTube', embedUrl: `https://www.youtube.com/embed/${yt[1]}` };
   const tt = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
   if (tt) return { platform: 'TikTok', embedUrl: `https://www.tiktok.com/embed/${tt[1]}` };
-  const fb = url.match(/facebook\.com\/(?:watch\/?\?v=|.*\/videos\/)(\d+)/);
+  const fb = url.match(/facebook\.com/);
   if (fb) return { platform: 'Facebook', embedUrl: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}` };
   return null;
 }
 
-const CAT_META = {
-  baby:    { emoji: '👶', ph: '👶' },
-  pet:     { emoji: '🐾', ph: '🐾' },
-  travel:  { emoji: '✈️', ph: '✈️' },
-  fitness: { emoji: '💪', ph: '💪' },
-  daily:   { emoji: '🏠', ph: '🏠' },
-};
-
-// ══════════════════════════════════════════════════════════════
-// 3. 탭 전환
-// ══════════════════════════════════════════════════════════════
-function switchTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.top-tab-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + tabId)?.classList.add('active');
-  document.querySelector(`.top-tab-btn[data-tab="${tabId}"]`)?.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-document.querySelectorAll('.top-tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-// ══════════════════════════════════════════════════════════════
-// 4. API
-// ══════════════════════════════════════════════════════════════
-async function fetchHouse() {
-  const q = ownerKey ? `&owner=${encodeURIComponent(ownerKey)}` : '';
-  const res  = await fetch(`/api/house?slug=${slug}${q}`);
-  const data = await res.json();
+/* ══════════════════════════════════════════
+   3. 데이터 로드
+══════════════════════════════════════════ */
+async function fetchData() {
+  const ownerQ = CN.ownerKey ? `&owner=${encodeURIComponent(CN.ownerKey)}` : '';
+  const res    = await fetch(`/api/house?slug=${CN.slug}${ownerQ}`);
+  const data   = await res.json();
   if (!data.house) throw new Error(data.error || '집을 찾을 수 없어요');
+
+  CN.house      = data.house;
+  CN.houseId    = data.house.id;
+  CN.isOwner    = !!data.house.is_owner;
+  CN.rooms      = data.rooms      || [];
+  CN.categories = data.categories || [];
+  CN.posts      = data.posts      || [];
+  CN.comments   = data.comments   || [];  // guestbook 전용
+  CN.media      = data.media      || [];
+  CN.milestones = data.milestones || [];
+
   return data;
 }
 
-// ══════════════════════════════════════════════════════════════
-// 5. 셸 렌더 (커버 / 프로필 / 집 정보 / D-day / 공유)
-// ══════════════════════════════════════════════════════════════
-function renderCover(house, isOwner) {
-  const img   = document.getElementById('coverImg');
-  const empty = document.getElementById('coverEmpty');
-  const btn   = document.getElementById('coverEditBtn');
-
-  if (house.cover_url) {
-    img.style.backgroundImage = `url(${house.cover_url})`;
-    empty.style.display = 'none';
-  }
-  if (!isOwner) return;
-
-  btn.style.display = 'block';
-  btn.addEventListener('click', () => document.getElementById('coverInput').click());
-  document.getElementById('coverInput').addEventListener('change', async e => {
-    const file = e.target.files[0]; if (!file) return;
-    showToast('커버 업로드 중... ⏳');
-    try {
-      const url = await cloudinaryUpload(await b64Blob(await resizeImg(file, 1600)), 'cover.jpg');
-      await fetch('/api/upload', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cover', house_id: house.id, file_url: url }),
-      });
-      img.style.backgroundImage = `url(${url})`;
-      empty.style.display = 'none';
-      showToast('커버가 변경됐어요 ✅');
-    } catch { showToast('업로드 실패'); }
-  });
+async function reloadData() {
+  await fetchData();
+  rebuildRenderTargets();
 }
 
-function renderProfile(house, isOwner) {
-  const photo = document.getElementById('profilePhoto');
-  const cat   = CAT_META[house.category] || CAT_META.daily;
+/* ══════════════════════════════════════════
+   4. 셸 렌더 (커버/프로필/이름/공유)
+══════════════════════════════════════════ */
+function renderShell() {
+  const h   = CN.house;
+  const cat = CAT_META[h.category] || CAT_META.daily;
 
-  if (house.profile_url) {
-    photo.innerHTML = `<img src="${esc(house.profile_url)}" alt="${esc(house.name)}"
-      style="width:100%;height:100%;object-fit:cover;"><div class="profile-photo-hint">변경</div>`;
+  document.title = `${h.name || CN.slug} · CoreNull`;
+  document.getElementById('heroName').textContent    = h.name || CN.slug;
+  document.getElementById('heroSub').textContent     = h.description || '';
+  document.getElementById('footerName').textContent  = h.name || CN.slug;
+  document.getElementById('footerEi').textContent    = cat.emoji;
+
+  // 커버
+  const coverImg = document.getElementById('coverImg');
+  if (h.cover_url) coverImg.style.backgroundImage = `url(${h.cover_url})`;
+
+  // 커버 수정 버튼 (오너)
+  const coverWrap = document.getElementById('coverWrap');
+  coverWrap.querySelector('.cover-edit-btn')?.remove();
+  if (CN.isOwner) {
+    const btn = document.createElement('button');
+    btn.className   = 'cover-edit-btn';
+    btn.textContent = '📷 커버 수정';
+    btn.addEventListener('click', () => document.getElementById('coverInput').click());
+    coverWrap.appendChild(btn);
+  }
+
+  // 프로필 사진
+  const photo = document.getElementById('profilePhoto');
+  if (h.profile_url) {
+    photo.innerHTML = `<img src="${h.profile_url}" alt="${esc(h.name)}"><div class="profile-photo-hint">변경</div>`;
   } else {
     document.getElementById('profilePlaceholder').textContent = cat.ph;
   }
-  if (!isOwner) return;
-
-  photo.classList.add('is-owner');
-  photo.addEventListener('click', () => document.getElementById('profileInput').click());
-  document.getElementById('profileInput').addEventListener('change', async e => {
-    const file = e.target.files[0]; if (!file) return;
-    showToast('프로필 업로드 중... ⏳');
-    try {
-      const url = await cloudinaryUpload(await b64Blob(await resizeImg(file, 400)), 'profile.jpg');
-      await fetch('/api/upload', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'profile', house_id: house.id, file_url: url }),
-      });
-      photo.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;">
-        <div class="profile-photo-hint">변경</div>`;
-      showToast('프로필이 변경됐어요 ✅');
-    } catch { showToast('업로드 실패'); }
-  });
-}
-
-function renderHeroInfo(house) {
-  const cat = CAT_META[house.category] || CAT_META.daily;
-  document.title = `${house.name} · CoreNull`;
-  document.getElementById('heroName').textContent   = house.name || slug;
-  document.getElementById('heroSub').textContent    = house.description || '';
-  document.getElementById('footerName').textContent = house.name || slug;
-  document.getElementById('footerEi').textContent   = cat.emoji;
-  if (house.category === 'baby' && house.name) {
-    document.getElementById('gbFormTitle').textContent =
-      `${house.name}에게 메시지를 남겨주세요 🎂`;
+  if (CN.isOwner) {
+    photo.classList.add('is-owner');
+    photo.onclick = () => document.getElementById('profileInput').click();
   }
+
+  // D-Day
+  renderDday(h);
+
+  // 공유 버튼
+  const shareWrap = document.getElementById('shareWrap');
+  shareWrap.style.display = 'flex';
+  shareWrap.innerHTML = `
+    <button class="share-btn kakao" id="shareKakaoBtn">💬 카카오</button>
+    <button class="share-btn link"  id="shareLinkBtn">🔗 링크 복사</button>`;
+  document.getElementById('shareKakaoBtn').addEventListener('click', shareKakao);
+  document.getElementById('shareLinkBtn').addEventListener('click', copyLink);
 }
 
-function renderDday(house) {
-  const wrap = document.getElementById('ddayWrap');
-  if (!house.birth_date && !house.start_date) return;
-  const start   = new Date(house.birth_date || house.start_date);
+function renderDday(h) {
+  if (!h.birth_date && !h.start_date) return;
+  const start   = new Date(h.birth_date || h.start_date);
   const now     = new Date();
   const elapsed = Math.floor((now - start) / 86400000);
-  let items = [{ num: `${elapsed}일`, label: '지난 날' }];
-  if (house.category === 'baby' && house.hundred_date) {
-    const diff = Math.ceil((new Date(house.hundred_date) - now) / 86400000);
+  let items = [{ num: elapsed + '일', label: '지난 날' }];
+  if (h.category === 'baby' && h.hundred_date) {
+    const diff = Math.ceil((new Date(h.hundred_date) - now) / 86400000);
     items = [
-      { num: `${elapsed}일`,  label: '태어난 지' },
+      { num: elapsed + '일', label: '태어난 지' },
       { num: diff > 0 ? `D-${diff}` : diff === 0 ? 'D-DAY' : '완료 🎂', label: '백일까지' },
       { num: '100', label: '기념일' },
     ];
   }
-  wrap.innerHTML = items.map(i =>
+  document.getElementById('ddayWrap').innerHTML = items.map(i =>
     `<div class="dday-box">
       <div class="dday-num">${i.num}</div>
       <div class="dday-label">${i.label}</div>
     </div>`).join('');
 }
 
-function renderShare(house) {
-  const url = location.origin + '/' + slug;
-  document.getElementById('shareLinkBtn').addEventListener('click', () => {
-    navigator.clipboard.writeText(url)
-      .then(() => showToast('링크가 복사됐어요 🔗'))
-      .catch(() => showToast('복사 실패'));
+/* ══════════════════════════════════════════
+   5. 탭 빌드
+══════════════════════════════════════════ */
+const _renderMap = new Map(); // tabId → renderFn
+
+function buildTabs() {
+  const topTabs     = document.getElementById('topTabs');
+  const tabContents = document.getElementById('tabContents');
+  topTabs.innerHTML    = '';
+  tabContents.innerHTML = '';
+
+  const ORDER   = ['living', 'room', 'library'];
+  const ordered = ORDER.map(t => CN.rooms.find(r => r.room_type === t)).filter(Boolean);
+
+  ordered.forEach((room, idx) => {
+    const meta  = ROOM_META[room.room_type];
+    const tabId = `tab-${room.id}`;
+
+    const btn = document.createElement('button');
+    btn.className   = 'top-tab-btn' + (idx === 0 ? ' active' : '');
+    btn.innerHTML   = `<span class="ti">${meta.icon}</span>${meta.label}`;
+    btn.dataset.tab = tabId;
+    btn.addEventListener('click', () => switchTab(tabId));
+    topTabs.appendChild(btn);
+
+    const div = document.createElement('div');
+    div.className = 'tab-content' + (idx === 0 ? ' active' : '');
+    div.id = tabId;
+    tabContents.appendChild(div);
+
+    // 렌더 함수 등록
+    if (room.room_type === 'living')  { _renderMap.set(tabId, () => renderLiving(div)); renderLiving(div); }
+    if (room.room_type === 'room')    { _renderMap.set(tabId, () => renderRoom(div, room)); renderRoom(div, room); }
+    if (room.room_type === 'library') { _renderMap.set(tabId, () => renderLibrary(div)); renderLibrary(div); }
   });
-  document.getElementById('shareKakaoBtn').addEventListener('click', () => {
-    if (window.Kakao?.isInitialized?.()) {
-      Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: house.name, description: house.description || 'CoreNull',
-          imageUrl: house.cover_url || '', link: { mobileWebUrl: url, webUrl: url },
-        },
-        buttons: [{ title: '집 방문하기', link: { mobileWebUrl: url, webUrl: url } }],
-      });
-    } else {
-      navigator.clipboard.writeText(url)
-        .then(() => showToast('링크가 복사됐어요 🔗'))
-        .catch(() => showToast('복사 실패'));
+}
+
+function rebuildRenderTargets() {
+  _renderMap.forEach(fn => fn());
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.top-tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId)?.classList.add('active');
+  document.querySelector(`[data-tab="${tabId}"]`)?.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchToType(type) {
+  const r = CN.rooms.find(r => r.room_type === type);
+  if (r) switchTab(`tab-${r.id}`);
+}
+
+/* ══════════════════════════════════════════
+   6. 거실 렌더
+══════════════════════════════════════════ */
+function renderLiving(container) {
+  const h = CN.house;
+  if (!h) return;
+
+  // 백일 배너
+  let bannerHtml = '';
+  if (h.hundred_date) {
+    const diff = Math.ceil((new Date(h.hundred_date) - new Date()) / 86400000);
+    if (diff >= 0) {
+      const badge = diff === 0 ? 'D-DAY 🎉' : `D-${diff}`;
+      bannerHtml = `<div class="lobby-banner"><div class="lobby-banner-inner">
+        <div class="lobby-badge">${badge}</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;">${h.name}의 백일이 다가오고 있어요 🎂</div>
+          <div style="font-size:12px;color:var(--muted)">${fmtDate(h.hundred_date)} · ${diff}일 남았어요</div>
+        </div>
+      </div></div>`;
     }
-  });
-}
-
-function trackVisit(houseId) {
-  const ref = new URLSearchParams(location.search).get('ref') || 'direct';
-  fetch('/api/house', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
-    body: JSON.stringify({ house_id: houseId, ref, invited_by: ref.startsWith('dev_') ? ref : null }),
-  }).catch(() => {});
-}
-
-// ══════════════════════════════════════════════════════════════
-// 6. 거실 — renderGuestbook(comments)
-// ══════════════════════════════════════════════════════════════
-function renderGuestbook(comments) {
-  const list = document.getElementById('living-guestbook-list');
-  if (!comments.length) {
-    list.innerHTML = `<div class="empty">
-      <div class="ei">💌</div>
-      <p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p>
-    </div>`;
-    return;
   }
-  list.innerHTML = comments.map((c, i) => `
-    <div class="feed-item" style="animation-delay:${i * 0.05}s">
-      <div class="feed-head">
-        <div class="feed-av">${esc((c.author_name || '?')[0])}</div>
-        <div class="feed-name">${esc(c.author_name || '익명')}</div>
-        <div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>
-        ${window.__cn.isOwner
-          ? `<button class="feed-del" data-id="${c.id}">🗑️</button>` : ''}
-      </div>
-      ${c.media_url ? `<div class="feed-img"><img src="${esc(c.media_url)}"></div>` : ''}
-      <div class="feed-body">${esc(c.content || '').replace(/\n/g, '<br>')}</div>
-      <div class="feed-time">${timeAgo(c.created_at)}</div>
-    </div>`).join('');
 
-  list.querySelectorAll('.feed-del').forEach(btn => {
-    btn.addEventListener('click', () => _deleteComment(btn.dataset.id));
-  });
+  // 방 카드
+  const navRooms = CN.rooms.filter(r => r.room_type !== 'living');
+  const roomCardsHtml = navRooms.length ? `
+    <div class="sec-head" style="margin-bottom:14px;">
+      <div><div class="sec-label">ROOMS</div><div class="sec-title">방 둘러보기</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:36px;">
+      ${navRooms.map(r => {
+        const icon = r.room_type === 'library' ? '📚' : '🚪';
+        const cnt  = r.room_type === 'library'
+          ? `사진 ${CN.media.filter(m => m.media_type === 'photo').length}장`
+          : `글 ${CN.posts.filter(p => p.room_id === r.id).length}개`;
+        return `<div data-nav-room="${r.id}"
+          style="background:white;border:1px solid rgba(139,94,60,.12);border-radius:14px;padding:14px 12px;cursor:pointer;transition:all .2s;"
+          onmouseover="this.style.borderColor='var(--brown)';this.style.background='var(--warm)'"
+          onmouseout="this.style.borderColor='rgba(139,94,60,.12)';this.style.background='white'">
+          <div style="font-size:24px;margin-bottom:7px;">${icon}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--dark);">${r.room_name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${cnt}</div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  // 최근 사진
+  const photos = CN.media.filter(m => m.media_type === 'photo').slice(0, 3);
+  const lbUrls = photos.map(m => m.file_url);
+  const photoHtml = photos.length
+    ? photos.map((m, i) => `<div class="ps-cell" data-lb-urls='${JSON.stringify(lbUrls)}' data-lb-idx="${i}"><img src="${m.file_url}" loading="lazy"></div>`).join('')
+    : `<div style="grid-column:span 3;text-align:center;padding:24px;color:var(--muted);font-size:13px;">아직 사진이 없어요 📷</div>`;
+
+  // 다음 마일스톤
+  const now   = new Date();
+  const nextM = CN.milestones
+    .filter(m => m.milestone_date && new Date(m.milestone_date) >= now)
+    .sort((a, b) => new Date(a.milestone_date) - new Date(b.milestone_date))[0];
+  let msHtml = '';
+  if (nextM) {
+    const diff = Math.ceil((new Date(nextM.milestone_date) - now) / 86400000);
+    msHtml = `<div class="sec-label" style="margin-bottom:10px;">NEXT MILESTONE</div>
+      <div class="ms-card">
+        <div class="ms-icon">${nextM.memo || '⭐'}</div>
+        <div class="ms-info">
+          <div class="ms-name">${nextM.title}</div>
+          <div class="ms-date">${fmtDate(nextM.milestone_date)}</div>
+        </div>
+        <div class="ms-badge">${diff === 0 ? 'D-DAY' : `D-${diff}`}</div>
+      </div>`;
+  }
+
+  // 최근 포스트
+  const recentPosts = [...CN.posts].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 2);
+  const recentPostsHtml = recentPosts.length ? `
+    <div class="sec-head" style="margin-bottom:14px;margin-top:36px;">
+      <div><div class="sec-label">RECENT POSTS</div><div class="sec-title">최근 기록</div></div>
+      <button class="more-btn" data-switch-type="room">더 보기 →</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:36px;">
+      ${recentPosts.map(p => {
+        const tags = (p.category_ids || []).map(cid => {
+          const c = CN.categories.find(x => x.id === cid);
+          return c ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${c.color||'var(--mint)'};color:white;">${c.name}</span>` : '';
+        }).join('');
+        const thumb = (p.media_urls && p.media_urls[0])
+          ? `<img src="${p.media_urls[0]}" style="width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
+          : `<div style="width:52px;height:52px;border-radius:8px;background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📝</div>`;
+        return `<div style="display:flex;gap:12px;background:white;border:1px solid rgba(139,94,60,.1);border-radius:14px;padding:12px;cursor:pointer;"
+          onmouseover="this.style.borderColor='var(--brown)'"
+          onmouseout="this.style.borderColor='rgba(139,94,60,.1)'">
+          ${thumb}
+          <div style="flex:1;min-width:0;">
+            ${tags ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px;">${tags}</div>` : ''}
+            <div style="font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.content) || '(사진)'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px;">${timeAgo(p.created_at)}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  // 방명록 피드 (comments = guestbook 전용)
+  const feedHtml = CN.comments.length
+    ? CN.comments.map((c, i) => `
+      <div class="feed-item" style="animation-delay:${i * 0.06}s">
+        <div class="feed-head">
+          <div class="feed-av">${(c.author_name || '?')[0]}</div>
+          <div class="feed-name">${esc(c.author_name || '익명')}</div>
+          <div class="feed-flag">${c.lang === 'vi' ? '🇻🇳' : '🇰🇷'}</div>
+          ${CN.isOwner ? `<button class="feed-del" data-comment-id="${c.id}">🗑️</button>` : ''}
+          <button class="gb-translate-btn" data-txt="${esc(c.content_original || c.content || '')}"
+            style="background:none;border:1px solid rgba(139,94,60,.2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Gowun Dodum',serif;margin-left:4px;">🌐 번역</button>
+        </div>
+        ${c.media_url ? `<div class="feed-img"><img src="${c.media_url}"></div>` : ''}
+        <div class="feed-body">${esc(c.content_original || c.content || '').replace(/\n/g, '<br>')}</div>
+        <div class="feed-time">${timeAgo(c.created_at)}</div>
+      </div>`).join('')
+    : `<div class="empty"><div class="ei">💌</div><p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p></div>`;
+
+  container.innerHTML = `
+    ${bannerHtml}
+    <div class="section">
+      ${roomCardsHtml}
+      <div class="sec-head">
+        <div><div class="sec-label">RECENT PHOTOS</div><div class="sec-title">최근 사진</div></div>
+        <button class="more-btn" data-switch-type="library">더 보기 →</button>
+      </div>
+      <div class="photo-strip">${photoHtml}</div>
+      ${msHtml}
+      ${recentPostsHtml}
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-label">GUESTBOOK</div><div class="sec-title">방명록 💌</div></div>
+        <div style="font-size:12px;color:var(--muted);">${CN.comments.length ? CN.comments.length + '개' : ''}</div>
+      </div>
+      <div class="feed-list" id="living-feed-list">${feedHtml}</div>
+      <div class="gb-form">
+        <div class="gb-title">${h.category === 'baby' ? h.name + '에게 메시지를 남겨주세요 🎂' : '메시지를 남겨주세요'}</div>
+        <input type="text" class="gb-input" id="gbAuthor" placeholder="이름 (예: 할머니, Bà ngoại, 큰아빠)"
+          value="${localStorage.getItem('cn_author_name') || ''}">
+        <div class="ai-row">
+          <button class="ai-btn" id="aiKoBtn">✨ 한국어 추천</button>
+          <button class="ai-btn" id="aiViBtn">✨ Gợi ý tiếng Việt</button>
+        </div>
+        <div class="ai-sugg" id="aiSugg" style="display:none;"></div>
+        <textarea class="gb-input gb-textarea" id="gbContent"
+          placeholder="메시지를 남겨주세요&#10;한국어, 베트남어 모두 괜찮아요 💕"></textarea>
+        <div class="gb-actions">
+          <button class="gb-photo-btn" id="gbPhotoBtn">📷</button>
+          <input type="file" id="gbPhotoInput" accept="image/*" style="display:none">
+          <button class="gb-submit" id="gbSubmitBtn">남기기</button>
+        </div>
+        <div id="gbPrevWrap" style="display:none;margin-top:8px;">
+          <img id="gbPrevImg" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;">
+        </div>
+      </div>
+    </div>`;
+
+  // 이벤트 위임
+  container.addEventListener('click', _livingClickHandler);
+  _bindGuestbookForm(container);
 }
 
-// 사진 미리보기
-let _gbPhotoB64 = null;
-document.getElementById('living-gb-photo-btn').addEventListener('click', () => {
-  document.getElementById('living-gb-photo-input').click();
-});
-document.getElementById('living-gb-photo-input').addEventListener('change', e => {
-  const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    _gbPhotoB64 = ev.target.result;
-    document.getElementById('living-gb-preview-img').src = ev.target.result;
-    document.getElementById('living-gb-preview').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-});
+function _livingClickHandler(e) {
+  // 방 카드 클릭
+  const navRoom = e.target.closest('[data-nav-room]');
+  if (navRoom) { switchTab(`tab-${navRoom.dataset.navRoom}`); return; }
 
-// 방명록 제출
-document.getElementById('living-gb-submit').addEventListener('click', async () => {
-  const author  = document.getElementById('living-gb-author').value.trim();
-  const content = document.getElementById('living-gb-content').value.trim();
+  // 더보기
+  const switchBtn = e.target.closest('[data-switch-type]');
+  if (switchBtn) { switchToType(switchBtn.dataset.switchType); return; }
+
+  // 사진 클릭 (라이트박스)
+  const psCell = e.target.closest('[data-lb-urls]');
+  if (psCell) { openLightbox(JSON.parse(psCell.dataset.lbUrls), Number(psCell.dataset.lbIdx)); return; }
+
+  // 방명록 삭제
+  const delBtn = e.target.closest('[data-comment-id]');
+  if (delBtn && CN.isOwner) { _deleteComment(delBtn.dataset.commentId); return; }
+
+  // 번역
+  const transBtn = e.target.closest('.gb-translate-btn');
+  if (transBtn) { _translateComment(transBtn.dataset.txt, transBtn); return; }
+}
+
+/* ══════════════════════════════════════════
+   7. 방명록 폼
+══════════════════════════════════════════ */
+let _gbPhotoB64 = null;
+
+function _bindGuestbookForm(container) {
+  container.querySelector('#gbPhotoBtn')?.addEventListener('click', () => {
+    container.querySelector('#gbPhotoInput')?.click();
+  });
+  container.querySelector('#gbPhotoInput')?.addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      _gbPhotoB64 = ev.target.result;
+      document.getElementById('gbPrevImg').src = ev.target.result;
+      document.getElementById('gbPrevWrap').style.display = 'block';
+    };
+    r.readAsDataURL(file);
+  });
+  container.querySelector('#gbSubmitBtn')?.addEventListener('click', _submitGuestbook);
+  container.querySelector('#aiKoBtn')?.addEventListener('click', () => _getAiMsg('ko'));
+  container.querySelector('#aiViBtn')?.addEventListener('click', () => _getAiMsg('vi'));
+}
+
+async function _submitGuestbook() {
+  const author  = document.getElementById('gbAuthor')?.value.trim();
+  const content = document.getElementById('gbContent')?.value.trim();
   if (!author || !content) { showToast('이름과 메시지를 입력해주세요'); return; }
+  localStorage.setItem('cn_author_name', author);
 
   let media_url = null;
   if (_gbPhotoB64) {
     try {
       showToast('사진 업로드 중... ⏳');
-      media_url = await cloudinaryUpload(await b64Blob(_gbPhotoB64), 'gb.jpg');
+      const blob = await b64Blob(_gbPhotoB64);
+      media_url  = await cloudinaryUpload(blob, 'gb.jpg');
     } catch { showToast('사진 업로드 실패'); return; }
   }
 
-  try {
-    const res  = await fetch('/api/comment', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ house_id: window.__cn.house.id, author_name: author, content, media_url }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      document.getElementById('living-gb-author').value  = '';
-      document.getElementById('living-gb-content').value = '';
-      document.getElementById('living-gb-preview').style.display = 'none';
-      _gbPhotoB64 = null;
-      showToast('메시지가 등록됐어요 💌');
-      await reloadData();
-    } else showToast(data.error || '등록 실패');
-  } catch { showToast('오류가 발생했어요'); }
-});
+  const res  = await fetch('/api/comment', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ house_id: CN.houseId, author_name: author, content, media_url }),
+  });
+  const data = await res.json();
+  if (data.success) {
+    document.getElementById('gbAuthor').value  = '';
+    document.getElementById('gbContent').value = '';
+    document.getElementById('gbPrevWrap').style.display = 'none';
+    _gbPhotoB64 = null;
+    showToast('메시지가 등록됐어요 💌');
+    await reloadData();
+  } else showToast(data.error || '등록 실패');
+}
 
 async function _deleteComment(id) {
   openConfirm('메시지를 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
     await fetch('/api/comment', {
       method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ comment_id: id, house_id: window.__cn.house.id }),
+      body: JSON.stringify({ comment_id: id, house_id: CN.houseId }),
     });
     showToast('삭제됐어요');
     await reloadData();
   });
 }
 
-// ══════════════════════════════════════════════════════════════
-// 7. 방 — renderCatBar(categories) + renderPosts(posts, categories)
-// ══════════════════════════════════════════════════════════════
-function renderCatBar(categories) {
-  const bar = document.getElementById('room-cat-bar');
-  bar.innerHTML = `<span class="cat-chip active" data-cat="all">전체</span>` +
-    categories.map(c =>
-      `<span class="cat-chip" data-cat="${c.id}">${esc(c.name)}</span>`
+async function _getAiMsg(lang) {
+  const btnId = lang === 'vi' ? 'aiViBtn' : 'aiKoBtn';
+  const btn   = document.getElementById(btnId); if (!btn) return;
+  btn.disabled = true;
+  try {
+    const res  = await fetch('/api/gemini', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'message', context: { lang } }),
+    });
+    const data = await res.json();
+    const el   = document.getElementById('aiSugg'); if (!el) return;
+    el.innerHTML = (data.suggestions || []).map(s =>
+      `<button class="ai-chip" data-sugg="${esc(s)}">${esc(s)}</button>`
     ).join('');
+    el.style.display = 'flex';
+    el.addEventListener('click', e => {
+      const chip = e.target.closest('[data-sugg]');
+      if (!chip) return;
+      const ta = document.getElementById('gbContent');
+      if (ta) ta.value = chip.dataset.sugg;
+      el.style.display = 'none';
+    });
+  } catch { showToast('AI 문구 생성 실패'); }
+  finally { btn.disabled = false; }
+}
 
-  bar.addEventListener('click', e => {
-    const chip = e.target.closest('.cat-chip');
+async function _translateComment(txt, btn) {
+  btn.disabled  = true;
+  btn.textContent = '번역 중...';
+  try {
+    const res  = await fetch('/api/gemini', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'translate', text: txt }),
+    });
+    const data = await res.json();
+    const item = btn.closest('.feed-item');
+    const body = item?.querySelector('.feed-body');
+    if (body && data.translated) {
+      body.insertAdjacentHTML('beforeend',
+        `<div style="margin-top:8px;padding:6px 10px;background:var(--warm);border-radius:8px;font-size:12px;color:var(--muted);">🌐 ${esc(data.translated)}</div>`);
+    }
+    btn.style.display = 'none';
+  } catch { btn.disabled = false; btn.textContent = '🌐 번역'; }
+}
+
+/* ══════════════════════════════════════════
+   8. 방 렌더
+══════════════════════════════════════════ */
+function renderRoom(container, room) {
+  const normal = CN.categories.filter(c => !c.is_event);
+  const events = CN.categories.filter(c =>  c.is_event);
+
+  const catChips = [
+    `<button class="cat-chip active" data-cat="all">전체</button>`,
+    ...normal.map(c => `<button class="cat-chip" data-cat="${c.id}"
+      style="--cat-color:${c.color || 'var(--mint)'};">${esc(c.name)}</button>`),
+    ...(events.length
+      ? [`<span style="color:var(--muted);font-size:11px;align-self:center;">|</span>`,
+         ...events.map(c => {
+           const diff = c.event_date ? Math.ceil((new Date(c.event_date) - new Date()) / 86400000) : null;
+           const badge = diff === null ? '' : diff > 0 ? `<span class="cat-chip-dday">D-${diff}</span>`
+             : diff === 0 ? `<span class="cat-chip-dday today">D-DAY</span>`
+             : `<span class="cat-chip-dday past">D+${Math.abs(diff)}</span>`;
+           return `<button class="cat-chip cat-chip-event" data-cat="${c.id}">🎂 ${esc(c.name)}${badge}</button>`;
+         })]
+      : []),
+  ].join('');
+
+  container.innerHTML = `
+    <div class="section">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-label">ROOM</div><div class="sec-title">${esc(room.room_name)}</div></div>
+        <div style="display:flex;gap:8px;">
+          ${CN.isOwner ? `<button class="more-btn" id="roomWriteBtn">+ 글쓰기</button>` : ''}
+        </div>
+      </div>
+      <div class="cat-filter" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="roomCatBar">
+        ${catChips}
+      </div>
+      <div id="roomPostList-${room.id}"></div>
+    </div>`;
+
+  _renderRoomPosts(room.id);
+
+  // 이벤트 위임
+  container.querySelector('#roomCatBar')?.addEventListener('click', e => {
+    const chip = e.target.closest('[data-cat]');
     if (!chip) return;
-    bar.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+    container.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
-    const catId    = chip.dataset.cat;
-    const filtered = catId === 'all'
-      ? window.__cn.posts
-      : window.__cn.posts.filter(p =>
-          (p.category_ids || []).map(String).includes(String(catId)));
-    renderPosts(filtered, window.__cn.categories);
+    CN.activeCat = chip.dataset.cat === 'all' ? null : chip.dataset.cat;
+    _renderRoomPosts(room.id);
+  });
+
+  container.querySelector('#roomWriteBtn')?.addEventListener('click', () => {
+    CN.editPostId = null;
+    openComposeModal(room.id);
+  });
+
+  container.addEventListener('click', e => {
+    const delBtn = e.target.closest('[data-del-post]');
+    if (delBtn && CN.isOwner) { _deletePost(delBtn.dataset.delPost, room.id); }
+    const imgEl = e.target.closest('[data-lb-urls]');
+    if (imgEl) { openLightbox(JSON.parse(imgEl.dataset.lbUrls), Number(imgEl.dataset.lbIdx)); }
   });
 }
 
-function _storyImgs(urls) {
+function _getFilteredPosts(roomId) {
+  const posts = CN.posts.filter(p => p.room_id === roomId);
+  if (!CN.activeCat) return posts;
+  return posts.filter(p => (p.category_ids || []).map(String).includes(String(CN.activeCat)));
+}
+
+function _renderRoomPosts(roomId) {
+  const el = document.getElementById(`roomPostList-${roomId}`);
+  if (!el) return;
+  const posts = _getFilteredPosts(roomId);
+  if (!posts.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">📝</div>
+      <p>아직 글이 없어요${CN.isOwner ? '<br>첫 번째 글을 써보세요!' : ''}</p></div>`;
+    return;
+  }
+  el.innerHTML = posts.map((p, i) => _postCardHtml(p, i)).join('');
+}
+
+function _storyImgsHtml(urls) {
   if (!urls.length) return '';
-  const img = (u, i) =>
-    `<img src="${esc(u)}" loading="lazy"
-          data-lb-urls='${JSON.stringify(urls)}' data-lb-idx="${i}"
-          style="cursor:zoom-in;">`;
-  const n = urls.length;
-  if (n === 1) return `<div class="story-imgs one">${img(urls[0],0)}</div>`;
-  if (n === 2) return `<div class="story-imgs two">${img(urls[0],0)}${img(urls[1],1)}</div>`;
-  if (n === 3) return `<div class="story-imgs three">${urls.map((u,i)=>img(u,i)).join('')}</div>`;
-  if (n === 4) return `<div class="story-imgs four">${urls.map((u,i)=>img(u,i)).join('')}</div>`;
-  const show = urls.slice(0,5), rest = n - 5;
-  const top  = show.slice(0,2).map((u,i)=>img(u,i)).join('');
-  const mid  = show.slice(2,4).map((u,i)=>img(u,i+2)).join('');
+  const cnt  = urls.length;
+  const attr = (u, i) => `data-lb-urls='${JSON.stringify(urls)}' data-lb-idx="${i}"`;
+  const img  = (u, i) => `<img src="${esc(u)}" loading="lazy" ${attr(u, i)} style="cursor:zoom-in;">`;
+  if (cnt === 1) return `<div class="story-imgs one">${img(urls[0], 0)}</div>`;
+  if (cnt === 2) return `<div class="story-imgs two">${img(urls[0], 0)}${img(urls[1], 1)}</div>`;
+  if (cnt === 3) return `<div class="story-imgs three">${urls.map((u, i) => img(u, i)).join('')}</div>`;
+  if (cnt === 4) return `<div class="story-imgs four">${urls.map((u, i) => img(u, i)).join('')}</div>`;
+  const show = urls.slice(0, 5), rest = cnt - 5;
+  const top  = show.slice(0, 2).map((u, i) => img(u, i)).join('');
+  const mid  = show.slice(2, 4).map((u, i) => img(u, i + 2)).join('');
   const last = rest > 0
-    ? `<div class="more-cell">${img(show[4],4)}
-         <div class="more-badge" data-lb-urls='${JSON.stringify(urls)}' data-lb-idx="4"
-              style="cursor:pointer;">+${rest+1}</div></div>`
+    ? `<div class="more-cell" ${attr(null, 4)}>${img(show[4], 4)}<div class="more-badge">+${rest + 1}</div></div>`
     : img(show[4], 4);
-  return `<div class="story-imgs many">
-    <div class="row-top">${top}</div>
-    <div class="row-bot">${mid}${last}</div>
+  return `<div class="story-imgs many"><div class="row-top">${top}</div><div class="row-bot">${mid}${last}</div></div>`;
+}
+
+function _postCardHtml(p, delay = 0) {
+  const tags = (p.category_ids || []).map(cid => {
+    const c = CN.categories.find(x => x.id === cid);
+    return c ? `<span class="post-tag" style="background:${c.color || 'var(--mint)'};">${esc(c.name)}</span>` : '';
+  }).join('');
+  const imgs  = p.media_urls || [];
+  const media = imgs.length ? _storyImgsHtml(imgs) : '';
+
+  return `<div class="post-item" style="animation-delay:${delay * 0.05}s;">
+    ${tags ? `<div class="post-tags">${tags}</div>` : ''}
+    ${p.content ? `<div class="post-body">${esc(p.content).replace(/\n/g, '<br>')}</div>` : ''}
+    ${media}
+    <div class="post-actions">
+      <span class="post-time" style="margin-left:auto;">${timeAgo(p.created_at)}</span>
+      ${CN.isOwner ? `<button data-del-post="${p.id}" class="post-del" style="background:none;border:none;font-size:14px;cursor:pointer;color:var(--muted);">🗑️</button>` : ''}
+    </div>
   </div>`;
 }
 
-function renderPosts(posts, categories) {
-  const list = document.getElementById('room-post-list');
-  if (!posts.length) {
-    list.innerHTML = `<div class="empty"><div class="ei">📝</div>
-      <p>아직 글이 없어요${window.__cn.isOwner ? '<br>첫 번째 글을 써보세요!' : ''}</p></div>`;
-    return;
-  }
-
-  list.innerHTML = posts.map((p, i) => {
-    const tags = (p.category_ids || []).map(cid => {
-      const c = categories.find(x => String(x.id) === String(cid));
-      return c ? `<span class="post-tag" style="background:${c.color||'var(--mint)'};">${esc(c.name)}</span>` : '';
-    }).join('');
-    const imgs  = p.media_urls || [];
-    const media = imgs.length ? _storyImgs(imgs) : '';
-    return `
-      <div class="post-item" style="animation-delay:${i*0.05}s">
-        ${tags ? `<div class="post-tags">${tags}</div>` : ''}
-        ${p.content ? `<div class="post-body">${esc(p.content).replace(/\n/g,'<br>')}</div>` : ''}
-        ${media}
-        <div class="post-foot">
-          <span class="post-time">${timeAgo(p.created_at)}</span>
-          ${window.__cn.isOwner ? `<button class="post-del" data-id="${p.id}">🗑️</button>` : ''}
-        </div>
-      </div>`;
-  }).join('');
-
-  // 이미지 라이트박스
-  list.querySelectorAll('[data-lb-urls]').forEach(el => {
-    el.addEventListener('click', () => {
-      const urls = JSON.parse(el.dataset.lbUrls);
-      const idx  = Number(el.dataset.lbIdx);
-      _lbOpen(urls, idx);
-    });
-  });
-
-  // 삭제
-  list.querySelectorAll('.post-del').forEach(btn => {
-    btn.addEventListener('click', () => _deletePost(btn.dataset.id));
-  });
-}
-
-async function _deletePost(id) {
+async function _deletePost(postId, roomId) {
   openConfirm('글을 삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
     const res  = await fetch('/api/posts', {
       method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ post_id: id, house_id: window.__cn.house.id, owner_key: ownerKey }),
+      body: JSON.stringify({ post_id: postId, house_id: CN.houseId, owner_key: CN.ownerKey }),
     });
     const data = await res.json();
     if (data.success) { showToast('삭제됐어요'); await reloadData(); }
@@ -654,70 +878,91 @@ async function _deletePost(id) {
   });
 }
 
-// ══════════════════════════════════════════════════════════════
-// 8. 서재 — renderLibrary(media)
-//    입력: media 배열 전체 (photo + video)
-// ══════════════════════════════════════════════════════════════
-function renderLibrary(media) {
-  const photos = media.filter(m => m.media_type === 'photo');
-  const videos = media.filter(m => m.media_type === 'video');
+/* ══════════════════════════════════════════
+   9. 서재 렌더
+══════════════════════════════════════════ */
+function renderLibrary(container) {
+  const photos = CN.media.filter(m => m.media_type === 'photo');
+  const videos = CN.media.filter(m => m.media_type === 'video');
+  const lbUrls = photos.map(m => m.file_url);
 
-  // 사진
-  const grid = document.getElementById('library-photo-grid');
-  if (photos.length) {
-    const lbUrls = photos.map(m => m.file_url);
-    grid.innerHTML = photos.map((m, i) => `
-      <div class="lib-item" data-lb-urls='${JSON.stringify(lbUrls)}' data-lb-idx="${i}">
-        <img src="${esc(m.file_url)}" loading="lazy">
-        ${window.__cn.isOwner ? `<button class="lib-del" data-id="${m.id}">🗑️</button>` : ''}
-      </div>`).join('');
+  const photoGrid = photos.length
+    ? `<div class="lib-grid">${photos.map((m, i) => `
+        <div class="lib-item" data-lb-urls='${JSON.stringify(lbUrls)}' data-lb-idx="${i}">
+          <img src="${esc(m.file_url)}" loading="lazy">
+          ${CN.isOwner ? `
+            <button class="lib-edit" data-lib-edit="${m.id}" data-lib-content="${esc(m.content || '')}">✏️</button>
+            <button class="lib-del"  data-lib-del="${m.id}">🗑️</button>` : ''}
+        </div>`).join('')}</div>`
+    : `<div class="empty"><div class="ei">📷</div><p>아직 사진이 없어요</p></div>`;
 
-    grid.querySelectorAll('.lib-item').forEach(item => {
-      item.addEventListener('click', () => {
-        _lbOpen(JSON.parse(item.dataset.lbUrls), Number(item.dataset.lbIdx));
-      });
-    });
-    grid.querySelectorAll('.lib-del').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        _deleteMedia(btn.dataset.id);
-      });
-    });
-  } else {
-    grid.innerHTML = `<div class="empty" style="grid-column:span 3;">
-      <div class="ei">📷</div><p>아직 사진이 없어요</p></div>`;
-  }
+  const videoList = videos.length
+    ? videos.map(v => {
+        const p = parseVideoUrl(v.file_url);
+        if (!p) return '';
+        return `<div class="video-item" style="background:white;border:1px solid rgba(139,94,60,.1);border-radius:16px;overflow:hidden;">
+          <iframe class="video-embed${p.platform === 'TikTok' ? ' vert' : ''}"
+            src="${p.embedUrl}" allowfullscreen></iframe>
+          <div class="video-info" style="padding:12px 16px;display:flex;align-items:center;gap:10px;">
+            <span class="video-plat">${p.platform}</span>
+            ${CN.isOwner ? `<button class="video-del" data-video-del="${v.id}" style="margin-left:auto;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);">🗑️</button>` : ''}
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="empty"><div class="ei">🎬</div><p>아직 영상이 없어요</p></div>`;
 
-  // 영상
-  const vlist = document.getElementById('library-video-list');
-  if (videos.length) {
-    vlist.innerHTML = videos.map(v => {
-      const p = parseVideoUrl(v.file_url);
-      if (!p) return '';
-      return `<div class="video-item">
-        <iframe class="video-embed${p.platform==='TikTok'?' vert':''}"
-                src="${p.embedUrl}" allowfullscreen></iframe>
-        <div class="video-info">
-          <span class="video-plat">${p.platform}</span>
-          ${window.__cn.isOwner
-            ? `<button class="video-del" data-id="${v.id}">🗑️</button>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+  container.innerHTML = `
+    <div class="section">
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div><div class="sec-label">GALLERY</div><div class="sec-title">사진첩 📷</div></div>
+        ${CN.isOwner ? `<button class="more-btn" id="libUploadBtn">+ 사진 추가</button>` : ''}
+      </div>
+      <div id="libPhotoWrap">${photoGrid}</div>
+      <div class="sec-head" style="margin-top:40px;margin-bottom:16px;">
+        <div><div class="sec-label">VIDEO</div><div class="sec-title">영상 🎬</div></div>
+        ${CN.isOwner ? `<button class="more-btn" id="libVideoBtn">+ 영상 추가</button>` : ''}
+      </div>
+      <div class="video-list">${videoList}</div>
+    </div>`;
 
-    vlist.querySelectorAll('.video-del').forEach(btn => {
-      btn.addEventListener('click', () => _deleteMedia(btn.dataset.id));
-    });
-  } else {
-    vlist.innerHTML = `<div class="empty"><div class="ei">🎬</div><p>아직 영상이 없어요</p></div>`;
-  }
+  // 이벤트 위임
+  container.addEventListener('click', e => {
+    // 라이트박스
+    const lbEl = e.target.closest('[data-lb-urls]');
+    if (lbEl) { openLightbox(JSON.parse(lbEl.dataset.lbUrls), Number(lbEl.dataset.lbIdx)); return; }
+
+    // 편집
+    const editBtn = e.target.closest('[data-lib-edit]');
+    if (editBtn) {
+      e.stopPropagation();
+      document.getElementById('editMediaId').value  = editBtn.dataset.libEdit;
+      document.getElementById('editContent').value  = editBtn.dataset.libContent;
+      openModal('editModal');
+      return;
+    }
+
+    // 삭제 (사진)
+    const delBtn = e.target.closest('[data-lib-del]');
+    if (delBtn) { e.stopPropagation(); _deleteMedia(delBtn.dataset.libDel); return; }
+
+    // 삭제 (영상)
+    const vdelBtn = e.target.closest('[data-video-del]');
+    if (vdelBtn) { _deleteMedia(vdelBtn.dataset.videoDel); return; }
+  });
+
+  container.querySelector('#libUploadBtn')?.addEventListener('click', () => {
+    CN.uploadRoomId = null;
+    document.getElementById('uploadDate').value = new Date().toISOString().slice(0, 10);
+    openModal('uploadModal');
+  });
+  container.querySelector('#libVideoBtn')?.addEventListener('click', () => openModal('videoModal'));
 }
 
 async function _deleteMedia(id) {
   openConfirm('삭제할까요?', '삭제하면 되돌릴 수 없어요.', async () => {
     const res  = await fetch('/api/media', {
       method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ media_id: id, house_id: window.__cn.house.id }),
+      body: JSON.stringify({ media_id: id, house_id: CN.houseId }),
     });
     const data = await res.json();
     if (data.success) { showToast('삭제됐어요'); await reloadData(); }
@@ -725,13 +970,227 @@ async function _deleteMedia(id) {
   });
 }
 
-// ══════════════════════════════════════════════════════════════
-// 9. 라이트박스
-// ══════════════════════════════════════════════════════════════
-let _lbUrls = [], _lbIdx = 0;
+/* ══════════════════════════════════════════
+   10. Compose Modal (글쓰기)
+══════════════════════════════════════════ */
+let _composeRoomId = null;
 
-function _lbOpen(urls, idx) {
-  _lbUrls = urls; _lbIdx = idx;
+function openComposeModal(roomId) {
+  _composeRoomId = roomId;
+  CN.composeFiles = [];
+  document.getElementById('composeContent').value = '';
+  document.getElementById('composePrevWrap').style.display = 'none';
+  document.getElementById('composePrevCells').innerHTML    = '';
+  document.getElementById('composeProgWrap').style.display = 'none';
+
+  // 카테고리 칩
+  const wrap = document.getElementById('composeCatWrap');
+  wrap.innerHTML = CN.categories.map(c =>
+    `<span class="cat-sel${c.is_event ? ' cat-event' : ''}" data-cat-sel="${c.id}"
+      style="--cat-color:${c.color || (c.is_event ? '#F7C59F' : 'var(--mint)')};">${esc(c.name)}</span>`
+  ).join('');
+  wrap.querySelectorAll('[data-cat-sel]').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('on'));
+  });
+
+  openModal('composeModal');
+  setTimeout(() => document.getElementById('composeContent').focus(), 120);
+}
+
+/* ══════════════════════════════════════════
+   11. 파일 미리보기 헬퍼
+══════════════════════════════════════════ */
+function _renderPrevCells(files, cellsEl, wrapEl) {
+  if (!files.length) { wrapEl.style.display = 'none'; return; }
+  wrapEl.style.display = 'block';
+  cellsEl.innerHTML = '';
+  files.forEach((f, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'prev-cell';
+    const img  = document.createElement('img'); img.src = URL.createObjectURL(f);
+    const rm   = document.createElement('button'); rm.className = 'prev-rm'; rm.textContent = '✕';
+    rm.addEventListener('click', () => { files.splice(i, 1); _renderPrevCells(files, cellsEl, wrapEl); });
+    cell.append(img, rm);
+    cellsEl.appendChild(cell);
+  });
+}
+
+async function _uploadFiles(files, progFill, progText) {
+  const urls = [];
+  for (let i = 0; i < files.length; i++) {
+    progText.textContent = `${i + 1} / ${files.length} 업로드 중...`;
+    const b64  = await resizeImg(files[i]);
+    const blob = await b64Blob(b64);
+    const url  = await cloudinaryUpload(blob);
+    urls.push(url);
+    progFill.style.width = `${Math.round(((i + 1) / files.length) * 100)}%`;
+  }
+  return urls;
+}
+
+/* ══════════════════════════════════════════
+   12. Compose 제출
+══════════════════════════════════════════ */
+async function _submitCompose() {
+  const content = document.getElementById('composeContent').value.trim();
+  const catIds  = [...document.querySelectorAll('#composeCatWrap .cat-sel.on')].map(el => el.dataset.catSel);
+
+  if (!content && !CN.composeFiles.length) { showToast('내용이나 사진을 추가해주세요'); return; }
+
+  let mediaUrls = [];
+  if (CN.composeFiles.length) {
+    const progWrap = document.getElementById('composeProgWrap');
+    const progFill = document.getElementById('composeProgFill');
+    const progText = document.getElementById('composeProgText');
+    progWrap.style.display = 'block';
+    try {
+      mediaUrls = await _uploadFiles(CN.composeFiles, progFill, progText);
+    } catch { showToast('업로드 실패'); progWrap.style.display = 'none'; return; }
+    progWrap.style.display = 'none';
+  }
+
+  const res  = await fetch('/api/posts', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      house_id:     CN.houseId,
+      owner_key:    CN.ownerKey,
+      room_id:      _composeRoomId,
+      content:      content || null,
+      media_urls:   mediaUrls,
+      category_ids: catIds,
+    }),
+  });
+  const data = await res.json();
+  if (data.id || data.success) {
+    showToast('등록됐어요 ✅');
+    closeModal('composeModal');
+    await reloadData();
+  } else showToast(data.error || '등록 실패');
+}
+
+/* ══════════════════════════════════════════
+   13. Upload 제출 (서재 사진)
+══════════════════════════════════════════ */
+async function _submitUpload() {
+  if (!CN.uploadFiles.length) { showToast('사진을 선택해주세요'); return; }
+  const libRoom = CN.rooms.find(r => r.room_type === 'library');
+  if (!libRoom) { showToast('서재를 찾을 수 없어요'); return; }
+
+  const btn      = document.getElementById('uploadSubmitBtn');
+  const progWrap = document.getElementById('uploadProgWrap');
+  const progFill = document.getElementById('uploadProgFill');
+  const progText = document.getElementById('uploadProgText');
+  btn.disabled = true; progWrap.style.display = 'block';
+
+  try {
+    const urls    = await _uploadFiles(CN.uploadFiles, progFill, progText);
+    const content = document.getElementById('uploadContent').value.trim();
+    const taken   = document.getElementById('uploadDate').value;
+
+    // 각 URL을 media 테이블에 저장
+    for (const url of urls) {
+      await fetch('/api/upload', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          house_id:   CN.houseId,
+          room_id:    libRoom.id,
+          file_url:   url,
+          media_type: 'photo',
+          content:    content || null,
+          event_date: taken   || null,
+        }),
+      });
+    }
+    showToast(`${urls.length}장 업로드됐어요 📷`);
+    closeModal('uploadModal');
+    CN.uploadFiles = [];
+    await reloadData();
+  } catch { showToast('업로드 실패'); }
+  finally { btn.disabled = false; progWrap.style.display = 'none'; }
+}
+
+/* ══════════════════════════════════════════
+   14. Video 제출
+══════════════════════════════════════════ */
+async function _submitVideo() {
+  const url     = document.getElementById('videoUrlInput').value.trim();
+  if (!url) { showToast('링크를 입력해주세요'); return; }
+  const libRoom = CN.rooms.find(r => r.room_type === 'library');
+  if (!libRoom) { showToast('서재를 찾을 수 없어요'); return; }
+
+  const res  = await fetch('/api/upload', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      house_id:   CN.houseId,
+      room_id:    libRoom.id,
+      file_url:   url,
+      media_type: 'video',
+    }),
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast('영상이 추가됐어요 🎬');
+    document.getElementById('videoUrlInput').value = '';
+    closeModal('videoModal');
+    await reloadData();
+  } else showToast(data.error || '추가 실패');
+}
+
+/* ══════════════════════════════════════════
+   15. Edit Modal (사진 설명 수정)
+══════════════════════════════════════════ */
+async function _submitEdit() {
+  const mediaId = document.getElementById('editMediaId').value;
+  const content = document.getElementById('editContent').value.trim();
+  const res  = await fetch('/api/media', {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ media_id: mediaId, house_id: CN.houseId, content }),
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast('수정됐어요 ✅');
+    closeModal('editModal');
+    await reloadData();
+  } else showToast(data.error || '수정 실패');
+}
+
+/* ══════════════════════════════════════════
+   16. 커버/프로필 업로드
+══════════════════════════════════════════ */
+document.getElementById('coverInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  showToast('커버 업로드 중... ⏳');
+  try {
+    const url  = await cloudinaryUpload(await b64Blob(await resizeImg(file, 1600)), 'cover.jpg');
+    await fetch('/api/upload', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cover', house_id: CN.houseId, owner_key: CN.ownerKey, file_url: url }),
+    });
+    document.getElementById('coverImg').style.backgroundImage = `url(${url})`;
+    showToast('커버가 변경됐어요 ✅');
+  } catch { showToast('업로드 실패'); }
+});
+
+document.getElementById('profileInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if (!file) return;
+  showToast('프로필 업로드 중... ⏳');
+  try {
+    const url  = await cloudinaryUpload(await b64Blob(await resizeImg(file, 400)), 'profile.jpg');
+    await fetch('/api/upload', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'profile', house_id: CN.houseId, owner_key: CN.ownerKey, file_url: url }),
+    });
+    const photo = document.getElementById('profilePhoto');
+    photo.innerHTML = `<img src="${url}" alt="profile"><div class="profile-photo-hint">변경</div>`;
+    showToast('프로필이 변경됐어요 ✅');
+  } catch { showToast('업로드 실패'); }
+});
+
+/* ══════════════════════════════════════════
+   17. 라이트박스
+══════════════════════════════════════════ */
+function openLightbox(urls, idx = 0) {
+  CN.lbImages = urls; CN.lbIndex = idx;
   _lbRender();
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -741,110 +1200,201 @@ function _lbRender() {
   const track   = document.getElementById('lbTrack');
   const thumbs  = document.getElementById('lbThumbs');
   const counter = document.getElementById('lbCounter');
+  const idx     = CN.lbIndex;
+  const urls    = CN.lbImages;
 
-  track.innerHTML = _lbUrls.map(u =>
-    `<div class="lb-slide"><img src="${esc(u)}"></div>`).join('');
-  track.style.transform = `translateX(-${_lbIdx * 100}vw)`;
-
-  thumbs.innerHTML = _lbUrls.map((u, i) =>
-    `<div class="lb-thumb${i===_lbIdx?' active':''}" data-idx="${i}">
-       <img src="${esc(u)}">
-     </div>`).join('');
-  thumbs.querySelectorAll('.lb-thumb').forEach(t => {
-    t.addEventListener('click', () => { _lbIdx = Number(t.dataset.idx); _lbRender(); });
-  });
-
-  counter.textContent = `${_lbIdx+1} / ${_lbUrls.length}`;
+  track.innerHTML = urls.map(u => `<div class="lb-slide"><img src="${esc(u)}"></div>`).join('');
+  track.style.transform = `translateX(-${idx * 100}vw)`;
+  thumbs.innerHTML = urls.map((u, i) =>
+    `<div class="lb-thumb${i === idx ? ' active' : ''}" data-lb-go="${i}"><img src="${esc(u)}"></div>`).join('');
+  counter.textContent = urls.length > 1 ? `${idx + 1} / ${urls.length}` : '';
 }
 
-function _lbPrev() { if (_lbIdx > 0) { _lbIdx--; _lbRender(); } }
-function _lbNext() { if (_lbIdx < _lbUrls.length-1) { _lbIdx++; _lbRender(); } }
-function _lbClose() {
+function _lbGo(i) {
+  CN.lbIndex = i; _lbRender();
+}
+
+document.getElementById('lbClose').addEventListener('click', () => {
   document.getElementById('lightbox').classList.remove('open');
   document.body.style.overflow = '';
+});
+document.getElementById('lbPrevBtn').addEventListener('click', () => { if (CN.lbIndex > 0) _lbGo(CN.lbIndex - 1); });
+document.getElementById('lbNextBtn').addEventListener('click', () => { if (CN.lbIndex < CN.lbImages.length - 1) _lbGo(CN.lbIndex + 1); });
+document.getElementById('lbThumbs').addEventListener('click', e => {
+  const t = e.target.closest('[data-lb-go]');
+  if (t) _lbGo(Number(t.dataset.lbGo));
+});
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+});
+
+/* ══════════════════════════════════════════
+   18. FAB Sheet
+══════════════════════════════════════════ */
+function toggleFabSheet() {
+  const sheet   = document.getElementById('fabSheet');
+  const backdrop = document.getElementById('fabBackdrop');
+  const fab     = document.getElementById('fab');
+  const open    = sheet.classList.toggle('open');
+  backdrop.classList.toggle('open', open);
+  fab.classList.toggle('sheet-open', open);
+  fab.textContent = open ? '✕' : '✏️';
 }
 
-document.getElementById('lbClose')  .addEventListener('click', _lbClose);
-document.getElementById('lbPrevBtn').addEventListener('click', _lbPrev);
-document.getElementById('lbNextBtn').addEventListener('click', _lbNext);
-document.getElementById('lightbox') .addEventListener('click', function(e) {
-  if (e.target === this) _lbClose();
+function closeFabSheet() {
+  document.getElementById('fabSheet').classList.remove('open');
+  document.getElementById('fabBackdrop').classList.remove('open');
+  const fab = document.getElementById('fab');
+  fab.classList.remove('sheet-open');
+  fab.textContent = '✏️';
+}
+
+document.getElementById('fab').addEventListener('click', toggleFabSheet);
+document.getElementById('fabBackdrop').addEventListener('click', closeFabSheet);
+
+document.getElementById('fabWriteBtn').addEventListener('click', () => {
+  closeFabSheet();
+  const roomObj = CN.rooms.find(r => r.room_type === 'room');
+  if (roomObj) { CN.editPostId = null; openComposeModal(roomObj.id); }
 });
+document.getElementById('fabPhotoBtn').addEventListener('click', () => {
+  closeFabSheet();
+  CN.uploadRoomId = null;
+  document.getElementById('uploadDate').value = new Date().toISOString().slice(0, 10);
+  openModal('uploadModal');
+});
+document.getElementById('fabVideoBtn').addEventListener('click', () => {
+  closeFabSheet();
+  openModal('videoModal');
+});
+
+/* ══════════════════════════════════════════
+   19. 모달 이벤트 바인딩
+══════════════════════════════════════════ */
+// Compose
+document.getElementById('composeModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('composeModal')) closeModal('composeModal');
+});
+document.getElementById('composePhotoBtn').addEventListener('click', () => {
+  document.getElementById('composePhotoInput').click();
+});
+document.getElementById('composePhotoInput').addEventListener('change', e => {
+  const files = Array.from(e.target.files);
+  CN.composeFiles = [...CN.composeFiles, ...files].slice(0, 10);
+  _renderPrevCells(
+    CN.composeFiles,
+    document.getElementById('composePrevCells'),
+    document.getElementById('composePrevWrap')
+  );
+  e.target.value = '';
+});
+document.getElementById('composeSubmitBtn').addEventListener('click', _submitCompose);
+
+// Upload
+document.getElementById('uploadModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('uploadModal')) closeModal('uploadModal');
+});
+document.getElementById('uploadSelectBtn').addEventListener('click', () => {
+  document.getElementById('uploadInput').click();
+});
+document.getElementById('uploadInput').addEventListener('change', e => {
+  CN.uploadFiles = Array.from(e.target.files).slice(0, 10);
+  _renderPrevCells(
+    CN.uploadFiles,
+    document.getElementById('uploadPrevCells'),
+    document.getElementById('uploadPrevWrap')
+  );
+  e.target.value = '';
+});
+document.getElementById('uploadSubmitBtn').addEventListener('click', _submitUpload);
+
+// Video
+document.getElementById('videoModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('videoModal')) closeModal('videoModal');
+});
+document.getElementById('videoSubmitBtn').addEventListener('click', _submitVideo);
+
+// Edit
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('editModal')) closeModal('editModal');
+});
+document.getElementById('editSubmitBtn').addEventListener('click', _submitEdit);
+
+// Confirm
+document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+
+/* ══════════════════════════════════════════
+   20. 공유
+══════════════════════════════════════════ */
+function shareKakao() {
+  const h   = CN.house; if (!h) return;
+  const url = location.href;
+  if (window.Kakao?.isInitialized?.()) {
+    Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title:       h.name,
+        description: h.description || 'CoreNull에서 소중한 순간을 기록하고 있어요',
+        imageUrl:    h.cover_url   || '',
+        link: { mobileWebUrl: url, webUrl: url },
+      },
+      buttons: [{ title: '집 방문하기', link: { mobileWebUrl: url, webUrl: url } }],
+    });
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast('링크가 복사됐어요 🔗'));
+  }
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => showToast('링크가 복사됐어요 🔗'));
+}
+
+/* ══════════════════════════════════════════
+   21. 키보드
+══════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
-  if (!document.getElementById('lightbox').classList.contains('open')) return;
-  if (e.key==='ArrowLeft')  _lbPrev();
-  if (e.key==='ArrowRight') _lbNext();
-  if (e.key==='Escape')     _lbClose();
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('lightbox').classList.contains('open')) {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    return;
+  }
+  ['composeModal', 'uploadModal', 'videoModal', 'editModal', 'confirmOverlay'].forEach(id => {
+    document.getElementById(id)?.classList.remove('open');
+  });
 });
 
-// ══════════════════════════════════════════════════════════════
-// 10. 오케스트레이터
-// ══════════════════════════════════════════════════════════════
-async function reloadData() {
-  const data = await fetchHouse();
-
-  // 네임스페이스 갱신 — 오케스트레이터만 씀
-  window.__cn.house      = data.house;
-  window.__cn.posts      = data.posts      || [];
-  window.__cn.comments   = data.comments   || [];
-  window.__cn.media      = data.media      || [];
-  window.__cn.categories = data.categories || [];
-  window.__cn.rooms      = data.rooms      || [];
-  window.__cn.isOwner    = !!data.house.is_owner;
-
-  // 렌더 함수는 데이터를 인자로 받는다
-  renderGuestbook(window.__cn.comments);
-  renderCatBar(window.__cn.categories);
-  renderPosts(window.__cn.posts, window.__cn.categories);
-  renderLibrary(window.__cn.media);
-}
-
+/* ══════════════════════════════════════════
+   22. INIT
+══════════════════════════════════════════ */
 async function init() {
   try {
-    const data    = await fetchHouse();
-    const house   = data.house;
-    const isOwner = !!house.is_owner;
+    await fetchData();
+    renderShell();
+    buildTabs();
 
-    window.__cn.house      = house;
-    window.__cn.posts      = data.posts      || [];
-    window.__cn.comments   = data.comments   || [];
-    window.__cn.media      = data.media      || [];
-    window.__cn.categories = data.categories || [];
-    window.__cn.rooms      = data.rooms      || [];
-    window.__cn.isOwner    = isOwner;
+    // 방문 추적
+    const ref = new URLSearchParams(location.search).get('ref') || 'direct';
+    fetch('/api/house', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-device-id': DEVICE_ID },
+      body: JSON.stringify({ house_id: CN.houseId, ref, invited_by: ref.startsWith('dev_') ? ref : null }),
+    }).catch(() => {});
 
-    // 셸
-    renderHeroInfo(house);
-    renderCover(house, isOwner);
-    renderProfile(house, isOwner);
-    renderDday(house);
-    renderShare(house);
+    if (CN.isOwner) document.getElementById('fab').style.display = 'flex';
 
-    // 콘텐츠
-    renderGuestbook(window.__cn.comments);
-    renderCatBar(window.__cn.categories);
-    renderPosts(window.__cn.posts, window.__cn.categories);
-    renderLibrary(window.__cn.media);
-
-    if (isOwner) document.getElementById('fab').style.display = 'flex';
-    trackVisit(house.id);
-
-    console.log('[house-new] Phase 4 init 완료', window.__cn);
-
-  } catch (err) {
-    console.error('[house-new] init 실패', err);
+  } catch(e) {
+    console.error('[house-new] init 실패', e);
     showToast('데이터를 불러오지 못했어요');
     document.getElementById('heroName').textContent = '불러오기 실패';
   }
 }
 
-// window 노출 (다른 스크립트 블록에서 참조할 것)
-window.showToast   = showToast;
-window.switchTab   = switchTab;
-window.openConfirm = openConfirm;
-window.reloadData  = reloadData;
-
 init();
+
 </script>
 
 <script src="https://hajunai-v2.vercel.app/js/brainpool-debug.js"></script>
