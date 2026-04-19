@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>집 · CoreNull</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/css/layout.css">
+  <link rel="stylesheet" href="/public/css/house.css">
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     L1 · Top Nav
+════════════════════════════════════ -->
+<nav class="top-nav" id="topNav">
+  <div class="top-nav-inner">
+    <a href="/" style="text-decoration:none;">
+    <span class="top-logo">CORE</span><span>NULL</span></a>
+    <div class="top-tabs" id="topTabs">
+      <button class="top-tab-btn active" data-tab="living">
+        <span class="ti">🛋️</span>거실
+      </button>
+      <button class="top-tab-btn" data-tab="room">
+        <span class="ti">🚪</span>방
+      </button>
+      <button class="top-tab-btn" data-tab="library">
+        <span class="ti">📚</span>서재
+      </button>
+    </div>
+    <div class="top-actions" id="topActions"></div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════
+     L2 · Cover Banner
+════════════════════════════════════ -->
+<div class="cover-wrap" id="coverWrap">
+  <div class="cover-img" id="coverImg"></div>
+  <div class="cover-gradient"></div>
+  <div class="cover-empty">
+    <span style="font-size:36px;">🏠</span>
+    <span>커버 사진을 추가해보세요</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     L3 · Profile Area
+════════════════════════════════════ -->
+<div class="profile-area">
+  <div class="profile-inner">
+    <div class="profile-left">
+      <div class="profile-photo" id="profilePhoto">
+        <div class="profile-photo-placeholder" id="profilePlaceholder">🏠</div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name" id="heroName">집 이름</div>
+        <div class="profile-sub"  id="heroSub">한 줄 소개</div>
+        <div class="profile-dday" id="ddayWrap"></div>
+      </div>
+    </div>
+    <div class="profile-right">
+      <div class="share-wrap" id="shareWrap">
+        <button class="share-btn kakao" disabled>💬 카카오</button>
+        <button class="share-btn link"  disabled>🔗 링크 복사</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     L4 · Tab Contents
+
+     데이터 삽입 포인트:
+     #living-guestbook-list  ← guestbook item
+     #room-post-list         ← post 카드
+     #library-photo-grid     ← 사진
+     #library-video-list     ← 영상
+════════════════════════════════════ -->
+<div id="tabContents">
+
+  <!-- 거실 (living) -->
+  <div class="tab-content active" id="tab-living">
+    <div class="section">
+
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div>
+          <div class="sec-label">GUESTBOOK</div>
+          <div class="sec-title">방명록 💌</div>
+        </div>
+      </div>
+
+      <div class="feed-list" id="living-guestbook-list">
+        <div class="empty">
+          <div class="ei">💌</div>
+          <p>아직 메시지가 없어요<br>첫 번째 메시지를 남겨주세요!</p>
+        </div>
+      </div>
+
+      <div class="gb-form">
+        <div class="gb-title">메시지를 남겨주세요</div>
+        <input  type="text" class="gb-input" id="living-gb-author"  placeholder="이름" disabled>
+        <textarea class="gb-input gb-textarea" id="living-gb-content" placeholder="메시지를 남겨주세요" disabled></textarea>
+        <div class="gb-actions">
+          <button class="gb-photo-btn" id="living-gb-photo-btn" disabled>📷</button>
+          <button class="gb-submit"    id="living-gb-submit"    disabled>남기기</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 방 (room) -->
+  <div class="tab-content" id="tab-room">
+    <div class="section">
+
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div>
+          <div class="sec-label">ROOM</div>
+          <div class="sec-title">방 📝</div>
+        </div>
+      </div>
+
+      <div class="cat-bar" id="room-cat-bar">
+        <span class="cat-chip active" data-cat="all">전체</span>
+      </div>
+
+      <div class="post-list" id="room-post-list">
+        <div class="empty">
+          <div class="ei">📝</div>
+          <p>아직 글이 없어요</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 서재 (library) -->
+  <div class="tab-content" id="tab-library">
+    <div class="section">
+
+      <div class="sec-head" style="margin-bottom:16px;">
+        <div>
+          <div class="sec-label">GALLERY</div>
+          <div class="sec-title">사진첩 📷</div>
+        </div>
+      </div>
+
+      <div class="lib-grid" id="library-photo-grid">
+        <div class="empty" style="grid-column:span 3;">
+          <div class="ei">📷</div>
+          <p>아직 사진이 없어요</p>
+        </div>
+      </div>
+
+      <div class="sec-head" style="margin-top:40px;margin-bottom:16px;">
+        <div>
+          <div class="sec-label">VIDEO</div>
+          <div class="sec-title">영상 🎬</div>
+        </div>
+      </div>
+
+      <div class="video-list" id="library-video-list">
+        <div class="empty">
+          <div class="ei">🎬</div>
+          <p>아직 영상이 없어요</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-ei"   id="footerEi">🏠</div>
+  <div class="footer-name" id="footerName">CoreNull</div>
+  <div class="footer-sub">powered by CoreNull · BRAINPOOL</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- JS: 탭 전환만. HTML에 onclick 없음. Phase 1에서 모듈로 분리 예정 -->
+<script>
+(function () {
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.top-tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId)?.classList.add('active');
+    document.querySelector('.top-tab-btn[data-tab="' + tabId + '"]')?.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('.top-tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { switchTab(btn.dataset.tab); });
+  });
+}());
+</script>
+<script src="https://hajunai-v2.vercel.app/js/brainpool-debug.js"></script>
+</body>
+</html>
