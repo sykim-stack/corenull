@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>HajunAI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+  :root {
+    --bg:#0D1117; --bg2:#161B22; --bg3:#21262D; --border:#30363D;
+    --accent:#58A6FF; --accent2:#3FB950; --warn:#F78166;
+    --text:#E6EDF3; --text2:#8B949E; --text3:#484F58; --radius:8px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { width:480px; min-height:600px; background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:13px; }
+  .header { background:var(--bg2); border-bottom:1px solid var(--border); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }
+  .header-left { display:flex; align-items:center; gap:8px; }
+  .logo { width:28px; height:28px; background:linear-gradient(135deg,#58A6FF,#3FB950); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; color:#0D1117; }
+  .header-title { font-weight:700; font-size:14px; }
+  .header-sub { font-size:10px; color:var(--text2); font-family:'JetBrains Mono',monospace; }
+  .status-dot { width:8px; height:8px; border-radius:50%; background:var(--accent2); box-shadow:0 0 6px var(--accent2); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .tabs { display:flex; background:var(--bg2); border-bottom:1px solid var(--border); padding:0 4px; overflow-x:auto; }
+  .tab { padding:8px 9px; font-size:11px; color:var(--text2); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .content { padding:14px 16px; display:none; }
+  .content.active { display:block; }
+  .section-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; font-family:'JetBrains Mono',monospace; }
+  select,textarea,input { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:12px; padding:8px 10px; outline:none; transition:border-color 0.15s; resize:none; }
+  select:focus,textarea:focus,input:focus { border-color:var(--accent); }
+  select option { background:var(--bg3); }
+  textarea { min-height:80px; line-height:1.5; }
+  .gap { margin-bottom:12px; }
+  .gap-sm { margin-bottom:8px; }
+  .type-btns { display:flex; gap:6px; flex-wrap:wrap; }
+  .type-btn { padding:4px 10px; border-radius:20px; font-size:11px; border:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; transition:all 0.15s; font-family:'Noto Sans KR',sans-serif; }
+  .type-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .type-btn.active { background:var(--accent); border-color:var(--accent); color:#0D1117; font-weight:700; }
+  .btn { width:100%; padding:10px; border-radius:var(--radius); border:none; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .btn-primary { background:var(--accent); color:#0D1117; }
+  .btn-primary:hover { background:#79B8FF; }
+  .btn-primary:disabled { background:var(--bg3); color:var(--text3); cursor:not-allowed; }
+  .btn-sm { padding:4px 8px; font-size:11px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text2); cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s; }
+  .btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-copy { border-color:var(--accent2) !important; color:var(--accent2) !important; }
+  /* 헬스 */
+  .project-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; }
+  .project-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .project-name { font-weight:700; font-size:13px; }
+  .project-score { font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .health-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .health-fill { height:100%; border-radius:2px; transition:width 0.6s ease; }
+  .project-phase { font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; margin-top:4px; }
+  /* 조회 카드 */
+  .record-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; }
+  .record-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .record-project { font-size:11px; font-weight:700; }
+  .record-time { font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; }
+  .record-title { font-size:12px; color:var(--text); font-weight:500; margin-bottom:3px; }
+  .record-body { font-size:11px; color:var(--text2); line-height:1.5; max-height:52px; overflow:hidden; transition:max-height 0.3s; }
+  .record-body.expanded { max-height:400px; }
+  .record-actions { display:flex; gap:6px; margin-top:8px; }
+  .record-type { display:inline-block; font-size:10px; padding:1px 6px; border-radius:10px; background:var(--bg2); color:var(--text3); margin-bottom:4px; }
+  /* 맥락 카드 */
+  .ctx-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; margin-bottom:8px; }
+  .ctx-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .ctx-name { font-weight:700; font-size:13px; }
+  .ctx-health { font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .ctx-summary { font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; }
+  .ctx-last { font-size:10px; color:var(--text3); font-family:'JetBrains Mono',monospace; margin-bottom:8px; }
+  .ctx-actions { display:flex; gap:6px; }
+  /* 필터 */
+  .filter-row { display:flex; gap:6px; margin-bottom:10px; }
+  .filter-row select { flex:1; }
+  /* 토스트 */
+  .toast { position:fixed; bottom:12px; left:50%; transform:translateX(-50%) translateY(40px); background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:8px 16px; font-size:12px; color:var(--text); opacity:0; transition:all 0.25s; white-space:nowrap; z-index:9999; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.success { border-color:var(--accent2); color:var(--accent2); }
+  .toast.error { border-color:var(--warn); color:var(--warn); }
+  .spinner { width:14px; height:14px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin 0.6s linear infinite; display:none; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .setting-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+  .setting-label { font-size:12px; color:var(--text2); }
+  .setting-val { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent); }
+  .empty { text-align:center; color:var(--text3); padding:30px 0; font-size:12px; }
+  .record-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+@keyframes blink-blue {
+  0% { box-shadow: 0 0 5px #3b82f6; }
+  50% { box-shadow: 0 0 20px #3b82f6; transform: scale(1.02); }
+  100% { box-shadow: 0 0 5px #3b82f6; }
+}
+.manus-blink {
+  animation: blink-blue 1.5s infinite;
+  border: 2px solid #60a5fa !important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">HJ</div>
+    <div>
+      <div class="header-title">HajunAI</div>
+      <div class="header-sub">BRAINPOOL 관제탑 v5</div>
+    </div>
+  </div>
+  <div class="status-dot" id="statusDot"></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="log">📝 기록</div>
+  <div class="tab" data-tab="today">📋 TODAY</div>
+  <div class="tab" data-tab="search">🔍 조회</div>
+  <div class="tab" data-tab="context">🧠 맥락</div>
+  <div class="tab" data-tab="health">📊 헬스</div>
+  <div class="tab" data-tab="doc">📄 문서</div>
+  <div class="tab" data-tab="settings">⚙️ 설정</div>
+</div>
+
+<!-- 기록 -->
+<div class="content active" id="tab-log">
+  <div class="gap">
+    <div class="section-label">프로젝트</div>
+    <select id="logProject"><option value="">선택하세요</option></select>
+  </div>
+  <div class="gap">
+    <div class="section-label">작업 유형</div>
+    <div class="type-btns" id="logTypeBtns">
+      <button class="type-btn active" data-type="work_log">✅ 완료</button>
+      <button class="type-btn" data-type="issue">🔴 이슈</button>
+      <button class="type-btn" data-type="decision">💡 결정</button>
+      <button class="type-btn" data-type="memo">📌 메모</button>
+    </div>
+  </div>
+  <div class="gap">
+    <div class="section-label">작업 내용</div>
+    <textarea id="logContent" placeholder="완료한 작업, 이슈, 결정사항..."></textarea>
+  </div>
+  <div class="gap-sm">
+    <div class="section-label">last_task 업데이트 (선택)</div>
+    <input type="text" id="logLastTask" placeholder="비워두면 스킵">
+  </div>
+  <div class="gap-sm">
+    <div class="section-label">🎯 다음 액션 (next_action)</div>
+    <input type="text" id="logNextAction" placeholder="예: PR 리뷰, 테스트 작성, 회의 준비">
+    <div id="aiSuggestions" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    <div class="gap-sm">
+      <div class="section-label">🤖 추천 액션</div>
+      <div id="aiSuggestions" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    </div>
+  </div>
+  <div style="margin-top:14px;">
+    <button class="btn btn-primary" id="btnSaveLog">
+      <span class="spinner" id="logSpinner"></span>
+      <span id="logBtnText">💾 DB에 저장</span>
+    </button>
+  </div>
+</div>
+
+<!-- TODAY 리스트 -->
+<div class="content" id="tab-today">
+  <div id="todayList"><div class="empty">⟳ 불러오는 중...</div></div>
+</div>
+
+<!-- 조회 -->
+<div class="content" id="tab-search">
+  <div class="filter-row">
+    <select id="searchProject"><option value="">전체 프로젝트</option></select>
+    <select id="searchType">
+      <option value="">전체 유형</option>
+      <option value="work_log">✅ 완료</option>
+      <option value="issue">🔴 이슈</option>
+      <option value="decision">💡 결정</option>
+      <option value="memo">📌 메모</option>
+      <option value="design">🏗️ 설계</option>
+      <option value="sql">🗃️ SQL</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" id="btnSearch" style="margin-bottom:12px;">🔍 조회</button>
+  <div id="searchResults"><div class="empty">조회 버튼을 눌러주세요</div></div>
+</div>
+
+<!-- 맥락 -->
+<div class="content" id="tab-context">
+  <div class="gap">
+    <div class="section-label">프로젝트</div>
+    <select id="ctxProject"><option value="">전체 보기</option></select>
+  </div>
+  <button class="btn btn-primary" id="btnLoadCtx" style="margin-bottom:12px;">🧠 맥락 불러오기</button>
+  <div id="ctxResults"><div class="empty">맥락 불러오기를 눌러주세요</div></div>
+</div>
+
+<!-- 헬스 -->
+<div class="content" id="tab-health">
+  <div id="healthList"><div class="empty">⟳ 로딩중...</div></div>
+</div>
+
+<!-- 문서 -->
+<div class="content" id="tab-doc">
+  <div class="gap">
+    <div class="section-label">프로젝트</div>
+    <select id="docProject"><option value="">선택하세요</option></select>
+  </div>
+  <div class="gap">
+    <div class="section-label">문서 제목</div>
+    <input type="text" id="docTitle" placeholder="예: CoreChat 작업현황 2026.03.07">
+  </div>
+  <div class="gap">
+    <div class="section-label">문서 유형</div>
+    <div class="type-btns" id="docTypeBtns">
+      <button class="type-btn active" data-type="work_log">📋 작업현황</button>
+      <button class="type-btn" data-type="design">🏗️ 설계</button>
+      <button class="type-btn" data-type="report">📊 보고서</button>
+      <button class="type-btn" data-type="sql">🗃️ SQL</button>
+    </div>
+  </div>
+  <div class="gap">
+    <div class="section-label">내용</div>
+    <textarea id="docContent" placeholder="내용..." style="min-height:120px;"></textarea>
+  </div>
+  <button class="btn btn-primary" id="btnSaveDoc">
+    <span class="spinner" id="docSpinner"></span>
+    <span id="docBtnText">📄 문서 DB 저장</span>
+  </button>
+</div>
+
+<!-- 설정 -->
+<div class="content" id="tab-settings">
+  <div class="section-label" style="margin-bottom:10px;">연결 설정</div>
+  <div class="gap">
+    <div class="section-label">Supabase URL</div>
+    <input type="text" id="settingUrl" placeholder="https://xxxx.supabase.co">
+  </div>
+  <div class="gap">
+    <div class="section-label">Supabase Anon Key</div>
+    <input type="password" id="settingKey" placeholder="eyJhbGciOiJIUzI1NiIs...">
+  </div>
+  <button class="btn btn-primary" id="btnSaveSettings" style="margin-bottom:12px;">💾 설정 저장</button>
+  <div class="setting-row"><span class="setting-label">버전</span><span class="setting-val">v5.0.0</span></div>
+  <div class="setting-row"><span class="setting-label">Phase</span><span class="setting-val">Phase 0→1</span></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="popup.js"></script>
+<script src="popup-extension.js"></script> <!-- 🔥 여기 -->
+</body>
+</html>

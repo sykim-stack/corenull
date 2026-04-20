@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "HajunAI — BRAINPOOL 관제탑",
+  "version": "2.1.0",
+  "description": "BRAINPOOL 프로젝트 작업 기록 · 문서 저장 · 컨텍스트 업데이트 · Claude 자동 감지",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.supabase.co/*",
+    "https://claude.ai/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
